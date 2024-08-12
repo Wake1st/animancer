@@ -33,7 +33,6 @@ fn select_unit(
             global_transform.translation().y,
         );
         if unit_pos.distance(unit_selection.pos) < unit.size {
-            info!("unit selected!");
             selectable.selected = true;
         }
     }

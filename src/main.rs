@@ -14,10 +14,22 @@ use unit::UnitPlugin;
 
 fn main() {
     App::new()
-        .add_plugins(DefaultPlugins.set(LogPlugin {
-            level: bevy::log::Level::INFO,
-            ..default()
-        }))
+        .add_plugins(
+            DefaultPlugins
+                .set(ImagePlugin::default_nearest())
+                .set(WindowPlugin {
+                    primary_window: Some(Window {
+                        title: "Animancer".into(),
+                        ..default()
+                    }),
+                    ..default()
+                })
+                .set(LogPlugin {
+                    level: bevy::log::Level::INFO,
+                    ..default()
+                })
+                .build(),
+        )
         .add_plugins((
             InputPlugin,
             CameraPlugin,
