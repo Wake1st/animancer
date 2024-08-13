@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{math::vec2, prelude::*};
 
 use crate::{movement::Moveable, selectable::Selectable};
 
@@ -11,9 +11,7 @@ impl Plugin for UnitPlugin {
 }
 
 #[derive(Component, Default)]
-pub struct Unit {
-    pub size: f32,
-}
+pub struct Unit {}
 
 fn setup_hero(mut commands: Commands, asset_server: Res<AssetServer>) {
     let texture: Handle<Image> = asset_server.load("character.png");
@@ -24,12 +22,15 @@ fn setup_hero(mut commands: Commands, asset_server: Res<AssetServer>) {
             transform: Transform::from_translation(Vec3::ZERO),
             ..default()
         },
-        Unit { size: 20.0 },
+        Unit {},
         Moveable {
             speed: 100.0,
             location: Vec3::ZERO,
         },
-        Selectable { selected: false },
+        Selectable {
+            selected: false,
+            size: vec2(32., 32.),
+        },
         Name::new("Hero"),
     ));
 }
