@@ -29,19 +29,19 @@ fn set_moveable_location(
     mut query: Query<(&mut Moveable, &Selectable), With<Moveable>>,
 ) {
     for unit_movement in reader.read() {
-        let (mut moveable, selectable) = query.get_single_mut().unwrap();
-
-        if selectable.selected {
-            moveable.location = vec3(unit_movement.pos.x, unit_movement.pos.y, 0.0);
+        for (mut moveable, selectable) in query.iter_mut() {
+            if selectable.selected {
+                moveable.location = vec3(unit_movement.pos.x, unit_movement.pos.y, 0.0);
+            }
         }
     }
 }
 
 fn move_unit(mut query: Query<(&mut Transform, &Moveable)>, time: Res<Time>) {
-    let (mut transform, moveable) = query.get_single_mut().unwrap();
-
-    if transform.translation.distance(moveable.location) > LOCATION_CLOSENESS {
-        let direction = (moveable.location - transform.translation).normalize();
-        transform.translation += direction * moveable.speed * time.delta_seconds();
-    };
+    for (mut transform, moveable) in query.iter_mut() {
+        if transform.translation.distance(moveable.location) > LOCATION_CLOSENESS {
+            let direction = (moveable.location - transform.translation).normalize();
+            transform.translation += direction * moveable.speed * time.delta_seconds();
+        };
+    }
 }
