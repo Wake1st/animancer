@@ -36,11 +36,11 @@ fn set_moveable_location(
 
         for (mut moveable, selectable) in query.iter_mut() {
             if selectable.selected {
-                let pos = get_cartesian_position(order);
+                let (radius, theta) = get_cartesian_position(order);
                 order += 1.0;
                 moveable.location = vec3(
-                    unit_movement.pos.x + pos.x,
-                    unit_movement.pos.y + pos.y,
+                    unit_movement.pos.x + radius * f32::cos(theta),
+                    unit_movement.pos.y + radius * f32::sin(theta),
                     0.0,
                 );
             }
@@ -57,52 +57,22 @@ fn move_unit(mut query: Query<(&mut Transform, &Moveable)>, time: Res<Time>) {
     }
 }
 
-fn get_cartesian_position(order: f32) -> Vec2 {
+/// The units are spaced in an exact hexagonal pattern
+/// TODO: it might be better to space them evenly as a group (which would have non-hex-based layers)
+fn get_cartesian_position(order: f32) -> (f32, f32) {
     match order {
-        1.0..=6.0 => {
-            let radius = UNIT_BUFFER;
-            let theta = (PI / 3.) * order;
-            Vec2::new(radius * f32::cos(theta), radius * f32::sin(theta))
-        }
-        7.0..=18.0 => {
-            let radius = UNIT_BUFFER * 2.;
-            let theta = (PI / 6.) * order;
-            Vec2::new(radius * f32::cos(theta), radius * f32::sin(theta))
-        }
-        19.0..=42.0 => {
-            let radius = UNIT_BUFFER * 3.;
-            let theta = (PI / 12.) * order;
-            Vec2::new(radius * f32::cos(theta), radius * f32::sin(theta))
-        }
-        43.0..=90.0 => {
-            let radius = UNIT_BUFFER * 4.;
-            let theta = (PI / 24.) * order;
-            Vec2::new(radius * f32::cos(theta), radius * f32::sin(theta))
-        }
-        91.0..=186.0 => {
-            let radius = UNIT_BUFFER * 5.;
-            let theta = (PI / 48.) * order;
-            Vec2::new(radius * f32::cos(theta), radius * f32::sin(theta))
-        }
-        187.0..=378.0 => {
-            let radius = UNIT_BUFFER * 6.;
-            let theta = (PI / 96.) * order;
-            Vec2::new(radius * f32::cos(theta), radius * f32::sin(theta))
-        }
-        379.0..=762.0 => {
-            let radius = UNIT_BUFFER * 7.;
-            let theta = (PI / 192.) * order;
-            Vec2::new(radius * f32::cos(theta), radius * f32::sin(theta))
-        }
-        763.0..=1530.0 => {
-            let radius = UNIT_BUFFER * 8.;
-            let theta = (PI / 384.) * order;
-            Vec2::new(radius * f32::cos(theta), radius * f32::sin(theta))
-        }
-        0.0 => Vec2::ZERO,
+        1.0..=6.0 => (UNIT_BUFFER, (PI / 3.) * order),
+        7.0..=18.0 => (UNIT_BUFFER * 2., (PI / 6.) * order),
+        19.0..=42.0 => (UNIT_BUFFER * 3., (PI / 12.) * order),
+        43.0..=90.0 => (UNIT_BUFFER * 4., (PI / 24.) * order),
+        91.0..=186.0 => (UNIT_BUFFER * 5., (PI / 48.) * order),
+        187.0..=378.0 => (UNIT_BUFFER * 6., (PI / 96.) * order),
+        379.0..=762.0 => (UNIT_BUFFER * 7., (PI / 192.) * order),
+        763.0..=1530.0 => (UNIT_BUFFER * 8., (PI / 384.) * order),
+        0.0 => (0.0, 0.0),
         _ => {
             warn!("Unhandled use case - too many units to order in a hexagonal pattern (See 'movement.rs' -> get_cartesian_position).");
-            Vec2::ZERO
+            (0.0, 0.0)
         }
     }
 }
