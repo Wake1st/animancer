@@ -74,7 +74,35 @@ fn get_cartesian_position(order: f32) -> Vec2 {
             let theta = (PI / 12.) * order;
             Vec2::new(radius * f32::cos(theta), radius * f32::sin(theta))
         }
+        43.0..=90.0 => {
+            let radius = UNIT_BUFFER * 3.;
+            let theta = (PI / 12.) * order;
+            Vec2::new(radius * f32::cos(theta), radius * f32::sin(theta))
+        }
+        91.0..=186.0 => {
+            let radius = UNIT_BUFFER * 3.;
+            let theta = (PI / 12.) * order;
+            Vec2::new(radius * f32::cos(theta), radius * f32::sin(theta))
+        }
+        187.0..=378.0 => {
+            let radius = UNIT_BUFFER * 3.;
+            let theta = (PI / 12.) * order;
+            Vec2::new(radius * f32::cos(theta), radius * f32::sin(theta))
+        }
+        379.0..=762.0 => {
+            let radius = UNIT_BUFFER * 3.;
+            let theta = (PI / 12.) * order;
+            Vec2::new(radius * f32::cos(theta), radius * f32::sin(theta))
+        }
+        763.0..=1530.0 => {
+            let radius = UNIT_BUFFER * 3.;
+            let theta = (PI / 12.) * order;
+            Vec2::new(radius * f32::cos(theta), radius * f32::sin(theta))
+        }
         0.0 => Vec2::ZERO,
-        _ => Vec2::ZERO,
+        _ => {
+            warn!("Unhandled use case - too many units to order in a hexagonal pattern (See 'movement.rs' -> get_cartesian_position).");
+            Vec2::ZERO
+        }
     }
 }
