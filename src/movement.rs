@@ -32,8 +32,8 @@ pub struct UnitMovement {
 pub enum Formation {
     Ringed,
     Line,
-    Box,
-    Staggered,
+    // Box,
+    // Staggered,
 }
 
 impl Default for Formation {
@@ -47,8 +47,8 @@ impl Clone for Formation {
         match self {
             Self::Ringed => Self::Ringed,
             Self::Line => Self::Line,
-            Self::Box => Self::Box,
-            Self::Staggered => Self::Staggered,
+            // Self::Box => Self::Box,
+            // Self::Staggered => Self::Staggered,
         }
     }
 }
@@ -84,9 +84,8 @@ fn set_moveable_location(
                             unit_movement.pos.y + (order * UNIT_BUFFER) * f32::sin(aim_angle),
                             0.0,
                         );
-                    }
-                    Formation::Box => (),
-                    Formation::Staggered => (),
+                    } // Formation::Box => (),
+                      // Formation::Staggered => (),
                 }
                 order += 1.0;
             }
