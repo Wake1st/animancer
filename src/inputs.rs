@@ -4,7 +4,10 @@ use bevy::{
     prelude::*,
 };
 
-use crate::{movement::UnitMovement, selectable::BoxSelection};
+use crate::{
+    movement::{Formation, UnitMovement},
+    selectable::BoxSelection,
+};
 
 pub struct InputPlugin;
 
@@ -18,6 +21,7 @@ impl Plugin for InputPlugin {
             selecting: false,
             start: Vec2::ZERO,
             current: Vec2::ZERO,
+            form: Formation::Ringed,
         })
         .insert_resource(UnitAim {
             aiming: false,
@@ -32,6 +36,7 @@ struct BoxSelector {
     selecting: bool,
     start: Vec2,
     current: Vec2,
+    form: Formation,
 }
 
 #[derive(Resource)]
@@ -83,6 +88,7 @@ fn handle_click(
             movement_writer.send(UnitMovement {
                 pos: unit_aim.start,
                 dir: unit_aim.current - unit_aim.start,
+                form: box_selector.form.clone(),
             });
 
             unit_aim.aiming = false;
