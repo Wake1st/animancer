@@ -1,4 +1,8 @@
-use bevy::{color::palettes::tailwind::GRAY_100, math::vec3, prelude::*};
+use bevy::{
+    color::palettes::tailwind::{GRAY_100, GREEN_200},
+    math::vec2,
+    prelude::*,
+};
 
 use crate::{movement::UnitMovement, selectable::BoxSelection};
 
@@ -6,12 +10,20 @@ pub struct InputPlugin;
 
 impl Plugin for InputPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, (handle_click, draw_box_selection).chain())
-            .insert_resource(BoxSelector {
-                selecting: false,
-                start: Vec2::ZERO,
-                current: Vec2::ZERO,
-            });
+        app.add_systems(
+            Update,
+            (handle_click, (draw_box_selection, draw_unit_look_at)).chain(),
+        )
+        .insert_resource(BoxSelector {
+            selecting: false,
+            start: Vec2::ZERO,
+            current: Vec2::ZERO,
+        })
+        .insert_resource(UnitLookAt {
+            looking: false,
+            start: Vec2::ZERO,
+            current: Vec2::ZERO,
+        });
     }
 }
 
@@ -22,11 +34,19 @@ struct BoxSelector {
     current: Vec2,
 }
 
+#[derive(Resource)]
+struct UnitLookAt {
+    looking: bool,
+    start: Vec2,
+    current: Vec2,
+}
+
 fn handle_click(
     mouse_button_input: Res<ButtonInput<MouseButton>>,
     camera: Query<(&Camera, &GlobalTransform)>,
     windows: Query<&Window>,
     mut box_selector: ResMut<BoxSelector>,
+    mut unit_look_at: ResMut<UnitLookAt>,
     mut box_selection_writer: EventWriter<BoxSelection>,
     mut movement_writer: EventWriter<UnitMovement>,
 ) {
@@ -52,23 +72,43 @@ fn handle_click(
             box_selector.selecting = false;
             box_selector.start = Vec2::ZERO;
             box_selector.current = Vec2::ZERO;
-        } else if mouse_button_input.just_pressed(MouseButton::Right) {
-            movement_writer.send(UnitMovement { pos });
+        } else if mouse_button_input.pressed(MouseButton::Right) {
+            if unit_look_at.looking == false {
+                unit_look_at.looking = true;
+                unit_look_at.start = pos;
+            } else {
+                unit_look_at.current = pos;
+            }
+        } else if mouse_button_input.just_released(MouseButton::Right) && unit_look_at.looking {
+            movement_writer.send(UnitMovement {
+                pos,
+                dir: unit_look_at.current - unit_look_at.start,
+            });
+
+            unit_look_at.looking = false;
+            unit_look_at.start = Vec2::ZERO;
+            unit_look_at.current = Vec2::ZERO;
         }
     }
 }
 
 fn draw_box_selection(box_selector: Res<BoxSelector>, mut gizmos: Gizmos) {
     if box_selector.selecting {
-        gizmos.linestrip(
+        gizmos.linestrip_2d(
             [
-                vec3(box_selector.start.x, box_selector.start.y, 0.0),
-                vec3(box_selector.current.x, box_selector.start.y, 0.0),
-                vec3(box_selector.current.x, box_selector.current.y, 0.0),
-                vec3(box_selector.start.x, box_selector.current.y, 0.0),
-                vec3(box_selector.start.x, box_selector.start.y, 0.0),
+                vec2(box_selector.start.x, box_selector.start.y),
+                vec2(box_selector.current.x, box_selector.start.y),
+                vec2(box_selector.current.x, box_selector.current.y),
+                vec2(box_selector.start.x, box_selector.current.y),
+                vec2(box_selector.start.x, box_selector.start.y),
             ],
             GRAY_100,
         );
+    }
+}
+
+fn draw_unit_look_at(unit_look_at: Res<UnitLookAt>, mut gizmos: Gizmos) {
+    if unit_look_at.looking {
+        gizmos.linestrip_2d([unit_look_at.start, unit_look_at.current], GREEN_200);
     }
 }

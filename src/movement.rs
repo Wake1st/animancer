@@ -25,6 +25,7 @@ pub struct Moveable {
 #[derive(Event)]
 pub struct UnitMovement {
     pub pos: Vec2,
+    pub dir: Vec2,
 }
 
 fn set_moveable_location(
