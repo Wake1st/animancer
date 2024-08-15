@@ -61,7 +61,7 @@ fn get_cartesian_position(order: f32) -> Vec2 {
     match order {
         1.0..=6.0 => {
             let radius = UNIT_BUFFER;
-            let theta = (PI / 3.0) * order;
+            let theta = (PI / 3.) * order;
             Vec2::new(radius * f32::cos(theta), radius * f32::sin(theta))
         }
         7.0..=18.0 => {
@@ -75,28 +75,28 @@ fn get_cartesian_position(order: f32) -> Vec2 {
             Vec2::new(radius * f32::cos(theta), radius * f32::sin(theta))
         }
         43.0..=90.0 => {
-            let radius = UNIT_BUFFER * 3.;
-            let theta = (PI / 12.) * order;
+            let radius = UNIT_BUFFER * 4.;
+            let theta = (PI / 24.) * order;
             Vec2::new(radius * f32::cos(theta), radius * f32::sin(theta))
         }
         91.0..=186.0 => {
-            let radius = UNIT_BUFFER * 3.;
-            let theta = (PI / 12.) * order;
+            let radius = UNIT_BUFFER * 5.;
+            let theta = (PI / 48.) * order;
             Vec2::new(radius * f32::cos(theta), radius * f32::sin(theta))
         }
         187.0..=378.0 => {
-            let radius = UNIT_BUFFER * 3.;
-            let theta = (PI / 12.) * order;
+            let radius = UNIT_BUFFER * 6.;
+            let theta = (PI / 96.) * order;
             Vec2::new(radius * f32::cos(theta), radius * f32::sin(theta))
         }
         379.0..=762.0 => {
-            let radius = UNIT_BUFFER * 3.;
-            let theta = (PI / 12.) * order;
+            let radius = UNIT_BUFFER * 7.;
+            let theta = (PI / 192.) * order;
             Vec2::new(radius * f32::cos(theta), radius * f32::sin(theta))
         }
         763.0..=1530.0 => {
-            let radius = UNIT_BUFFER * 3.;
-            let theta = (PI / 12.) * order;
+            let radius = UNIT_BUFFER * 8.;
+            let theta = (PI / 384.) * order;
             Vec2::new(radius * f32::cos(theta), radius * f32::sin(theta))
         }
         0.0 => Vec2::ZERO,
