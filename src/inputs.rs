@@ -12,15 +12,15 @@ impl Plugin for InputPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Update,
-            (handle_click, (draw_box_selection, draw_unit_look_at)).chain(),
+            (handle_click, (draw_box_selection, draw_unit_aim)).chain(),
         )
         .insert_resource(BoxSelector {
             selecting: false,
             start: Vec2::ZERO,
             current: Vec2::ZERO,
         })
-        .insert_resource(UnitLookAt {
-            looking: false,
+        .insert_resource(UnitAim {
+            aiming: false,
             start: Vec2::ZERO,
             current: Vec2::ZERO,
         });
@@ -35,8 +35,8 @@ struct BoxSelector {
 }
 
 #[derive(Resource)]
-struct UnitLookAt {
-    looking: bool,
+struct UnitAim {
+    aiming: bool,
     start: Vec2,
     current: Vec2,
 }
@@ -46,7 +46,7 @@ fn handle_click(
     camera: Query<(&Camera, &GlobalTransform)>,
     windows: Query<&Window>,
     mut box_selector: ResMut<BoxSelector>,
-    mut unit_look_at: ResMut<UnitLookAt>,
+    mut unit_aim: ResMut<UnitAim>,
     mut box_selection_writer: EventWriter<BoxSelection>,
     mut movement_writer: EventWriter<UnitMovement>,
 ) {
@@ -73,21 +73,21 @@ fn handle_click(
             box_selector.start = Vec2::ZERO;
             box_selector.current = Vec2::ZERO;
         } else if mouse_button_input.pressed(MouseButton::Right) {
-            if unit_look_at.looking == false {
-                unit_look_at.looking = true;
-                unit_look_at.start = pos;
+            if unit_aim.aiming == false {
+                unit_aim.aiming = true;
+                unit_aim.start = pos;
             } else {
-                unit_look_at.current = pos;
+                unit_aim.current = pos;
             }
-        } else if mouse_button_input.just_released(MouseButton::Right) && unit_look_at.looking {
+        } else if mouse_button_input.just_released(MouseButton::Right) && unit_aim.aiming {
             movement_writer.send(UnitMovement {
-                pos,
-                dir: unit_look_at.current - unit_look_at.start,
+                pos: unit_aim.start,
+                dir: unit_aim.current - unit_aim.start,
             });
 
-            unit_look_at.looking = false;
-            unit_look_at.start = Vec2::ZERO;
-            unit_look_at.current = Vec2::ZERO;
+            unit_aim.aiming = false;
+            unit_aim.start = Vec2::ZERO;
+            unit_aim.current = Vec2::ZERO;
         }
     }
 }
@@ -107,8 +107,8 @@ fn draw_box_selection(box_selector: Res<BoxSelector>, mut gizmos: Gizmos) {
     }
 }
 
-fn draw_unit_look_at(unit_look_at: Res<UnitLookAt>, mut gizmos: Gizmos) {
-    if unit_look_at.looking {
-        gizmos.linestrip_2d([unit_look_at.start, unit_look_at.current], GREEN_200);
+fn draw_unit_aim(unit_aim: Res<UnitAim>, mut gizmos: Gizmos) {
+    if unit_aim.aiming {
+        gizmos.linestrip_2d([unit_aim.start, unit_aim.current], GREEN_200);
     }
 }

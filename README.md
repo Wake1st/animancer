@@ -5,6 +5,7 @@
 - [x] user can select multiple units
 - [x] user can move selected unit(s)
 - [x] selected units move as a group (they have a buffer to distance themselves by)
-- [ ] use can hold the right mouse button and "aim" the direction selected units face
+- [x] use can hold the right mouse button and "aim" the direction selected units face
 - [ ] user can spawn units from a spawner
 - [ ] user can direct units to generate "faith" (currency)
+- [ ] user can change a groups formation (eg: hex, line, box, staggered, flank)

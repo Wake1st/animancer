@@ -35,13 +35,20 @@ fn set_moveable_location(
     for unit_movement in reader.read() {
         let mut order: f32 = 0.0;
 
+        let aim_angle = match unit_movement.dir {
+            Vec2::ZERO => 0.0,
+            _ => Vec2::X.angle_between(unit_movement.dir),
+        };
+
+        info!("\ndir: {:?}\nangle: {:?}", unit_movement.dir, aim_angle);
+
         for (mut moveable, selectable) in query.iter_mut() {
             if selectable.selected {
                 let (radius, theta) = get_cartesian_position(order);
                 order += 1.0;
                 moveable.location = vec3(
-                    unit_movement.pos.x + radius * f32::cos(theta),
-                    unit_movement.pos.y + radius * f32::sin(theta),
+                    unit_movement.pos.x + radius * f32::cos(theta + aim_angle),
+                    unit_movement.pos.y + radius * f32::sin(theta + aim_angle),
                     0.0,
                 );
             }
