@@ -1,4 +1,5 @@
 mod camera;
+mod formation;
 mod inputs;
 mod movement;
 mod selectable;

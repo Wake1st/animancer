@@ -1,8 +1,11 @@
+use std::f32::consts::PI;
+
 use bevy::{math::vec3, prelude::*};
 
 use crate::selectable::Selectable;
 
 const LOCATION_CLOSENESS: f32 = 1.0;
+const UNIT_BUFFER: f32 = 40.0;
 
 pub struct MovementPlugin;
 
@@ -29,9 +32,17 @@ fn set_moveable_location(
     mut query: Query<(&mut Moveable, &Selectable), With<Moveable>>,
 ) {
     for unit_movement in reader.read() {
+        let mut order: f32 = 0.0;
+
         for (mut moveable, selectable) in query.iter_mut() {
             if selectable.selected {
-                moveable.location = vec3(unit_movement.pos.x, unit_movement.pos.y, 0.0);
+                let pos = get_cartesian_position(order);
+                order += 1.0;
+                moveable.location = vec3(
+                    unit_movement.pos.x + pos.x,
+                    unit_movement.pos.y + pos.y,
+                    0.0,
+                );
             }
         }
     }
@@ -43,5 +54,27 @@ fn move_unit(mut query: Query<(&mut Transform, &Moveable)>, time: Res<Time>) {
             let direction = (moveable.location - transform.translation).normalize();
             transform.translation += direction * moveable.speed * time.delta_seconds();
         };
+    }
+}
+
+fn get_cartesian_position(order: f32) -> Vec2 {
+    match order {
+        1.0..=6.0 => {
+            let radius = UNIT_BUFFER;
+            let theta = (PI / 3.0) * order;
+            Vec2::new(radius * f32::cos(theta), radius * f32::sin(theta))
+        }
+        7.0..=18.0 => {
+            let radius = UNIT_BUFFER * 2.;
+            let theta = (PI / 6.) * order;
+            Vec2::new(radius * f32::cos(theta), radius * f32::sin(theta))
+        }
+        19.0..=42.0 => {
+            let radius = UNIT_BUFFER * 3.;
+            let theta = (PI / 12.) * order;
+            Vec2::new(radius * f32::cos(theta), radius * f32::sin(theta))
+        }
+        0.0 => Vec2::ZERO,
+        _ => Vec2::ZERO,
     }
 }
