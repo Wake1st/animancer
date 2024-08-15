@@ -19,14 +19,14 @@ impl Plugin for InputPlugin {
         )
         .insert_resource(BoxSelector {
             selecting: false,
-            start: Vec2::ZERO,
-            current: Vec2::ZERO,
-            form: Formation::Ringed,
+            start: Default::default(),
+            current: Default::default(),
+            form: Formation::Line,
         })
         .insert_resource(UnitAim {
             aiming: false,
-            start: Vec2::ZERO,
-            current: Vec2::ZERO,
+            start: Default::default(),
+            current: Default::default(),
         });
     }
 }

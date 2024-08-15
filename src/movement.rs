@@ -60,28 +60,36 @@ fn set_moveable_location(
     for unit_movement in reader.read() {
         let mut order: f32 = 0.0;
 
-        match unit_movement.form {
-            Formation::Ringed => {
-                let aim_angle = match unit_movement.dir {
-                    Vec2::ZERO => 0.0,
-                    _ => Vec2::X.angle_between(unit_movement.dir),
-                };
+        let aim_angle = match unit_movement.dir {
+            Vec2::ZERO => 0.0,
+            _ => Vec2::X.angle_between(unit_movement.dir),
+        };
 
-                for (mut moveable, selectable) in query.iter_mut() {
-                    if selectable.selected {
-                        let (radius, theta) = get_cartesian_position(order);
-                        order += 1.0;
+        for (mut moveable, selectable) in query.iter_mut() {
+            if selectable.selected {
+                match unit_movement.form {
+                    Formation::Ringed => {
+                        let (radius, theta) = get_polar_coordinates(order);
                         moveable.location = vec3(
-                            unit_movement.pos.x + radius * f32::cos(theta + aim_angle),
-                            unit_movement.pos.y + radius * f32::sin(theta + aim_angle),
+                            unit_movement.pos.x
+                                + (radius * UNIT_BUFFER) * f32::cos(theta + aim_angle),
+                            unit_movement.pos.y
+                                + (radius * UNIT_BUFFER) * f32::sin(theta + aim_angle),
                             0.0,
                         );
                     }
+                    Formation::Line => {
+                        moveable.location = vec3(
+                            unit_movement.pos.x + (order * UNIT_BUFFER) * f32::cos(aim_angle),
+                            unit_movement.pos.y + (order * UNIT_BUFFER) * f32::sin(aim_angle),
+                            0.0,
+                        );
+                    }
+                    Formation::Box => (),
+                    Formation::Staggered => (),
                 }
+                order += 1.0;
             }
-            Formation::Line => (),
-            Formation::Box => (),
-            Formation::Staggered => (),
         }
     }
 }
@@ -98,16 +106,16 @@ fn move_unit(mut query: Query<(&mut Transform, &Moveable)>, time: Res<Time>) {
 /// The units are spaced in an exact hexagonal pattern
 /// TODO: it might be better to space them evenly as a group (which would have non-hex-based layers)
 /// TODO: move UNIT_BUFFER out of this function - it can be used elsewhere, once
-fn get_cartesian_position(order: f32) -> (f32, f32) {
+fn get_polar_coordinates(order: f32) -> (f32, f32) {
     match order {
-        1.0..=6.0 => (UNIT_BUFFER, (PI / 3.) * order),
-        7.0..=18.0 => (UNIT_BUFFER * 2., (PI / 6.) * order),
-        19.0..=42.0 => (UNIT_BUFFER * 3., (PI / 12.) * order),
-        43.0..=90.0 => (UNIT_BUFFER * 4., (PI / 24.) * order),
-        91.0..=186.0 => (UNIT_BUFFER * 5., (PI / 48.) * order),
-        187.0..=378.0 => (UNIT_BUFFER * 6., (PI / 96.) * order),
-        379.0..=762.0 => (UNIT_BUFFER * 7., (PI / 192.) * order),
-        763.0..=1530.0 => (UNIT_BUFFER * 8., (PI / 384.) * order),
+        1.0..=6.0 => (1., (PI / 3.) * order),
+        7.0..=18.0 => (2., (PI / 6.) * order),
+        19.0..=42.0 => (3., (PI / 12.) * order),
+        43.0..=90.0 => (4., (PI / 24.) * order),
+        91.0..=186.0 => (5., (PI / 48.) * order),
+        187.0..=378.0 => (6., (PI / 96.) * order),
+        379.0..=762.0 => (7., (PI / 192.) * order),
+        763.0..=1530.0 => (8., (PI / 384.) * order),
         0.0 => (0.0, 0.0),
         _ => {
             warn!("Unhandled use case - too many units to order in a hexagonal pattern (See 'movement.rs' -> get_cartesian_position).");
