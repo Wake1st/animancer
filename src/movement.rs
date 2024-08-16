@@ -6,6 +6,7 @@ use crate::selectable::Selectable;
 
 const LOCATION_CLOSENESS: f32 = 1.0;
 const UNIT_BUFFER: f32 = 40.0;
+const FORMATION_MULTIPLIER: f32 = 0.5;
 
 pub struct MovementPlugin;
 
@@ -47,8 +48,6 @@ impl Clone for Formation {
         match self {
             Self::Ringed => Self::Ringed,
             Self::Line => Self::Line,
-            // Self::Box => Self::Box,
-            // Self::Staggered => Self::Staggered,
         }
     }
 }
@@ -60,9 +59,12 @@ fn set_moveable_location(
     for unit_movement in reader.read() {
         let mut order: f32 = 0.0;
 
-        let aim_angle = match unit_movement.direction {
-            Vec2::ZERO => 0.0,
-            _ => Vec2::X.angle_between(unit_movement.direction),
+        let (aim_angle, strength) = match unit_movement.direction {
+            Vec2::ZERO => (0.0, UNIT_BUFFER),
+            d => (
+                Vec2::X.angle_between(d),
+                UNIT_BUFFER + FORMATION_MULTIPLIER * d.length(),
+            ),
         };
 
         for (mut moveable, selectable) in query.iter_mut() {
@@ -72,16 +74,16 @@ fn set_moveable_location(
                         let (radius, theta) = get_polar_coordinates(order);
                         moveable.location = vec3(
                             unit_movement.position.x
-                                + (radius * UNIT_BUFFER) * f32::cos(theta + aim_angle),
+                                + (radius * strength * f32::cos(theta + aim_angle)),
                             unit_movement.position.y
-                                + (radius * UNIT_BUFFER) * f32::sin(theta + aim_angle),
+                                + (radius * strength * f32::sin(theta + aim_angle)),
                             0.0,
                         );
                     }
                     Formation::Line => {
                         moveable.location = vec3(
-                            unit_movement.position.x + (order * UNIT_BUFFER) * f32::cos(aim_angle),
-                            unit_movement.position.y + (order * UNIT_BUFFER) * f32::sin(aim_angle),
+                            unit_movement.position.x + (order * strength) * f32::cos(aim_angle),
+                            unit_movement.position.y + (order * strength) * f32::sin(aim_angle),
                             0.0,
                         );
                     } // Formation::Box => (),
