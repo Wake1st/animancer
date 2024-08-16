@@ -1,4 +1,5 @@
 mod camera;
+mod helpers;
 mod inputs;
 mod movement;
 mod selectable;
@@ -7,6 +8,7 @@ mod unit;
 use bevy::{log::LogPlugin, prelude::*};
 
 use camera::CameraPlugin;
+use helpers::HelperPlugin;
 use inputs::InputPlugin;
 use movement::MovementPlugin;
 use selectable::SelectablePlugin;
@@ -36,6 +38,7 @@ fn main() {
             UnitPlugin,
             SelectablePlugin,
             MovementPlugin,
+            HelperPlugin,
         ))
         .run();
 }
