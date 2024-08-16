@@ -1,5 +1,8 @@
+use std::cmp::Ordering;
+
 use bevy::{
-    color::palettes::tailwind::{GRAY_100, GREEN_200},
+    color::palettes::tailwind::{GRAY_100, GREEN_300},
+    input::mouse::MouseWheel,
     math::vec2,
     prelude::*,
 };
@@ -13,21 +16,26 @@ pub struct InputPlugin;
 
 impl Plugin for InputPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(
-            Update,
-            (handle_click, (draw_box_selection, draw_unit_aim)).chain(),
-        )
-        .insert_resource(BoxSelector {
-            selecting: false,
-            start: Default::default(),
-            current: Default::default(),
-            form: Formation::Line,
-        })
-        .insert_resource(UnitAim {
-            aiming: false,
-            start: Default::default(),
-            current: Default::default(),
-        });
+        app.add_systems(Startup, setup_debug_helper_text)
+            .add_systems(
+                Update,
+                (
+                    (handle_click, handle_mouse_wheel),
+                    (draw_box_selection, draw_unit_aim, text_update_system),
+                )
+                    .chain(),
+            )
+            .insert_resource(BoxSelector {
+                selecting: false,
+                start: Default::default(),
+                current: Default::default(),
+                form: Formation::Line,
+            })
+            .insert_resource(UnitAim {
+                aiming: false,
+                start: Default::default(),
+                current: Default::default(),
+            });
     }
 }
 
@@ -98,6 +106,21 @@ fn handle_click(
     }
 }
 
+fn handle_mouse_wheel(
+    mut mouse_wheel_input: EventReader<MouseWheel>,
+    mut box_selector: ResMut<BoxSelector>,
+) {
+    for wheel in mouse_wheel_input.read() {
+        box_selector.form = match (wheel.y.total_cmp(&0.0), box_selector.form.clone()) {
+            (Ordering::Less, Formation::Ringed) => Formation::Line,
+            (Ordering::Less, Formation::Line) => Formation::Ringed,
+            (Ordering::Greater, Formation::Ringed) => Formation::Line,
+            (Ordering::Greater, Formation::Line) => Formation::Ringed,
+            _ => box_selector.form.clone(),
+        }
+    }
+}
+
 fn draw_box_selection(box_selector: Res<BoxSelector>, mut gizmos: Gizmos) {
     if box_selector.selecting {
         gizmos.linestrip_2d(
@@ -115,6 +138,33 @@ fn draw_box_selection(box_selector: Res<BoxSelector>, mut gizmos: Gizmos) {
 
 fn draw_unit_aim(unit_aim: Res<UnitAim>, mut gizmos: Gizmos) {
     if unit_aim.aiming {
-        gizmos.linestrip_2d([unit_aim.start, unit_aim.current], GREEN_200);
+        gizmos.linestrip_2d([unit_aim.start, unit_aim.current], GREEN_300);
+    }
+}
+
+#[derive(Component)]
+struct FormationDebugText;
+
+fn setup_debug_helper_text(mut commands: Commands) {
+    commands.spawn((
+        // Create a TextBundle that has a Text with a list of sections.
+        TextBundle::from_sections([
+            TextSection::new("Formation::", TextStyle { ..default() }),
+            TextSection::new("_", TextStyle { ..default() }),
+        ]),
+        FormationDebugText,
+    ));
+}
+
+fn text_update_system(
+    box_selector: Res<BoxSelector>,
+    mut query: Query<&mut Text, With<FormationDebugText>>,
+) {
+    for mut text in &mut query {
+        text.sections[1].value = (match box_selector.form {
+            Formation::Line => "Line",
+            Formation::Ringed => "Ringed",
+        })
+        .into();
     }
 }

@@ -104,7 +104,6 @@ fn move_unit(mut query: Query<(&mut Transform, &Moveable)>, time: Res<Time>) {
 
 /// The units are spaced in an exact hexagonal pattern
 /// TODO: it might be better to space them evenly as a group (which would have non-hex-based layers)
-/// TODO: move UNIT_BUFFER out of this function - it can be used elsewhere, once
 fn get_polar_coordinates(order: f32) -> (f32, f32) {
     match order {
         1.0..=6.0 => (1., (PI / 3.) * order),
