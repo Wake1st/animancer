@@ -16,7 +16,7 @@ impl Plugin for InputPlugin {
                 selecting: false,
                 start: Default::default(),
                 current: Default::default(),
-                form: Formation::Line,
+                formation: Formation::Line,
             })
             .insert_resource(UnitAim {
                 aiming: false,
@@ -31,7 +31,7 @@ pub struct BoxSelector {
     pub selecting: bool,
     pub start: Vec2,
     pub current: Vec2,
-    pub form: Formation,
+    pub formation: Formation,
 }
 
 #[derive(Resource)]
@@ -81,9 +81,9 @@ fn handle_click(
             }
         } else if mouse_button_input.just_released(MouseButton::Right) && unit_aim.aiming {
             movement_writer.send(UnitMovement {
-                pos: unit_aim.start,
-                dir: unit_aim.current - unit_aim.start,
-                form: box_selector.form.clone(),
+                position: unit_aim.start,
+                direction: unit_aim.current - unit_aim.start,
+                formation: box_selector.formation.clone(),
             });
 
             unit_aim.aiming = false;
@@ -98,12 +98,12 @@ fn handle_mouse_wheel(
     mut box_selector: ResMut<BoxSelector>,
 ) {
     for wheel in mouse_wheel_input.read() {
-        box_selector.form = match (wheel.y.total_cmp(&0.0), box_selector.form.clone()) {
+        box_selector.formation = match (wheel.y.total_cmp(&0.0), box_selector.formation.clone()) {
             (Ordering::Less, Formation::Ringed) => Formation::Line,
             (Ordering::Less, Formation::Line) => Formation::Ringed,
             (Ordering::Greater, Formation::Ringed) => Formation::Line,
             (Ordering::Greater, Formation::Line) => Formation::Ringed,
-            _ => box_selector.form.clone(),
+            _ => box_selector.formation.clone(),
         }
     }
 }

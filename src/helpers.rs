@@ -61,7 +61,7 @@ fn text_update_system(
     mut query: Query<&mut Text, With<FormationDebugText>>,
 ) {
     for mut text in &mut query {
-        text.sections[1].value = (match box_selector.form {
+        text.sections[1].value = (match box_selector.formation {
             Formation::Line => "Line",
             Formation::Ringed => "Ringed",
         })

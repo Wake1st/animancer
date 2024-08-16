@@ -24,9 +24,9 @@ pub struct Moveable {
 
 #[derive(Event)]
 pub struct UnitMovement {
-    pub pos: Vec2,
-    pub dir: Vec2,
-    pub form: Formation,
+    pub position: Vec2,
+    pub direction: Vec2,
+    pub formation: Formation,
 }
 
 pub enum Formation {
@@ -60,28 +60,28 @@ fn set_moveable_location(
     for unit_movement in reader.read() {
         let mut order: f32 = 0.0;
 
-        let aim_angle = match unit_movement.dir {
+        let aim_angle = match unit_movement.direction {
             Vec2::ZERO => 0.0,
-            _ => Vec2::X.angle_between(unit_movement.dir),
+            _ => Vec2::X.angle_between(unit_movement.direction),
         };
 
         for (mut moveable, selectable) in query.iter_mut() {
             if selectable.selected {
-                match unit_movement.form {
+                match unit_movement.formation {
                     Formation::Ringed => {
                         let (radius, theta) = get_polar_coordinates(order);
                         moveable.location = vec3(
-                            unit_movement.pos.x
+                            unit_movement.position.x
                                 + (radius * UNIT_BUFFER) * f32::cos(theta + aim_angle),
-                            unit_movement.pos.y
+                            unit_movement.position.y
                                 + (radius * UNIT_BUFFER) * f32::sin(theta + aim_angle),
                             0.0,
                         );
                     }
                     Formation::Line => {
                         moveable.location = vec3(
-                            unit_movement.pos.x + (order * UNIT_BUFFER) * f32::cos(aim_angle),
-                            unit_movement.pos.y + (order * UNIT_BUFFER) * f32::sin(aim_angle),
+                            unit_movement.position.x + (order * UNIT_BUFFER) * f32::cos(aim_angle),
+                            unit_movement.position.y + (order * UNIT_BUFFER) * f32::sin(aim_angle),
                             0.0,
                         );
                     } // Formation::Box => (),
