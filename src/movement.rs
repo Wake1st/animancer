@@ -1,12 +1,16 @@
 use std::f32::consts::PI;
 
-use bevy::{math::vec3, prelude::*};
+use bevy::{
+    math::{vec2, vec3},
+    prelude::*,
+};
 
-use crate::selectable::Selectable;
+use crate::selectable::SelectedUnits;
 
 const LOCATION_CLOSENESS: f32 = 1.0;
 const UNIT_BUFFER: f32 = 40.0;
-const FORMATION_MULTIPLIER: f32 = 0.5;
+const LINE_STRENGTH_SCALE: f32 = 2.4;
+const RINGED_STRENGTH_SCALE: f32 = 1.0;
 
 pub struct MovementPlugin;
 
@@ -54,43 +58,75 @@ impl Clone for Formation {
 
 fn set_moveable_location(
     mut reader: EventReader<UnitMovement>,
-    mut query: Query<(&mut Moveable, &Selectable), With<Moveable>>,
+    mut query: Query<&mut Moveable>,
+    selected: Res<SelectedUnits>,
 ) {
     for unit_movement in reader.read() {
-        let mut order: f32 = 0.0;
-
+        //  TODO: store window size (see example: https://bevyengine.org/examples-webgpu/3d-rendering/split-screen/)
         let (aim_angle, strength) = match unit_movement.direction {
             Vec2::ZERO => (0.0, UNIT_BUFFER),
-            d => (
-                Vec2::X.angle_between(d),
-                UNIT_BUFFER + FORMATION_MULTIPLIER * d.length(),
-            ),
+            d => (Vec2::X.angle_between(d), UNIT_BUFFER + d.length()),
         };
 
-        for (mut moveable, selectable) in query.iter_mut() {
-            if selectable.selected {
-                match unit_movement.formation {
-                    Formation::Ringed => {
+        match unit_movement.formation {
+            Formation::Ringed => {
+                let mut order: f32 = 0.0;
+                for &entity in selected.entities.iter() {
+                    if let Ok(mut moveable) = query.get_mut(entity) {
                         let (radius, theta) = get_polar_coordinates(order);
                         moveable.location = vec3(
                             unit_movement.position.x
-                                + (radius * strength * f32::cos(theta + aim_angle)),
+                                + (radius
+                                    * RINGED_STRENGTH_SCALE
+                                    * strength
+                                    * f32::cos(theta + aim_angle)),
                             unit_movement.position.y
-                                + (radius * strength * f32::sin(theta + aim_angle)),
+                                + (radius
+                                    * RINGED_STRENGTH_SCALE
+                                    * strength
+                                    * f32::sin(theta + aim_angle)),
                             0.0,
                         );
                     }
-                    Formation::Line => {
+                    order += 1.0;
+                }
+            }
+            Formation::Line => {
+                let unit_count = selected.entities.len() as f32;
+                let line_count =
+                    f32::ceil(LINE_STRENGTH_SCALE * strength / (unit_count * UNIT_BUFFER));
+                let units_per_line = f32::ceil(unit_count / line_count);
+
+                let mut order: f32 = 0.0;
+                for &entity in selected.entities.iter() {
+                    if let Ok(mut moveable) = query.get_mut(entity) {
+                        let current_line_index = f32::floor(order / units_per_line);
+                        let stagger =
+                            if line_count == 1.0 || (current_line_index + 1.0) != line_count {
+                                0.5
+                            } else {
+                                1.0
+                            };
+
+                        let position = vec2(
+                            (order % units_per_line) - units_per_line / 2. + stagger,
+                            -f32::floor(order / units_per_line),
+                        ) * UNIT_BUFFER;
+
                         moveable.location = vec3(
-                            unit_movement.position.x + (order * strength) * f32::cos(aim_angle),
-                            unit_movement.position.y + (order * strength) * f32::sin(aim_angle),
+                            unit_movement.position.x
+                                + position.length()
+                                    * f32::cos(aim_angle - PI / 2. + position.to_angle()),
+                            unit_movement.position.y
+                                + position.length()
+                                    * f32::sin(aim_angle - PI / 2. + position.to_angle()),
                             0.0,
                         );
-                    } // Formation::Box => (),
-                      // Formation::Staggered => (),
+                    }
+                    order += 1.0;
                 }
-                order += 1.0;
-            }
+            } // Formation::Box => (),
+              // Formation::Staggered => (),
         }
     }
 }

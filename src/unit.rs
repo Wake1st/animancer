@@ -31,7 +31,6 @@ fn spawn_hero(mut commands: Commands, asset_server: Res<AssetServer>) {
             location: Vec3::ZERO,
         },
         Selectable {
-            selected: false,
             size: vec2(32., 32.),
         },
         Name::new("Hero"),
@@ -57,7 +56,6 @@ fn spawn_worker(mut commands: Commands, asset_server: Res<AssetServer>) {
                 location,
             },
             Selectable {
-                selected: false,
                 size: vec2(32., 32.),
             },
             Name::new("Worker"),
