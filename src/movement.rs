@@ -10,7 +10,7 @@ use crate::selectable::SelectedUnits;
 const LOCATION_CLOSENESS: f32 = 1.0;
 const UNIT_BUFFER: f32 = 40.0;
 const LINE_STRENGTH_SCALE: f32 = 2.4;
-const RINGED_STRENGTH_SCALE: f32 = 1.0;
+const RINGED_STRENGTH_SCALE: f32 = 0.4;
 
 pub struct MovementPlugin;
 
@@ -63,6 +63,7 @@ fn set_moveable_location(
 ) {
     for unit_movement in reader.read() {
         //  TODO: store window size (see example: https://bevyengine.org/examples-webgpu/3d-rendering/split-screen/)
+        let unit_count = selected.entities.len() as f32;
         let (aim_angle, strength) = match unit_movement.direction {
             Vec2::ZERO => (0.0, UNIT_BUFFER),
             d => (Vec2::X.angle_between(d), UNIT_BUFFER + d.length()),
@@ -73,7 +74,7 @@ fn set_moveable_location(
                 let mut order: f32 = 0.0;
                 for &entity in selected.entities.iter() {
                     if let Ok(mut moveable) = query.get_mut(entity) {
-                        let (radius, theta) = get_polar_coordinates(order);
+                        let (radius, theta) = get_polar_coordinates(order, unit_count);
                         moveable.location = vec3(
                             unit_movement.position.x
                                 + (radius
@@ -92,7 +93,6 @@ fn set_moveable_location(
                 }
             }
             Formation::Line => {
-                let unit_count = selected.entities.len() as f32;
                 let line_count =
                     f32::ceil(LINE_STRENGTH_SCALE * strength / (unit_count * UNIT_BUFFER));
                 let units_per_line = f32::ceil(unit_count / line_count);
@@ -142,16 +142,72 @@ fn move_unit(mut query: Query<(&mut Transform, &Moveable)>, time: Res<Time>) {
 
 /// The units are spaced in an exact hexagonal pattern
 /// TODO: it might be better to space them evenly as a group (which would have non-hex-based layers)
-fn get_polar_coordinates(order: f32) -> (f32, f32) {
+fn get_polar_coordinates(order: f32, unit_count: f32) -> (f32, f32) {
     match order {
-        1.0..=6.0 => (1., (PI / 3.) * order),
-        7.0..=18.0 => (2., (PI / 6.) * order),
-        19.0..=42.0 => (3., (PI / 12.) * order),
-        43.0..=90.0 => (4., (PI / 24.) * order),
-        91.0..=186.0 => (5., (PI / 48.) * order),
-        187.0..=378.0 => (6., (PI / 96.) * order),
-        379.0..=762.0 => (7., (PI / 192.) * order),
-        763.0..=1530.0 => (8., (PI / 384.) * order),
+        1.0..=6.0 => (
+            1.,
+            (if unit_count >= 6.0 {
+                PI / 3.
+            } else {
+                2. * PI / (unit_count - 1.0)
+            }) * order,
+        ),
+        7.0..=18.0 => (
+            2.,
+            (if unit_count >= 18.0 {
+                PI / 18.0
+            } else {
+                2. * PI / (unit_count - 7.0)
+            }) * order,
+        ),
+        19.0..=42.0 => (
+            3.,
+            (if unit_count >= 42.0 {
+                PI / 42.0
+            } else {
+                2. * PI / (unit_count - 19.0)
+            }) * order,
+        ),
+        43.0..=90.0 => (
+            4.,
+            (if unit_count >= 90.0 {
+                PI / 90.0
+            } else {
+                2. * PI / (unit_count - 43.0)
+            }) * order,
+        ),
+        91.0..=186.0 => (
+            5.,
+            (if unit_count >= 186.0 {
+                PI / 186.0
+            } else {
+                2. * PI / (unit_count - 91.0)
+            }) * order,
+        ),
+        187.0..=378.0 => (
+            6.,
+            (if unit_count >= 378.0 {
+                PI / 378.0
+            } else {
+                2. * PI / (unit_count - 187.0)
+            }) * order,
+        ),
+        379.0..=762.0 => (
+            7.,
+            (if unit_count >= 762.0 {
+                PI / 762.0
+            } else {
+                2. * PI / (unit_count - 379.0)
+            }) * order,
+        ),
+        763.0..=1530.0 => (
+            8.,
+            (if unit_count >= 1530.0 {
+                PI / 1530.0
+            } else {
+                2. * PI / (unit_count - 763.0)
+            }) * order,
+        ),
         0.0 => (0.0, 0.0),
         _ => {
             warn!("Unhandled use case - too many units to order in a hexagonal pattern (See 'movement.rs' -> get_cartesian_position).");
