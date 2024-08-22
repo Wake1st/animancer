@@ -7,11 +7,11 @@
 - [x] selected units move as a group (they have a buffer to distance themselves by)
 - [x] use can hold the right mouse button and "aim" the direction selected units face
 - [x] user can change the spacing of units in a formation by the magnitude of the aim direction
-- [ ] user can change a groups formation 
+- [x] user can change a groups formation 
   - [x] ringed
   - [x] line
-  - [ ] box
-  - [ ] staggered
+  - [x] box
+  - [x] NO ~staggered~
+- [x] selection should store selected entities for better control of formations
 - [ ] user can spawn units from a spawner
 - [ ] user can direct units to generate "faith" (currency)
-- [ ] selection should store selected entities for better control of formations
