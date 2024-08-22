@@ -100,9 +100,11 @@ fn handle_mouse_wheel(
     for wheel in mouse_wheel_input.read() {
         box_selector.formation = match (wheel.y.total_cmp(&0.0), box_selector.formation.clone()) {
             (Ordering::Less, Formation::Ringed) => Formation::Line,
-            (Ordering::Less, Formation::Line) => Formation::Ringed,
-            (Ordering::Greater, Formation::Ringed) => Formation::Line,
+            (Ordering::Less, Formation::Line) => Formation::Box,
+            (Ordering::Less, Formation::Box) => Formation::Ringed,
+            (Ordering::Greater, Formation::Ringed) => Formation::Box,
             (Ordering::Greater, Formation::Line) => Formation::Ringed,
+            (Ordering::Greater, Formation::Box) => Formation::Line,
             _ => box_selector.formation.clone(),
         }
     }

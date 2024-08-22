@@ -10,7 +10,7 @@ use crate::selectable::SelectedUnits;
 const LOCATION_CLOSENESS: f32 = 1.0;
 const UNIT_BUFFER: f32 = 40.0;
 const LINE_STRENGTH_SCALE: f32 = 2.4;
-const RINGED_STRENGTH_SCALE: f32 = 0.4;
+const RINGED_STRENGTH_SCALE: f32 = 0.9;
 
 pub struct MovementPlugin;
 
@@ -37,7 +37,7 @@ pub struct UnitMovement {
 pub enum Formation {
     Ringed,
     Line,
-    // Box,
+    Box,
     // Staggered,
 }
 
@@ -52,6 +52,7 @@ impl Clone for Formation {
         match self {
             Self::Ringed => Self::Ringed,
             Self::Line => Self::Line,
+            Self::Box => Self::Box,
         }
     }
 }
@@ -72,20 +73,20 @@ fn set_moveable_location(
         match unit_movement.formation {
             Formation::Ringed => {
                 let mut order: f32 = 0.0;
+                let circumference = 2. * PI * strength;
+                let theta = (circumference / unit_count) / strength;
+
                 for &entity in selected.entities.iter() {
                     if let Ok(mut moveable) = query.get_mut(entity) {
-                        let (radius, theta) = get_polar_coordinates(order, unit_count);
                         moveable.location = vec3(
                             unit_movement.position.x
-                                + (radius
-                                    * RINGED_STRENGTH_SCALE
+                                + (RINGED_STRENGTH_SCALE
                                     * strength
-                                    * f32::cos(theta + aim_angle)),
+                                    * f32::cos(order * theta + aim_angle)),
                             unit_movement.position.y
-                                + (radius
-                                    * RINGED_STRENGTH_SCALE
+                                + (RINGED_STRENGTH_SCALE
                                     * strength
-                                    * f32::sin(theta + aim_angle)),
+                                    * f32::sin(order * theta + aim_angle)),
                             0.0,
                         );
                     }
@@ -93,11 +94,11 @@ fn set_moveable_location(
                 }
             }
             Formation::Line => {
+                let mut order: f32 = 0.0;
                 let line_count =
                     f32::ceil(LINE_STRENGTH_SCALE * strength / (unit_count * UNIT_BUFFER));
                 let units_per_line = f32::ceil(unit_count / line_count);
 
-                let mut order: f32 = 0.0;
                 for &entity in selected.entities.iter() {
                     if let Ok(mut moveable) = query.get_mut(entity) {
                         let current_line_index = f32::floor(order / units_per_line);
@@ -125,8 +126,52 @@ fn set_moveable_location(
                     }
                     order += 1.0;
                 }
-            } // Formation::Box => (),
-              // Formation::Staggered => (),
+            }
+            Formation::Box => {
+                let mut distance_traveled = 0.0;
+                let mut line_count = 1.0;
+                let length = strength * 4.0;
+                let half_strength = strength / 2.0;
+                let unit_spacing = length / unit_count;
+
+                //  move along the square, placing units evenly apart
+                for &entity in selected.entities.iter() {
+                    if let Ok(mut moveable) = query.get_mut(entity) {
+                        distance_traveled += unit_spacing;
+
+                        let mut line_distance = distance_traveled % (line_count * strength);
+                        if distance_traveled / (line_count * strength) > 1.0 {
+                            line_count += 1.0;
+                            line_distance = distance_traveled % (line_count * strength);
+                            info!("\nline count update -> {:?}", line_count);
+                        }
+
+                        //  move along proper line
+                        let position = match line_count {
+                            1.0 => vec2(line_distance - half_strength, strength),
+                            2.0 => vec2(strength, half_strength - line_distance),
+                            3.0 => vec2(half_strength - line_distance, -strength),
+                            4.0 => vec2(-strength, line_distance - half_strength),
+                            _ => vec2(0., 0.),
+                        };
+
+                        info!(
+                            "\ntotal dist: {:?}\nline dist: {:?}\nposition: {:?}",
+                            distance_traveled, line_distance, position
+                        );
+
+                        moveable.location = vec3(
+                            unit_movement.position.x
+                                + position.length()
+                                    * f32::cos(aim_angle - PI / 2. + position.to_angle()),
+                            unit_movement.position.y
+                                + position.length()
+                                    * f32::sin(aim_angle - PI / 2. + position.to_angle()),
+                            0.0,
+                        );
+                    }
+                }
+            } // Formation::Staggered => (),
         }
     }
 }
@@ -137,81 +182,5 @@ fn move_unit(mut query: Query<(&mut Transform, &Moveable)>, time: Res<Time>) {
             let direction = (moveable.location - transform.translation).normalize();
             transform.translation += direction * moveable.speed * time.delta_seconds();
         };
-    }
-}
-
-/// The units are spaced in an exact hexagonal pattern
-/// TODO: it might be better to space them evenly as a group (which would have non-hex-based layers)
-fn get_polar_coordinates(order: f32, unit_count: f32) -> (f32, f32) {
-    match order {
-        1.0..=6.0 => (
-            1.,
-            (if unit_count >= 6.0 {
-                PI / 3.
-            } else {
-                2. * PI / (unit_count - 1.0)
-            }) * order,
-        ),
-        7.0..=18.0 => (
-            2.,
-            (if unit_count >= 18.0 {
-                PI / 18.0
-            } else {
-                2. * PI / (unit_count - 7.0)
-            }) * order,
-        ),
-        19.0..=42.0 => (
-            3.,
-            (if unit_count >= 42.0 {
-                PI / 42.0
-            } else {
-                2. * PI / (unit_count - 19.0)
-            }) * order,
-        ),
-        43.0..=90.0 => (
-            4.,
-            (if unit_count >= 90.0 {
-                PI / 90.0
-            } else {
-                2. * PI / (unit_count - 43.0)
-            }) * order,
-        ),
-        91.0..=186.0 => (
-            5.,
-            (if unit_count >= 186.0 {
-                PI / 186.0
-            } else {
-                2. * PI / (unit_count - 91.0)
-            }) * order,
-        ),
-        187.0..=378.0 => (
-            6.,
-            (if unit_count >= 378.0 {
-                PI / 378.0
-            } else {
-                2. * PI / (unit_count - 187.0)
-            }) * order,
-        ),
-        379.0..=762.0 => (
-            7.,
-            (if unit_count >= 762.0 {
-                PI / 762.0
-            } else {
-                2. * PI / (unit_count - 379.0)
-            }) * order,
-        ),
-        763.0..=1530.0 => (
-            8.,
-            (if unit_count >= 1530.0 {
-                PI / 1530.0
-            } else {
-                2. * PI / (unit_count - 763.0)
-            }) * order,
-        ),
-        0.0 => (0.0, 0.0),
-        _ => {
-            warn!("Unhandled use case - too many units to order in a hexagonal pattern (See 'movement.rs' -> get_cartesian_position).");
-            (0.0, 0.0)
-        }
     }
 }

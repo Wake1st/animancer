@@ -64,6 +64,7 @@ fn text_update_system(
         text.sections[1].value = (match box_selector.formation {
             Formation::Line => "Line",
             Formation::Ringed => "Ringed",
+            Formation::Box => "Box",
         })
         .into();
     }
