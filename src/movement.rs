@@ -11,6 +11,7 @@ const LOCATION_CLOSENESS: f32 = 1.0;
 const UNIT_BUFFER: f32 = 40.0;
 const LINE_STRENGTH_SCALE: f32 = 2.4;
 const RINGED_STRENGTH_SCALE: f32 = 0.9;
+const BOX_STRENGTH_SCALE: f32 = 0.9;
 
 pub struct MovementPlugin;
 
@@ -73,20 +74,15 @@ fn set_moveable_location(
         match unit_movement.formation {
             Formation::Ringed => {
                 let mut order: f32 = 0.0;
-                let circumference = 2. * PI * strength;
-                let theta = (circumference / unit_count) / strength;
+                let radius = RINGED_STRENGTH_SCALE * strength;
+                let circumference = 2. * PI * radius;
+                let theta = (circumference / unit_count) / radius;
 
                 for &entity in selected.entities.iter() {
                     if let Ok(mut moveable) = query.get_mut(entity) {
                         moveable.location = vec3(
-                            unit_movement.position.x
-                                + (RINGED_STRENGTH_SCALE
-                                    * strength
-                                    * f32::cos(order * theta + aim_angle)),
-                            unit_movement.position.y
-                                + (RINGED_STRENGTH_SCALE
-                                    * strength
-                                    * f32::sin(order * theta + aim_angle)),
+                            unit_movement.position.x + radius * f32::cos(order * theta + aim_angle),
+                            unit_movement.position.y + radius * f32::sin(order * theta + aim_angle),
                             0.0,
                         );
                     }
@@ -130,35 +126,28 @@ fn set_moveable_location(
             Formation::Box => {
                 let mut distance_traveled = 0.0;
                 let mut line_count = 1.0;
-                let length = strength * 4.0;
-                let half_strength = strength / 2.0;
-                let unit_spacing = length / unit_count;
+                let half_side = BOX_STRENGTH_SCALE * strength;
+                let side_length = half_side * 2.0;
+                let total_length = side_length * 4.0;
+                let unit_spacing = total_length / unit_count;
 
                 //  move along the square, placing units evenly apart
                 for &entity in selected.entities.iter() {
                     if let Ok(mut moveable) = query.get_mut(entity) {
                         distance_traveled += unit_spacing;
-
-                        let mut line_distance = distance_traveled % (line_count * strength);
-                        if distance_traveled / (line_count * strength) > 1.0 {
+                        if distance_traveled / (line_count * side_length) > 1.0 {
                             line_count += 1.0;
-                            line_distance = distance_traveled % (line_count * strength);
-                            info!("\nline count update -> {:?}", line_count);
                         }
+                        let line_distance = distance_traveled - side_length * (line_count - 1.0);
 
                         //  move along proper line
                         let position = match line_count {
-                            1.0 => vec2(line_distance - half_strength, strength),
-                            2.0 => vec2(strength, half_strength - line_distance),
-                            3.0 => vec2(half_strength - line_distance, -strength),
-                            4.0 => vec2(-strength, line_distance - half_strength),
+                            1.0 => vec2(line_distance - half_side, half_side),
+                            2.0 => vec2(half_side, half_side - line_distance),
+                            3.0 => vec2(half_side - line_distance, -half_side),
+                            4.0..=4.1 => vec2(-half_side, line_distance - half_side),
                             _ => vec2(0., 0.),
                         };
-
-                        info!(
-                            "\ntotal dist: {:?}\nline dist: {:?}\nposition: {:?}",
-                            distance_traveled, line_distance, position
-                        );
 
                         moveable.location = vec3(
                             unit_movement.position.x
