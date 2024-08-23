@@ -39,7 +39,6 @@ pub enum Formation {
     Ringed,
     Line,
     Box,
-    // Staggered,
 }
 
 impl Default for Formation {
@@ -160,7 +159,7 @@ fn set_moveable_location(
                         );
                     }
                 }
-            } // Formation::Staggered => (),
+            }
         }
     }
 }

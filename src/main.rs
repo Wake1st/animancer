@@ -3,6 +3,7 @@ mod helpers;
 mod inputs;
 mod movement;
 mod selectable;
+mod structure;
 mod unit;
 
 use bevy::{log::LogPlugin, prelude::*};
@@ -12,6 +13,7 @@ use helpers::HelperPlugin;
 use inputs::InputPlugin;
 use movement::MovementPlugin;
 use selectable::SelectablePlugin;
+use structure::StructurePlugin;
 use unit::UnitPlugin;
 
 fn main() {
@@ -39,6 +41,7 @@ fn main() {
             SelectablePlugin,
             MovementPlugin,
             HelperPlugin,
+            StructurePlugin,
         ))
         .run();
 }
