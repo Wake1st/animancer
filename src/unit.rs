@@ -1,9 +1,6 @@
-use bevy::{
-    math::{vec2, vec3},
-    prelude::*,
-};
+use bevy::{math::vec2, prelude::*};
 
-use crate::{movement::Moveable, selectable::Selectable};
+use crate::{generator::GenerateWorker, movement::Moveable, selectable::Selectable};
 
 pub struct UnitPlugin;
 
@@ -37,28 +34,29 @@ fn spawn_hero(mut commands: Commands, asset_server: Res<AssetServer>) {
     ));
 }
 
-fn spawn_worker(mut commands: Commands, asset_server: Res<AssetServer>) {
+fn spawn_worker(
+    mut generation_event: EventReader<GenerateWorker>,
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+) {
     let texture: Handle<Image> = asset_server.load("footman.png");
 
-    let iter = 0..40;
-    iter.for_each(|i| {
-        let location = vec3((i % 10) as f32 * 60., (i / 10) as f32 * 60., 0.0);
-
+    for event in generation_event.read() {
         commands.spawn((
             SpriteBundle {
                 texture: texture.clone(),
-                transform: Transform::from_translation(location),
+                transform: Transform::from_translation(event.position),
                 ..default()
             },
             Unit {},
             Moveable {
                 speed: 100.0,
-                location,
+                location: event.position,
             },
             Selectable {
                 size: vec2(32., 32.),
             },
             Name::new("Worker"),
         ));
-    });
+    }
 }

@@ -1,4 +1,6 @@
 mod camera;
+mod faith;
+mod generator;
 mod helpers;
 mod inputs;
 mod movement;
@@ -9,6 +11,8 @@ mod unit;
 use bevy::{log::LogPlugin, prelude::*};
 
 use camera::CameraPlugin;
+use faith::FaithPlugin;
+use generator::GeneratorPlugin;
 use helpers::HelperPlugin;
 use inputs::InputPlugin;
 use movement::MovementPlugin;
@@ -42,6 +46,8 @@ fn main() {
             MovementPlugin,
             HelperPlugin,
             StructurePlugin,
+            GeneratorPlugin,
+            FaithPlugin,
         ))
         .run();
 }

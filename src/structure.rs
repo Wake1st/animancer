@@ -3,7 +3,11 @@ use bevy::{
     prelude::*,
 };
 
-use crate::selectable::Selectable;
+use crate::{
+    faith::Faith,
+    generator::{Generator, GeneratorType},
+    selectable::Selectable,
+};
 
 const ASSET_PATH: &str = "harvester.png";
 const SELECTION_SIZE: Vec2 = vec2(64., 64.);
@@ -17,23 +21,55 @@ impl Plugin for StructurePlugin {
     }
 }
 
-#[derive(Component, Default)]
+#[derive(Component)]
 pub struct Structure {
     structure_type: StructureType,
+    is_generating: bool,
+    value: f32,
+}
+
+impl Default for Structure {
+    fn default() -> Self {
+        Self {
+            structure_type: Default::default(),
+            is_generating: Default::default(),
+            value: Default::default(),
+        }
+    }
 }
 
 pub enum StructureType {
-    WorkerSpawner,
+    SimpleShrine,
+    WorkerProducer,
+}
+
+impl StructureType {
+    fn get_generator_type(&self) -> GeneratorType {
+        match self {
+            Self::SimpleShrine => GeneratorType::Faith,
+            Self::WorkerProducer => GeneratorType::Worker,
+        }
+    }
 }
 
 impl Default for StructureType {
     fn default() -> Self {
-        StructureType::WorkerSpawner
+        StructureType::WorkerProducer
+    }
+}
+
+impl Clone for StructureType {
+    fn clone(&self) -> Self {
+        match self {
+            Self::SimpleShrine => Self::SimpleShrine,
+            Self::WorkerProducer => Self::WorkerProducer,
+        }
     }
 }
 
 #[derive(Event)]
 pub struct PlaceStructure {
+    structure_type: StructureType,
     pos: Vec2,
 }
 
@@ -52,7 +88,15 @@ fn spawn_structure(
                 ..default()
             },
             Structure {
-                structure_type: Default::default(),
+                structure_type: place.structure_type.clone(),
+                ..Default::default()
+            },
+            Generator {
+                gen_type: place.structure_type.get_generator_type(),
+                is_running: true,
+                value: 0.0,
+                rate: 1.0,
+                completion: 10.0,
             },
             Selectable {
                 size: SELECTION_SIZE,
