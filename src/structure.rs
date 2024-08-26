@@ -4,7 +4,6 @@ use bevy::{
 };
 
 use crate::{
-    faith::Faith,
     generator::{Generator, GeneratorType},
     selectable::Selectable,
 };
@@ -69,8 +68,8 @@ impl Clone for StructureType {
 
 #[derive(Event)]
 pub struct PlaceStructure {
-    structure_type: StructureType,
-    pos: Vec2,
+    pub structure_type: StructureType,
+    pub position: Vec2,
 }
 
 fn spawn_structure(
@@ -84,7 +83,11 @@ fn spawn_structure(
         commands.spawn((
             SpriteBundle {
                 texture,
-                transform: Transform::from_translation(vec3(place.pos.x, place.pos.y, 0.0)),
+                transform: Transform::from_translation(vec3(
+                    place.position.x,
+                    place.position.y,
+                    0.0,
+                )),
                 ..default()
             },
             Structure {
