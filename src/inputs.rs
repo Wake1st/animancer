@@ -1,6 +1,6 @@
 use std::cmp::Ordering;
 
-use bevy::{core_pipeline::core_2d::graph::input, input::mouse::MouseWheel, prelude::*};
+use bevy::{input::mouse::MouseWheel, prelude::*};
 
 use crate::{
     movement::{Formation, UnitMovement},
@@ -51,8 +51,8 @@ pub struct UnitAim {
 
 #[derive(Resource)]
 pub struct BuildSelection {
-    is_selected: bool,
-    structure_type: StructureType,
+    pub is_selected: bool,
+    pub structure_type: StructureType,
 }
 
 fn handle_click(
