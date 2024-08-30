@@ -6,7 +6,8 @@ pub struct UnitPlugin;
 
 impl Plugin for UnitPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, (spawn_hero, spawn_worker));
+        app.add_systems(Startup, spawn_hero)
+            .add_systems(Update, spawn_worker);
     }
 }
 
@@ -42,6 +43,7 @@ fn spawn_worker(
     let texture: Handle<Image> = asset_server.load("footman.png");
 
     for event in generation_event.read() {
+        info!("worker spawning at : {:?}", event.position);
         commands.spawn((
             SpriteBundle {
                 texture: texture.clone(),

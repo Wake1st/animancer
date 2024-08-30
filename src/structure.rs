@@ -8,7 +8,8 @@ use crate::{
     selectable::Selectable,
 };
 
-const ASSET_PATH: &str = "harvester.png";
+const SIMPLE_SHRINE_ASSET_PATH: &str = "harvester.png";
+const WORKER_PRODUCER_ASSET_PATH: &str = "worker producer.png";
 const SELECTION_SIZE: Vec2 = vec2(64., 64.);
 
 pub struct StructurePlugin;
@@ -78,7 +79,10 @@ fn spawn_structure(
     mut commands: Commands,
 ) {
     for place in placement_event.read() {
-        let texture: Handle<Image> = asset_server.load(ASSET_PATH);
+        let texture: Handle<Image> = asset_server.load(match place.structure_type {
+            StructureType::SimpleShrine => SIMPLE_SHRINE_ASSET_PATH,
+            StructureType::WorkerProducer => WORKER_PRODUCER_ASSET_PATH,
+        });
 
         commands.spawn((
             SpriteBundle {

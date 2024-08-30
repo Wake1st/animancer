@@ -2,7 +2,7 @@ use bevy::{math::vec3, prelude::*};
 
 use crate::{faith::Faith, structure::Structure};
 
-const SPAWN_OFFSET: Vec3 = vec3(0.0, 50.0, 0.0);
+const SPAWN_OFFSET: Vec3 = vec3(0.0, -60.0, -0.1);
 
 pub struct GeneratorPlugin;
 
@@ -54,6 +54,10 @@ fn generate(
                         generation_writer.send(GenerateWorker {
                             position: transform.translation() + SPAWN_OFFSET,
                         });
+                        info!(
+                            "worker generated at: {:?}",
+                            transform.translation() + SPAWN_OFFSET
+                        );
                     }
                 }
             }
