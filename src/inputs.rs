@@ -4,8 +4,10 @@ use bevy::{input::mouse::MouseWheel, prelude::*};
 
 use crate::{
     movement::{Formation, UnitMovement},
+    schedule::InGameSet,
     selectable::BoxSelection,
     structure::{PlaceStructure, StructureType},
+    ui::OverUI,
 };
 
 pub struct InputPlugin;
@@ -14,7 +16,7 @@ impl Plugin for InputPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Update,
-            (handle_click, handle_mouse_wheel, handle_keyboard_input),
+            (handle_click, handle_mouse_wheel).in_set(InGameSet::UserInput),
         )
         .insert_resource(BoxSelector {
             selecting: false,
@@ -59,11 +61,12 @@ fn handle_click(
     mouse_button_input: Res<ButtonInput<MouseButton>>,
     camera: Query<(&Camera, &GlobalTransform)>,
     windows: Query<&Window>,
+    over_ui: Res<OverUI>,
     mut box_selector: ResMut<BoxSelector>,
     mut unit_aim: ResMut<UnitAim>,
     mut box_selection_writer: EventWriter<BoxSelection>,
     mut movement_writer: EventWriter<UnitMovement>,
-    build_selection: ResMut<BuildSelection>,
+    mut build_selection: ResMut<BuildSelection>,
     mut place_structure: EventWriter<PlaceStructure>,
 ) {
     let (camera, camera_transform) = camera.single();
@@ -73,12 +76,19 @@ fn handle_click(
         .and_then(|cursor| camera.viewport_to_world(camera_transform, cursor))
         .map(|ray| ray.origin.truncate())
     {
+        //  ensure cursor is not hovered over ui
+        if over_ui.value {
+            return;
+        }
+
         if build_selection.is_selected {
             if mouse_button_input.just_pressed(MouseButton::Left) {
                 place_structure.send(PlaceStructure {
                     structure_type: build_selection.structure_type.clone(),
                     position: pos,
                 });
+            } else if mouse_button_input.just_pressed(MouseButton::Right) {
+                build_selection.is_selected = false;
             }
         } else {
             if mouse_button_input.pressed(MouseButton::Left) {
@@ -133,20 +143,5 @@ fn handle_mouse_wheel(
             (Ordering::Greater, Formation::Box) => Formation::Line,
             _ => box_selector.formation.clone(),
         }
-    }
-}
-
-fn handle_keyboard_input(
-    input: Res<ButtonInput<KeyCode>>,
-    mut build_selection: ResMut<BuildSelection>,
-) {
-    if input.just_pressed(KeyCode::Numpad0) {
-        build_selection.is_selected = false;
-    } else if input.just_pressed(KeyCode::Numpad1) {
-        build_selection.is_selected = true;
-        build_selection.structure_type = StructureType::SimpleShrine;
-    } else if input.just_pressed(KeyCode::Numpad2) {
-        build_selection.is_selected = true;
-        build_selection.structure_type = StructureType::WorkerProducer;
     }
 }

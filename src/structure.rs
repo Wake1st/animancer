@@ -5,6 +5,7 @@ use bevy::{
 
 use crate::{
     generator::{Generator, GeneratorType},
+    schedule::InGameSet,
     selectable::Selectable,
 };
 
@@ -16,27 +17,13 @@ pub struct StructurePlugin;
 
 impl Plugin for StructurePlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, spawn_structure)
+        app.add_systems(Update, spawn_structure.in_set(InGameSet::EntityUpdates))
             .add_event::<PlaceStructure>();
     }
 }
 
 #[derive(Component)]
-pub struct Structure {
-    structure_type: StructureType,
-    is_generating: bool,
-    value: f32,
-}
-
-impl Default for Structure {
-    fn default() -> Self {
-        Self {
-            structure_type: Default::default(),
-            is_generating: Default::default(),
-            value: Default::default(),
-        }
-    }
-}
+pub struct Structure;
 
 pub enum StructureType {
     SimpleShrine,
@@ -94,10 +81,7 @@ fn spawn_structure(
                 )),
                 ..default()
             },
-            Structure {
-                structure_type: place.structure_type.clone(),
-                ..Default::default()
-            },
+            Structure {},
             Generator {
                 gen_type: place.structure_type.get_generator_type(),
                 is_running: true,

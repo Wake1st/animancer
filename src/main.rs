@@ -4,8 +4,11 @@ mod generator;
 mod helpers;
 mod inputs;
 mod movement;
+mod schedule;
 mod selectable;
+mod state;
 mod structure;
+mod ui;
 mod unit;
 
 use bevy::{log::LogPlugin, prelude::*};
@@ -16,8 +19,11 @@ use generator::GeneratorPlugin;
 use helpers::HelperPlugin;
 use inputs::InputPlugin;
 use movement::MovementPlugin;
+use schedule::SchedulePlugin;
 use selectable::SelectablePlugin;
+use state::StatePlugin;
 use structure::StructurePlugin;
+use ui::UIPlugin;
 use unit::UnitPlugin;
 
 fn main() {
@@ -39,6 +45,9 @@ fn main() {
                 .build(),
         )
         .add_plugins((
+            StatePlugin,
+            SchedulePlugin,
+            UIPlugin,
             InputPlugin,
             CameraPlugin,
             UnitPlugin,
