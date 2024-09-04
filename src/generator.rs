@@ -17,6 +17,7 @@ impl Plugin for GeneratorPlugin {
 pub struct Generator {
     pub gen_type: GeneratorType,
     pub is_running: bool,
+    pub queue: i32,
     pub value: f32,
     pub completion: f32,
     pub rate: f32,
@@ -45,19 +46,21 @@ fn generate(
             match generator.gen_type {
                 GeneratorType::Faith => faith.value += generator.rate * delta_time,
                 GeneratorType::Worker => {
-                    generator.value += generator.rate * delta_time;
+                    if generator.queue > 0 {
+                        generator.value += generator.rate * delta_time;
 
-                    if generator.value >= generator.completion {
-                        //	leave the remainder, so as to avoid value loss over time
-                        generator.value = generator.value % generator.completion;
+                        if generator.value >= generator.completion {
+                            //	leave the remainder, so as to avoid value loss over time
+                            generator.value = generator.value % generator.completion;
 
-                        generation_writer.send(GenerateWorker {
-                            position: transform.translation() + SPAWN_OFFSET,
-                        });
-                        info!(
-                            "worker generated at: {:?}",
-                            transform.translation() + SPAWN_OFFSET
-                        );
+                            generation_writer.send(GenerateWorker {
+                                position: transform.translation() + SPAWN_OFFSET,
+                            });
+                            info!(
+                                "worker generated at: {:?}",
+                                transform.translation() + SPAWN_OFFSET
+                            );
+                        }
                     }
                 }
             }

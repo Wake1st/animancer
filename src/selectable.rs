@@ -1,7 +1,6 @@
 use bevy::{math::vec2, prelude::*};
 
 use crate::{structure::Structure, unit::Unit};
-
 pub struct SelectablePlugin;
 
 impl Plugin for SelectablePlugin {

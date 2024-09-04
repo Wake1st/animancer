@@ -85,6 +85,7 @@ fn spawn_structure(
             Generator {
                 gen_type: place.structure_type.get_generator_type(),
                 is_running: true,
+                queue: 0,
                 value: 0.0,
                 rate: 1.0,
                 completion: 10.0,
