@@ -7,7 +7,8 @@ use crate::{
     schedule::InGameSet,
     selectable::BoxSelection,
     structure::{PlaceStructure, StructureType},
-    ui::OverUI,
+    ui::CurrentUI,
+    worker::RemoveWorkerUI,
 };
 
 pub struct InputPlugin;
@@ -61,13 +62,14 @@ fn handle_click(
     mouse_button_input: Res<ButtonInput<MouseButton>>,
     camera: Query<(&Camera, &GlobalTransform)>,
     windows: Query<&Window>,
-    over_ui: Res<OverUI>,
+    current_ui: Res<CurrentUI>,
     mut box_selector: ResMut<BoxSelector>,
     mut unit_aim: ResMut<UnitAim>,
     mut box_selection_writer: EventWriter<BoxSelection>,
     mut movement_writer: EventWriter<UnitMovement>,
     mut build_selection: ResMut<BuildSelection>,
     mut place_structure: EventWriter<PlaceStructure>,
+    mut remove_worker_ui: EventWriter<RemoveWorkerUI>,
 ) {
     let (camera, camera_transform) = camera.single();
     if let Some(pos) = windows
@@ -77,7 +79,7 @@ fn handle_click(
         .map(|ray| ray.origin.truncate())
     {
         //  ensure cursor is not hovered over ui
-        if over_ui.value {
+        if current_ui.focused {
             return;
         }
 
@@ -92,6 +94,8 @@ fn handle_click(
             }
         } else {
             if mouse_button_input.pressed(MouseButton::Left) {
+                remove_worker_ui.send(RemoveWorkerUI {});
+
                 if box_selector.selecting == false {
                     box_selector.selecting = true;
                     box_selector.start = pos;

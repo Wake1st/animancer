@@ -1,6 +1,8 @@
 use bevy::{math::vec2, prelude::*};
 
-use crate::{generator::GenerateWorker, movement::Moveable, selectable::Selectable};
+use crate::{
+    generator::GenerateWorker, movement::Moveable, selectable::Selectable, worker::Worker,
+};
 
 pub struct UnitPlugin;
 
@@ -24,6 +26,7 @@ fn spawn_hero(mut commands: Commands, asset_server: Res<AssetServer>) {
             ..default()
         },
         Unit {},
+        Worker { output: 3.0 },
         Moveable {
             speed: 100.0,
             location: Vec3::ZERO,
@@ -51,6 +54,7 @@ fn spawn_worker(
                 ..default()
             },
             Unit {},
+            Worker { output: 1.0 },
             Moveable {
                 speed: 100.0,
                 location: event.position,

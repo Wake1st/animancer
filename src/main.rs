@@ -10,6 +10,7 @@ mod state;
 mod structure;
 mod ui;
 mod unit;
+mod worker;
 
 use bevy::{log::LogPlugin, prelude::*};
 
@@ -25,6 +26,7 @@ use state::StatePlugin;
 use structure::StructurePlugin;
 use ui::UIPlugin;
 use unit::UnitPlugin;
+use worker::WorkerPlugin;
 
 fn main() {
     App::new()
@@ -57,6 +59,7 @@ fn main() {
             StructurePlugin,
             GeneratorPlugin,
             FaithPlugin,
+            WorkerPlugin,
         ))
         .run();
 }
