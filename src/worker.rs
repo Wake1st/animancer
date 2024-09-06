@@ -16,9 +16,7 @@ impl Plugin for WorkerPlugin {
 }
 
 #[derive(Component)]
-pub struct Worker {
-    pub output: f32,
-}
+pub struct Worker {}
 
 #[derive(Event)]
 pub struct DisplayWorkerUI {}

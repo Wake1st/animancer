@@ -26,7 +26,7 @@ fn spawn_hero(mut commands: Commands, asset_server: Res<AssetServer>) {
             ..default()
         },
         Unit {},
-        Worker { output: 3.0 },
+        Worker {},
         Moveable {
             speed: 100.0,
             location: Vec3::ZERO,
@@ -54,7 +54,7 @@ fn spawn_worker(
                 ..default()
             },
             Unit {},
-            Worker { output: 1.0 },
+            Worker {},
             Moveable {
                 speed: 100.0,
                 location: event.position,

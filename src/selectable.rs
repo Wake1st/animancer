@@ -1,6 +1,11 @@
 use bevy::{math::vec2, prelude::*};
 
-use crate::{structure::Structure, unit::Unit};
+use crate::{
+    structure::Structure,
+    ui::{CurrentUI, UIType},
+    unit::Unit,
+    worker::RemoveWorkerUI,
+};
 pub struct SelectablePlugin;
 
 impl Plugin for SelectablePlugin {
@@ -42,6 +47,8 @@ fn select_entities(
     mut query_structures: Query<(Entity, &GlobalTransform, &Selectable), With<Structure>>,
     mut selected_units: ResMut<SelectedUnits>,
     mut selected_structures: ResMut<SelectedStructures>,
+    mut remove_worker_ui: EventWriter<RemoveWorkerUI>,
+    mut current_ui: ResMut<CurrentUI>,
 ) {
     for box_selection in reader.read() {
         selected_units.entities.clear();
@@ -65,6 +72,9 @@ fn select_entities(
         //  Always prioritize units and never select units AND structures
         if selected_units.entities.len() > 0 {
             return;
+        } else {
+            remove_worker_ui.send(RemoveWorkerUI {});
+            current_ui.ui_type = UIType::None;
         }
 
         for (entity, global_transform, selectable) in query_structures.iter_mut() {

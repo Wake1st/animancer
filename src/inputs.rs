@@ -62,14 +62,13 @@ fn handle_click(
     mouse_button_input: Res<ButtonInput<MouseButton>>,
     camera: Query<(&Camera, &GlobalTransform)>,
     windows: Query<&Window>,
-    mut current_ui: ResMut<CurrentUI>,
+    current_ui: Res<CurrentUI>,
     mut box_selector: ResMut<BoxSelector>,
     mut unit_aim: ResMut<UnitAim>,
     mut box_selection_writer: EventWriter<BoxSelection>,
     mut movement_writer: EventWriter<UnitMovement>,
     mut build_selection: ResMut<BuildSelection>,
     mut place_structure: EventWriter<PlaceStructure>,
-    mut remove_worker_ui: EventWriter<RemoveWorkerUI>,
 ) {
     let (camera, camera_transform) = camera.single();
     if let Some(pos) = windows
@@ -93,11 +92,6 @@ fn handle_click(
                 build_selection.is_selected = false;
             }
         } else {
-            if mouse_button_input.just_pressed(MouseButton::Left) {
-                current_ui.ui_type = UIType::None;
-                remove_worker_ui.send(RemoveWorkerUI {});
-            }
-
             if mouse_button_input.pressed(MouseButton::Left) {
                 if box_selector.selecting == false {
                     box_selector.selecting = true;
