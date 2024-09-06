@@ -24,9 +24,13 @@ pub struct UIPlugin;
 impl Plugin for UIPlugin {
     fn build(&self, app: &mut App) {
         // Only run the app when there is user input. This will significantly reduce CPU/GPU use.
-        app.add_systems(Update, (remove_worker_ui, display_worker_ui).chain())
+        app.add_systems(Startup, setup_worker_ui)
+            .add_systems(Update, (remove_worker_ui, display_worker_ui).chain())
             .add_systems(Update, button_system.in_set(InGameSet::UIInput))
-            .insert_resource(CurrentUI { focused: false });
+            .insert_resource(CurrentUI {
+                focused: false,
+                ui_type: UIType::None,
+            });
     }
 }
 
@@ -38,108 +42,119 @@ struct BuildButton {
 #[derive(Component)]
 pub struct WorkerUI {}
 
+pub enum UIType {
+    None,
+    Worker,
+}
+
 #[derive(Resource)]
 pub struct CurrentUI {
     pub focused: bool,
+    pub ui_type: UIType,
+}
+
+fn setup_worker_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
+    let simple_shrine_texture: Handle<Image> = asset_server.load(SIMPLE_SHRINE_ASSET_PATH);
+    let worker_producer_texture: Handle<Image> = asset_server.load(WORKER_PRODUCER_ASSET_PATH);
+
+    commands
+        .spawn((
+            NodeBundle {
+                style: Style {
+                    // fill the entire window
+                    width: Val::Percent(100.),
+                    height: Val::Percent(100.),
+                    flex_direction: FlexDirection::Column,
+                    justify_content: JustifyContent::FlexEnd,
+                    align_items: AlignItems::FlexStart,
+                    row_gap: MARGIN,
+                    display: Display::None,
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
+            WorkerUI {},
+        ))
+        .with_children(|builder| {
+            builder
+                .spawn(NodeBundle {
+                    style: Style {
+                        flex_direction: FlexDirection::Row,
+                        padding: UiRect::all(MARGIN),
+                        ..Default::default()
+                    },
+                    background_color: Color::Srgba(DARK_GREEN).into(),
+                    ..Default::default()
+                })
+                .with_children(|builder| {
+                    builder.spawn((
+                        ButtonBundle {
+                            style: Style {
+                                width: Val::Px(64.0),
+                                height: Val::Px(64.0),
+                                border: UiRect::all(Val::Px(2.0)),
+                                justify_content: JustifyContent::Center,
+                                align_items: AlignItems::Center,
+                                ..default()
+                            },
+                            border_color: Color::Srgba(GRAY_800).into(),
+                            background_color: NORMAL_BUTTON.into(),
+                            image: UiImage {
+                                texture: simple_shrine_texture,
+                                ..default()
+                            },
+                            ..default()
+                        },
+                        BuildButton {
+                            structure_type: StructureType::SimpleShrine,
+                        },
+                    ));
+                    builder.spawn((
+                        ButtonBundle {
+                            style: Style {
+                                width: Val::Px(64.0),
+                                height: Val::Px(64.0),
+                                border: UiRect::all(Val::Px(2.0)),
+                                justify_content: JustifyContent::Center,
+                                align_items: AlignItems::Center,
+                                ..default()
+                            },
+                            border_color: Color::Srgba(GRAY_800).into(),
+                            background_color: NORMAL_BUTTON.into(),
+                            image: UiImage {
+                                texture: worker_producer_texture,
+                                ..default()
+                            },
+                            ..default()
+                        },
+                        BuildButton {
+                            structure_type: StructureType::WorkerProducer,
+                        },
+                    ));
+                });
+        });
 }
 
 fn display_worker_ui(
     mut display_worker_ui: EventReader<DisplayWorkerUI>,
-    mut commands: Commands,
-    asset_server: Res<AssetServer>,
+    mut worker_ui_query: Query<&mut Style, With<WorkerUI>>,
 ) {
     for _ in display_worker_ui.read() {
-        let simple_shrine_texture: Handle<Image> = asset_server.load(SIMPLE_SHRINE_ASSET_PATH);
-        let worker_producer_texture: Handle<Image> = asset_server.load(WORKER_PRODUCER_ASSET_PATH);
-
-        commands
-            .spawn((
-                NodeBundle {
-                    style: Style {
-                        // fill the entire window
-                        width: Val::Percent(100.),
-                        height: Val::Percent(100.),
-                        flex_direction: FlexDirection::Column,
-                        justify_content: JustifyContent::FlexEnd,
-                        align_items: AlignItems::FlexStart,
-                        row_gap: MARGIN,
-                        ..Default::default()
-                    },
-                    ..Default::default()
-                },
-                WorkerUI {},
-            ))
-            .with_children(|builder| {
-                builder
-                    .spawn(NodeBundle {
-                        style: Style {
-                            flex_direction: FlexDirection::Row,
-                            padding: UiRect::all(MARGIN),
-                            ..Default::default()
-                        },
-                        background_color: Color::Srgba(DARK_GREEN).into(),
-                        ..Default::default()
-                    })
-                    .with_children(|builder| {
-                        builder.spawn((
-                            ButtonBundle {
-                                style: Style {
-                                    width: Val::Px(64.0),
-                                    height: Val::Px(64.0),
-                                    border: UiRect::all(Val::Px(2.0)),
-                                    justify_content: JustifyContent::Center,
-                                    align_items: AlignItems::Center,
-                                    ..default()
-                                },
-                                border_color: Color::Srgba(GRAY_800).into(),
-                                background_color: NORMAL_BUTTON.into(),
-                                image: UiImage {
-                                    texture: simple_shrine_texture,
-                                    ..default()
-                                },
-                                ..default()
-                            },
-                            BuildButton {
-                                structure_type: StructureType::SimpleShrine,
-                            },
-                        ));
-                        builder.spawn((
-                            ButtonBundle {
-                                style: Style {
-                                    width: Val::Px(64.0),
-                                    height: Val::Px(64.0),
-                                    border: UiRect::all(Val::Px(2.0)),
-                                    justify_content: JustifyContent::Center,
-                                    align_items: AlignItems::Center,
-                                    ..default()
-                                },
-                                border_color: Color::Srgba(GRAY_800).into(),
-                                background_color: NORMAL_BUTTON.into(),
-                                image: UiImage {
-                                    texture: worker_producer_texture,
-                                    ..default()
-                                },
-                                ..default()
-                            },
-                            BuildButton {
-                                structure_type: StructureType::WorkerProducer,
-                            },
-                        ));
-                    });
-            });
+        for mut style in &mut worker_ui_query {
+            info!("show"); //  TODO: figure out why this is fucked
+            style.display = Display::Flex;
+        }
     }
 }
 
 fn remove_worker_ui(
     mut remove_worker_ui: EventReader<RemoveWorkerUI>,
-    mut worker_ui_query: Query<Entity, With<WorkerUI>>,
-    mut commands: Commands,
+    mut worker_ui_query: Query<&mut Style, With<WorkerUI>>,
 ) {
     for _ in remove_worker_ui.read() {
-        info!("event");
-        for entity in &mut worker_ui_query {
-            info!("query: {:?}", entity); //  TODO: figure out why this is fucked
-            commands.entity(entity).despawn_recursive();
+        for mut style in &mut worker_ui_query {
+            info!("don show"); //  TODO: figure out why this is fucked
+            style.display = Display::None;
         }
     }
 }

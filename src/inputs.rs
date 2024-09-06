@@ -7,7 +7,7 @@ use crate::{
     schedule::InGameSet,
     selectable::BoxSelection,
     structure::{PlaceStructure, StructureType},
-    ui::CurrentUI,
+    ui::{CurrentUI, UIType},
     worker::RemoveWorkerUI,
 };
 
@@ -62,7 +62,7 @@ fn handle_click(
     mouse_button_input: Res<ButtonInput<MouseButton>>,
     camera: Query<(&Camera, &GlobalTransform)>,
     windows: Query<&Window>,
-    current_ui: Res<CurrentUI>,
+    mut current_ui: ResMut<CurrentUI>,
     mut box_selector: ResMut<BoxSelector>,
     mut unit_aim: ResMut<UnitAim>,
     mut box_selection_writer: EventWriter<BoxSelection>,
@@ -93,9 +93,12 @@ fn handle_click(
                 build_selection.is_selected = false;
             }
         } else {
-            if mouse_button_input.pressed(MouseButton::Left) {
+            if mouse_button_input.just_pressed(MouseButton::Left) {
+                current_ui.ui_type = UIType::None;
                 remove_worker_ui.send(RemoveWorkerUI {});
+            }
 
+            if mouse_button_input.pressed(MouseButton::Left) {
                 if box_selector.selecting == false {
                     box_selector.selecting = true;
                     box_selector.start = pos;
