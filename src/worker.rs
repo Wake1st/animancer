@@ -32,10 +32,11 @@ fn display_worker_ui(
     if selected_units.entities.len() > 0 {
         match current_ui.ui_type {
             UIType::None => {
-                current_ui.ui_type = UIType::Worker;
                 event_writer.send(DisplayWorkerUI {});
+                current_ui.ui_type = UIType::Worker;
             }
             UIType::Worker => (),
+            UIType::Producer => (),
         }
     }
 }

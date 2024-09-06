@@ -7,8 +7,7 @@ use crate::{
     schedule::InGameSet,
     selectable::BoxSelection,
     structure::{PlaceStructure, StructureType},
-    ui::{CurrentUI, UIType},
-    worker::RemoveWorkerUI,
+    ui::CurrentUI,
 };
 
 pub struct InputPlugin;

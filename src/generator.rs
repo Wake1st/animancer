@@ -1,6 +1,11 @@
 use bevy::{math::vec3, prelude::*};
 
-use crate::{faith::Faith, structure::Structure};
+use crate::{
+    faith::Faith,
+    selectable::SelectedStructures,
+    structure::Structure,
+    ui::{CurrentUI, UIType},
+};
 
 const SPAWN_OFFSET: Vec3 = vec3(0.0, -60.0, -0.1);
 
@@ -8,8 +13,12 @@ pub struct GeneratorPlugin;
 
 impl Plugin for GeneratorPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, generate)
-            .add_event::<GenerateWorker>();
+        app.add_systems(Update, display_producer_ui)
+            .add_systems(Update, generate)
+            .add_event::<QueueWorker>()
+            .add_event::<GenerateWorker>()
+            .add_event::<DisplayProducerUI>()
+            .add_event::<RemoveProducerUI>();
     }
 }
 
@@ -27,6 +36,17 @@ pub enum GeneratorType {
     Faith,
     Worker,
 }
+
+#[derive(Event)]
+pub struct QueueWorker {
+    pub entity: Entity,
+}
+
+#[derive(Event)]
+pub struct DisplayProducerUI {}
+
+#[derive(Event)]
+pub struct RemoveProducerUI {}
 
 #[derive(Event)]
 pub struct GenerateWorker {
@@ -52,6 +72,7 @@ fn generate(
                         if generator.value >= generator.completion {
                             //	leave the remainder, so as to avoid value loss over time
                             generator.value = generator.value % generator.completion;
+                            generator.queue -= 1;
 
                             generation_writer.send(GenerateWorker {
                                 position: transform.translation() + SPAWN_OFFSET,
@@ -64,6 +85,23 @@ fn generate(
                     }
                 }
             }
+        }
+    }
+}
+
+fn display_producer_ui(
+    selected_structures: Res<SelectedStructures>,
+    mut current_ui: ResMut<CurrentUI>,
+    mut event_writer: EventWriter<DisplayProducerUI>,
+) {
+    if selected_structures.entities.len() > 0 {
+        match current_ui.ui_type {
+            UIType::None => {
+                event_writer.send(DisplayProducerUI {});
+                current_ui.ui_type = UIType::Producer;
+            }
+            UIType::Worker => (),
+            UIType::Producer => (),
         }
     }
 }
