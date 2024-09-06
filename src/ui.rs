@@ -141,7 +141,6 @@ fn display_worker_ui(
 ) {
     for _ in display_worker_ui.read() {
         for mut style in &mut worker_ui_query {
-            info!("show"); //  TODO: figure out why this is fucked
             style.display = Display::Flex;
         }
     }
@@ -153,7 +152,6 @@ fn remove_worker_ui(
 ) {
     for _ in remove_worker_ui.read() {
         for mut style in &mut worker_ui_query {
-            info!("don show"); //  TODO: figure out why this is fucked
             style.display = Display::None;
         }
     }
