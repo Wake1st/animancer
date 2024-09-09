@@ -1,7 +1,7 @@
 use bevy::{math::vec2, prelude::*};
 
 use crate::{
-    generator::{DisplayProducerUI, RemoveProducerUI},
+    generator::RemoveProducerUI,
     structure::Structure,
     ui::{CurrentUI, UIType},
     unit::Unit,
@@ -49,7 +49,6 @@ fn select_entities(
     mut selected_units: ResMut<SelectedUnits>,
     mut selected_structures: ResMut<SelectedStructures>,
     mut remove_worker_ui: EventWriter<RemoveWorkerUI>,
-    mut display_producer_ui: EventWriter<DisplayProducerUI>,
     mut remove_producer_ui: EventWriter<RemoveProducerUI>,
     mut current_ui: ResMut<CurrentUI>,
 ) {
@@ -95,6 +94,10 @@ fn select_entities(
             }
         }
 
+        info!(
+            "selected structures: {:?}",
+            selected_structures.entities.len(),
+        );
         if selected_structures.entities.len() > 0 {
             return;
         } else {

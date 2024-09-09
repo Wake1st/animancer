@@ -8,7 +8,7 @@ use bevy::{
 
 use crate::{
     generator::{DisplayProducerUI, Generator, RemoveProducerUI},
-    inputs::BuildSelection,
+    inputs::{BuildSelection, ProducerSelection},
     schedule::InGameSet,
     selectable::SelectedStructures,
     structure::StructureType,
@@ -285,6 +285,7 @@ fn producer_button_interactions(
         (&Interaction, &mut BorderColor),
         (Changed<Interaction>, With<ProducerButton>),
     >,
+    mut producer_selected: ResMut<ProducerSelection>,
     selected_structures: Res<SelectedStructures>,
     mut generator_query: Query<&mut Generator>,
     mut current_ui: ResMut<CurrentUI>,
@@ -294,6 +295,7 @@ fn producer_button_interactions(
         match *interaction {
             Interaction::Pressed => {
                 border_color.0 = Color::Srgba(GREEN_200);
+                producer_selected.is_selected = true;
                 current_ui.focused = true;
 
                 for entity in selected_structures.entities.clone() {
@@ -301,14 +303,17 @@ fn producer_button_interactions(
                         generator.queue += 1;
                     }
                 }
+                info!("pressed");
             }
             Interaction::Hovered => {
                 border_color.0 = Color::Srgba(GRAY_200);
                 current_ui.focused = true;
+                info!("hovered");
             }
             Interaction::None => {
                 border_color.0 = Color::Srgba(GRAY_800);
                 current_ui.focused = current_ui.focused || false;
+                info!("none");
             }
         }
     }

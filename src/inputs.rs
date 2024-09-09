@@ -32,7 +32,8 @@ impl Plugin for InputPlugin {
         .insert_resource(BuildSelection {
             is_selected: false,
             structure_type: StructureType::SimpleShrine,
-        });
+        })
+        .insert_resource(ProducerSelection { is_selected: false });
     }
 }
 
@@ -57,6 +58,11 @@ pub struct BuildSelection {
     pub structure_type: StructureType,
 }
 
+#[derive(Resource)]
+pub struct ProducerSelection {
+    pub is_selected: bool,
+}
+
 fn handle_click(
     mouse_button_input: Res<ButtonInput<MouseButton>>,
     camera: Query<(&Camera, &GlobalTransform)>,
@@ -68,6 +74,7 @@ fn handle_click(
     mut movement_writer: EventWriter<UnitMovement>,
     mut build_selection: ResMut<BuildSelection>,
     mut place_structure: EventWriter<PlaceStructure>,
+    mut producer_selection: ResMut<ProducerSelection>,
 ) {
     let (camera, camera_transform) = camera.single();
     if let Some(pos) = windows
@@ -89,6 +96,10 @@ fn handle_click(
                 });
             } else if mouse_button_input.just_pressed(MouseButton::Right) {
                 build_selection.is_selected = false;
+            }
+        } else if producer_selection.is_selected {
+            if mouse_button_input.just_pressed(MouseButton::Right) {
+                producer_selection.is_selected = false;
             }
         } else {
             if mouse_button_input.pressed(MouseButton::Left) {
