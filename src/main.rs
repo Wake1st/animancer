@@ -12,7 +12,7 @@ mod ui;
 mod unit;
 mod worker;
 
-use bevy::{log::LogPlugin, prelude::*};
+use bevy::{log::LogPlugin, prelude::*, window::WindowMode};
 
 use camera::CameraPlugin;
 use faith::FaithPlugin;
@@ -36,6 +36,8 @@ fn main() {
                 .set(WindowPlugin {
                     primary_window: Some(Window {
                         title: "Animancer".into(),
+                        resizable: false,
+                        mode: WindowMode::BorderlessFullscreen,
                         ..default()
                     }),
                     ..default()

@@ -1,6 +1,6 @@
 use bevy::{
     color::palettes::{
-        css::DARK_GREEN,
+        css::{DARK_GREEN, DARK_SLATE_BLUE},
         tailwind::{GRAY_200, GRAY_800, GREEN_200},
     },
     prelude::*,
@@ -15,6 +15,9 @@ use crate::{
     worker::{DisplayWorkerUI, RemoveWorkerUI},
 };
 
+const WINDOW_HEIGHT: f32 = 1080.;
+const UI_BASE_HEIGHT: f32 = 88.;
+
 const MARGIN: Val = Val::Px(12.);
 const NORMAL_BUTTON: Color = Color::srgb(0.15, 0.35, 0.35);
 
@@ -27,12 +30,16 @@ pub struct UIPlugin;
 impl Plugin for UIPlugin {
     fn build(&self, app: &mut App) {
         // Only run the app when there is user input. This will significantly reduce CPU/GPU use.
-        app.add_systems(Startup, (setup_worker_ui, setup_producer_ui))
+        app.add_systems(Startup, (setup_ui_base, setup_worker_ui, setup_producer_ui))
             .add_systems(Update, (remove_worker_ui, display_worker_ui).chain())
             .add_systems(Update, (remove_producer_ui, display_producer_ui).chain())
             .add_systems(
                 Update,
-                (build_button_interactions, producer_button_interactions)
+                (
+                    check_mouse_position,
+                    build_button_interactions,
+                    producer_button_interactions,
+                )
                     .in_set(InGameSet::UIInput),
             )
             .insert_resource(CurrentUI {
@@ -66,6 +73,36 @@ pub enum UIType {
 pub struct CurrentUI {
     pub focused: bool,
     pub ui_type: UIType,
+}
+
+fn setup_ui_base(mut commands: Commands) {
+    commands
+        .spawn((NodeBundle {
+            style: Style {
+                // fill the entire window
+                width: Val::Percent(100.),
+                height: Val::Percent(100.),
+                flex_direction: FlexDirection::Column,
+                justify_content: JustifyContent::FlexEnd,
+                align_items: AlignItems::FlexStart,
+                row_gap: MARGIN,
+                ..Default::default()
+            },
+            ..Default::default()
+        },))
+        .with_children(|builder| {
+            builder.spawn(NodeBundle {
+                style: Style {
+                    flex_direction: FlexDirection::Row,
+                    padding: UiRect::all(MARGIN),
+                    height: Val::Px(UI_BASE_HEIGHT),
+                    width: Val::Percent(100.),
+                    ..Default::default()
+                },
+                background_color: Color::Srgba(DARK_SLATE_BLUE).into(),
+                ..Default::default()
+            });
+        });
 }
 
 fn setup_worker_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
@@ -207,6 +244,14 @@ fn setup_producer_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
         });
 }
 
+/// check if cursor is hovered over ui
+fn check_mouse_position(windows: Query<&Window>, mut current_ui: ResMut<CurrentUI>) {
+    if let Some(pos) = windows.single().cursor_position() {
+        info!("mouse: {:?}", pos);
+        current_ui.focused = pos.y > (WINDOW_HEIGHT - UI_BASE_HEIGHT);
+    }
+}
+
 fn display_worker_ui(
     mut display_worker_ui: EventReader<DisplayWorkerUI>,
     mut worker_ui_query: Query<&mut Style, With<WorkerUI>>,
@@ -267,14 +312,17 @@ fn build_button_interactions(
                 build_selection.structure_type = button.structure_type.clone();
                 build_selection.is_selected = true;
                 current_ui.focused = true;
+                info!("build button pressed");
             }
             Interaction::Hovered => {
                 border_color.0 = Color::Srgba(GRAY_200);
                 current_ui.focused = true;
+                info!("build button hovered");
             }
             Interaction::None => {
                 border_color.0 = Color::Srgba(GRAY_800);
                 current_ui.focused = current_ui.focused || false;
+                info!("build button none");
             }
         }
     }
@@ -303,17 +351,17 @@ fn producer_button_interactions(
                         generator.queue += 1;
                     }
                 }
-                info!("pressed");
+                info!("producer button pressed");
             }
             Interaction::Hovered => {
                 border_color.0 = Color::Srgba(GRAY_200);
                 current_ui.focused = true;
-                info!("hovered");
+                info!("producer button hovered");
             }
             Interaction::None => {
                 border_color.0 = Color::Srgba(GRAY_800);
                 current_ui.focused = current_ui.focused || false;
-                info!("none");
+                info!("producer button none");
             }
         }
     }
