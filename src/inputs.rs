@@ -1,6 +1,10 @@
 use std::cmp::Ordering;
 
-use bevy::{input::mouse::MouseWheel, math::vec3, prelude::*};
+use bevy::{
+    input::mouse::MouseWheel,
+    math::{vec3, VectorSpace},
+    prelude::*,
+};
 
 use crate::{
     movement::{Formation, UnitMovement},
@@ -114,8 +118,12 @@ fn handle_click(
                     structure_type: build_selection.structure_type.clone(),
                     position: pos,
                 });
+                movement_writer.send(UnitMovement {
+                    position: pos,
+                    direction: Vec2::ZERO,
+                    formation: Formation::Ringed,
+                });
             } else if mouse_button_input.just_released(MouseButton::Right) {
-                //  TODO: send worker units to build on site
                 build_selection.is_selected = false;
             }
         } else if producer_selection.is_selected {
