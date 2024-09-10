@@ -114,7 +114,7 @@ fn handle_click(
                     structure_type: build_selection.structure_type.clone(),
                     position: pos,
                 });
-            } else if mouse_button_input.just_pressed(MouseButton::Right) {
+            } else if mouse_button_input.just_released(MouseButton::Right) {
                 //  TODO: send worker units to build on site
                 build_selection.is_selected = false;
             }
@@ -125,7 +125,7 @@ fn handle_click(
                         producer.post_spawn_location = vec3(pos.x, pos.y, 0.0);
                     }
                 }
-            } else if mouse_button_input.just_pressed(MouseButton::Left) {
+            } else if mouse_button_input.just_released(MouseButton::Left) {
                 producer_selection.is_selected = false;
             }
         } else {
