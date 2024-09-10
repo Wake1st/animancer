@@ -15,7 +15,6 @@ impl Plugin for GeneratorPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Update, display_producer_ui)
             .add_systems(Update, generate)
-            .add_event::<QueueWorker>()
             .add_event::<GenerateWorker>()
             .add_event::<DisplayProducerUI>()
             .add_event::<RemoveProducerUI>();
@@ -35,11 +34,6 @@ pub struct Generator {
 pub enum GeneratorType {
     Faith,
     Worker,
-}
-
-#[derive(Event)]
-pub struct QueueWorker {
-    pub entity: Entity,
 }
 
 #[derive(Event)]
