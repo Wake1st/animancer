@@ -6,7 +6,7 @@ use bevy::{
 
 use crate::{
     faith::Faith,
-    inputs::{BoxSelector, BuildSelection, UnitAim},
+    inputs::{BoxSelector, BuildSelection, ProducerSelection, UnitAim},
     movement::Formation,
     structure::StructureType,
     ui::CurrentUI,
@@ -54,10 +54,12 @@ fn setup_debug_helper_text(mut commands: Commands) {
             TextSection::new("\nStructure::", TextStyle { ..default() }),
             TextSection::new("_", TextStyle { ..default() }), //  3
             TextSection::new("_", TextStyle { ..default() }), //  4
-            TextSection::new("\nFaith = ", TextStyle { ..default() }),
+            TextSection::new("\nProducer - ", TextStyle { ..default() }),
             TextSection::new("_", TextStyle { ..default() }), //  6
-            TextSection::new("\nUI Focused = ", TextStyle { ..default() }),
+            TextSection::new("\nFaith = ", TextStyle { ..default() }),
             TextSection::new("_", TextStyle { ..default() }), //  8
+            TextSection::new("\nUI Focused = ", TextStyle { ..default() }),
+            TextSection::new("_", TextStyle { ..default() }), //  10
         ]),
         DebugText,
     ));
@@ -66,6 +68,7 @@ fn setup_debug_helper_text(mut commands: Commands) {
 fn debug_text(
     box_selector: Res<BoxSelector>,
     build_selection: Res<BuildSelection>,
+    producer_selection: Res<ProducerSelection>,
     faith: Res<Faith>,
     current_ui: Res<CurrentUI>,
     mut query: Query<&mut Text, With<DebugText>>,
@@ -79,19 +82,25 @@ fn debug_text(
         .into();
 
         text.sections[3].value = (match build_selection.structure_type {
-            StructureType::SimpleShrine => "SimpleShrine",
-            StructureType::WorkerProducer => "WorkerProducer",
+            StructureType::SimpleShrine => "SimpleShrine - ",
+            StructureType::WorkerProducer => "WorkerProducer - ",
         })
         .into();
 
         text.sections[4].value = (match build_selection.is_selected {
-            true => " -'is selected'",
-            false => " -'is not selected'",
+            true => "is selected",
+            false => "is not selected",
         })
         .into();
 
-        text.sections[6].value = faith.value.to_string();
+        text.sections[6].value = (match producer_selection.is_selected {
+            true => "is selected",
+            false => "is not selected",
+        })
+        .into();
 
-        text.sections[8].value = current_ui.focused.to_string();
+        text.sections[8].value = faith.value.to_string();
+
+        text.sections[10].value = current_ui.focused.to_string();
     }
 }

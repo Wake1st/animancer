@@ -10,30 +10,34 @@ use crate::{
     ui::CurrentUI,
 };
 
+const WINDOW_HEIGHT: f32 = 1080.;
+const UI_BASE_HEIGHT: f32 = 88.;
+
 pub struct InputPlugin;
 
 impl Plugin for InputPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(
-            Update,
-            (handle_click, handle_mouse_wheel).in_set(InGameSet::UserInput),
-        )
-        .insert_resource(BoxSelector {
-            selecting: false,
-            start: Default::default(),
-            current: Default::default(),
-            formation: Formation::Line,
-        })
-        .insert_resource(UnitAim {
-            aiming: false,
-            start: Default::default(),
-            current: Default::default(),
-        })
-        .insert_resource(BuildSelection {
-            is_selected: false,
-            structure_type: StructureType::SimpleShrine,
-        })
-        .insert_resource(ProducerSelection { is_selected: false });
+        app.add_systems(Update, check_mouse_position.in_set(InGameSet::UIInput))
+            .add_systems(
+                Update,
+                (handle_click, handle_mouse_wheel).in_set(InGameSet::UserInput),
+            )
+            .insert_resource(BoxSelector {
+                selecting: false,
+                start: Default::default(),
+                current: Default::default(),
+                formation: Formation::Line,
+            })
+            .insert_resource(UnitAim {
+                aiming: false,
+                start: Default::default(),
+                current: Default::default(),
+            })
+            .insert_resource(BuildSelection {
+                is_selected: false,
+                structure_type: StructureType::SimpleShrine,
+            })
+            .insert_resource(ProducerSelection { is_selected: false });
     }
 }
 
@@ -63,6 +67,14 @@ pub struct ProducerSelection {
     pub is_selected: bool,
 }
 
+/// check if cursor is hovered over ui
+fn check_mouse_position(windows: Query<&Window>, mut current_ui: ResMut<CurrentUI>) {
+    if let Some(pos) = windows.single().cursor_position() {
+        info!("mouse: {:?}", pos);
+        current_ui.focused = pos.y > (WINDOW_HEIGHT - UI_BASE_HEIGHT);
+    }
+}
+
 fn handle_click(
     mouse_button_input: Res<ButtonInput<MouseButton>>,
     camera: Query<(&Camera, &GlobalTransform)>,
@@ -74,7 +86,6 @@ fn handle_click(
     mut movement_writer: EventWriter<UnitMovement>,
     mut build_selection: ResMut<BuildSelection>,
     mut place_structure: EventWriter<PlaceStructure>,
-    mut producer_selection: ResMut<ProducerSelection>,
 ) {
     let (camera, camera_transform) = camera.single();
     if let Some(pos) = windows
@@ -88,6 +99,12 @@ fn handle_click(
             return;
         }
 
+        let reset_selector = |selector: &mut BoxSelector| {
+            selector.selecting = false;
+            selector.start = Vec2::ZERO;
+            selector.current = Vec2::ZERO;
+        };
+
         if build_selection.is_selected {
             if mouse_button_input.just_pressed(MouseButton::Left) {
                 place_structure.send(PlaceStructure {
@@ -95,11 +112,8 @@ fn handle_click(
                     position: pos,
                 });
             } else if mouse_button_input.just_pressed(MouseButton::Right) {
+                //  TODO: send worker units to build on site
                 build_selection.is_selected = false;
-            }
-        } else if producer_selection.is_selected {
-            if mouse_button_input.just_pressed(MouseButton::Right) {
-                producer_selection.is_selected = false;
             }
         } else {
             if mouse_button_input.pressed(MouseButton::Left) {
@@ -115,9 +129,7 @@ fn handle_click(
                     rect: Rect::from_corners(box_selector.start, box_selector.current),
                 });
 
-                box_selector.selecting = false;
-                box_selector.start = Vec2::ZERO;
-                box_selector.current = Vec2::ZERO;
+                reset_selector(&mut box_selector);
             } else if mouse_button_input.pressed(MouseButton::Right) {
                 if unit_aim.aiming == false {
                     unit_aim.aiming = true;

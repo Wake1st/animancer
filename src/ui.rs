@@ -8,14 +8,13 @@ use bevy::{
 
 use crate::{
     generator::{DisplayProducerUI, Generator, RemoveProducerUI},
-    inputs::{BuildSelection, ProducerSelection},
+    inputs::BuildSelection,
     schedule::InGameSet,
     selectable::SelectedStructures,
     structure::StructureType,
     worker::{DisplayWorkerUI, RemoveWorkerUI},
 };
 
-const WINDOW_HEIGHT: f32 = 1080.;
 const UI_BASE_HEIGHT: f32 = 88.;
 
 const MARGIN: Val = Val::Px(12.);
@@ -35,11 +34,7 @@ impl Plugin for UIPlugin {
             .add_systems(Update, (remove_producer_ui, display_producer_ui).chain())
             .add_systems(
                 Update,
-                (
-                    check_mouse_position,
-                    build_button_interactions,
-                    producer_button_interactions,
-                )
+                (build_button_interactions, producer_button_interactions)
                     .in_set(InGameSet::UIInput),
             )
             .insert_resource(CurrentUI {
@@ -244,14 +239,6 @@ fn setup_producer_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
         });
 }
 
-/// check if cursor is hovered over ui
-fn check_mouse_position(windows: Query<&Window>, mut current_ui: ResMut<CurrentUI>) {
-    if let Some(pos) = windows.single().cursor_position() {
-        info!("mouse: {:?}", pos);
-        current_ui.focused = pos.y > (WINDOW_HEIGHT - UI_BASE_HEIGHT);
-    }
-}
-
 fn display_worker_ui(
     mut display_worker_ui: EventReader<DisplayWorkerUI>,
     mut worker_ui_query: Query<&mut Style, With<WorkerUI>>,
@@ -302,27 +289,19 @@ fn build_button_interactions(
         (Changed<Interaction>, With<BuildButton>),
     >,
     mut build_selection: ResMut<BuildSelection>,
-    mut current_ui: ResMut<CurrentUI>,
 ) {
-    current_ui.focused = false;
     for (interaction, mut border_color, button) in &mut interaction_query {
         match *interaction {
             Interaction::Pressed => {
                 border_color.0 = Color::Srgba(GREEN_200);
                 build_selection.structure_type = button.structure_type.clone();
                 build_selection.is_selected = true;
-                current_ui.focused = true;
-                info!("build button pressed");
             }
             Interaction::Hovered => {
                 border_color.0 = Color::Srgba(GRAY_200);
-                current_ui.focused = true;
-                info!("build button hovered");
             }
             Interaction::None => {
                 border_color.0 = Color::Srgba(GRAY_800);
-                current_ui.focused = current_ui.focused || false;
-                info!("build button none");
             }
         }
     }
@@ -333,35 +312,25 @@ fn producer_button_interactions(
         (&Interaction, &mut BorderColor),
         (Changed<Interaction>, With<ProducerButton>),
     >,
-    mut producer_selected: ResMut<ProducerSelection>,
     selected_structures: Res<SelectedStructures>,
     mut generator_query: Query<&mut Generator>,
-    mut current_ui: ResMut<CurrentUI>,
 ) {
-    current_ui.focused = false;
     for (interaction, mut border_color) in &mut interaction_query {
         match *interaction {
             Interaction::Pressed => {
                 border_color.0 = Color::Srgba(GREEN_200);
-                producer_selected.is_selected = true;
-                current_ui.focused = true;
 
                 for entity in selected_structures.entities.clone() {
                     if let Ok(mut generator) = generator_query.get_mut(entity) {
                         generator.queue += 1;
                     }
                 }
-                info!("producer button pressed");
             }
             Interaction::Hovered => {
                 border_color.0 = Color::Srgba(GRAY_200);
-                current_ui.focused = true;
-                info!("producer button hovered");
             }
             Interaction::None => {
                 border_color.0 = Color::Srgba(GRAY_800);
-                current_ui.focused = current_ui.focused || false;
-                info!("producer button none");
             }
         }
     }
