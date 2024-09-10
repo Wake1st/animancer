@@ -4,10 +4,7 @@ use bevy::{
 };
 
 use crate::{
-    generator::{Generator, GeneratorType},
-    producer::Producer,
-    schedule::InGameSet,
-    selectable::Selectable,
+    generator::Generator, producer::Producer, schedule::InGameSet, selectable::Selectable,
 };
 
 const SIMPLE_SHRINE_ASSET_PATH: &str = "harvester.png";
@@ -76,11 +73,7 @@ fn spawn_structure(
                         ..default()
                     },
                     Structure {},
-                    Generator {
-                        gen_type: GeneratorType::Faith,
-                        is_running: true,
-                        rate: 1.0,
-                    },
+                    Generator { ..default() },
                     Selectable {
                         size: SELECTION_SIZE,
                     },
@@ -99,12 +92,7 @@ fn spawn_structure(
                         ..default()
                     },
                     Structure {},
-                    Producer {
-                        queue: 0,
-                        cost: 10.,
-                        value: 0.,
-                        rate: 2.5,
-                    },
+                    Producer { ..default() },
                     Selectable {
                         size: SELECTION_SIZE,
                     },

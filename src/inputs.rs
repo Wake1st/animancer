@@ -1,11 +1,12 @@
 use std::cmp::Ordering;
 
-use bevy::{input::mouse::MouseWheel, prelude::*};
+use bevy::{input::mouse::MouseWheel, math::vec3, prelude::*};
 
 use crate::{
     movement::{Formation, UnitMovement},
+    producer::Producer,
     schedule::InGameSet,
-    selectable::BoxSelection,
+    selectable::{BoxSelection, SelectedStructures},
     structure::{PlaceStructure, StructureType},
     ui::CurrentUI,
 };
@@ -70,7 +71,6 @@ pub struct ProducerSelection {
 /// check if cursor is hovered over ui
 fn check_mouse_position(windows: Query<&Window>, mut current_ui: ResMut<CurrentUI>) {
     if let Some(pos) = windows.single().cursor_position() {
-        info!("mouse: {:?}", pos);
         current_ui.focused = pos.y > (WINDOW_HEIGHT - UI_BASE_HEIGHT);
     }
 }
@@ -86,6 +86,9 @@ fn handle_click(
     mut movement_writer: EventWriter<UnitMovement>,
     mut build_selection: ResMut<BuildSelection>,
     mut place_structure: EventWriter<PlaceStructure>,
+    mut producer_selection: ResMut<ProducerSelection>,
+    selected_structures: Res<SelectedStructures>,
+    mut producers: Query<&mut Producer>,
 ) {
     let (camera, camera_transform) = camera.single();
     if let Some(pos) = windows
@@ -114,6 +117,16 @@ fn handle_click(
             } else if mouse_button_input.just_pressed(MouseButton::Right) {
                 //  TODO: send worker units to build on site
                 build_selection.is_selected = false;
+            }
+        } else if producer_selection.is_selected {
+            if mouse_button_input.just_pressed(MouseButton::Right) {
+                for &entity in selected_structures.entities.iter() {
+                    if let Ok(mut producer) = producers.get_mut(entity) {
+                        producer.post_spawn_location = vec3(pos.x, pos.y, 0.0);
+                    }
+                }
+            } else if mouse_button_input.just_pressed(MouseButton::Left) {
+                producer_selection.is_selected = false;
             }
         } else {
             if mouse_button_input.pressed(MouseButton::Left) {

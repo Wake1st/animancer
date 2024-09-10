@@ -55,7 +55,7 @@ fn spawn_worker(
             Worker {},
             Moveable {
                 speed: 100.0,
-                location: event.position,
+                location: event.location,
             },
             Selectable {
                 size: vec2(32., 32.),

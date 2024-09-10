@@ -17,6 +17,16 @@ pub struct Generator {
     pub rate: f32,
 }
 
+impl Default for Generator {
+    fn default() -> Self {
+        Self {
+            gen_type: GeneratorType::Faith,
+            is_running: true,
+            rate: 1.0,
+        }
+    }
+}
+
 pub enum GeneratorType {
     Faith,
 }

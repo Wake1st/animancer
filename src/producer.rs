@@ -6,7 +6,7 @@ use crate::{
     ui::{CurrentUI, UIType},
 };
 
-const SPAWN_OFFSET: Vec3 = vec3(0.0, -60.0, -0.1);
+const SPAWN_OFFSET: Vec3 = vec3(0.0, -40.0, 0.1);
 
 pub struct ProducerPlugin;
 
@@ -26,6 +26,19 @@ pub struct Producer {
     pub cost: f32,
     pub value: f32,
     pub rate: f32,
+    pub post_spawn_location: Vec3,
+}
+
+impl Default for Producer {
+    fn default() -> Self {
+        Self {
+            queue: 0,
+            cost: 10.0,
+            value: 0.0,
+            rate: 2.0,
+            post_spawn_location: Vec3::ZERO,
+        }
+    }
 }
 
 #[derive(Event)]
@@ -37,6 +50,7 @@ pub struct RemoveProducerUI {}
 #[derive(Event)]
 pub struct ProduceWorker {
     pub position: Vec3,
+    pub location: Vec3,
 }
 
 fn produce(
@@ -57,6 +71,7 @@ fn produce(
 
                 producer_writer.send(ProduceWorker {
                     position: transform.translation() + SPAWN_OFFSET,
+                    location: producer.post_spawn_location,
                 });
             }
         }
