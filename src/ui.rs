@@ -7,8 +7,8 @@ use bevy::{
 };
 
 use crate::{
-    generator::{DisplayProducerUI, Generator, RemoveProducerUI},
     inputs::BuildSelection,
+    producer::{DisplayProducerUI, Producer, RemoveProducerUI},
     schedule::InGameSet,
     selectable::SelectedStructures,
     structure::StructureType,
@@ -344,7 +344,7 @@ fn producer_button_interactions(
         (Changed<Interaction>, With<ProducerButton>),
     >,
     selected_structures: Res<SelectedStructures>,
-    mut generator_query: Query<&mut Generator>,
+    mut producer_query: Query<&mut Producer>,
 ) {
     for (interaction, mut border_color) in &mut interaction_query {
         match *interaction {
@@ -352,8 +352,8 @@ fn producer_button_interactions(
                 border_color.0 = Color::Srgba(GREEN_200);
 
                 for entity in selected_structures.entities.clone() {
-                    if let Ok(mut generator) = generator_query.get_mut(entity) {
-                        generator.queue += 1;
+                    if let Ok(mut producer) = producer_query.get_mut(entity) {
+                        producer.queue += 1;
                     }
                 }
             }
@@ -370,13 +370,13 @@ fn producer_button_interactions(
 fn producer_queue_display(
     mut text_query: Query<&mut Text, With<QueueText>>,
     selected_structures: Res<SelectedStructures>,
-    generator_query: Query<&Generator>,
+    producer_query: Query<&Producer>,
 ) {
     for mut text in &mut text_query {
         for entity in selected_structures.entities.clone() {
-            if let Ok(generator) = generator_query.get(entity) {
-                text.sections[0].value = if generator.queue > 0 {
-                    generator.queue.to_string()
+            if let Ok(producer) = producer_query.get(entity) {
+                text.sections[0].value = if producer.queue > 0 {
+                    producer.queue.to_string()
                 } else {
                     "".into()
                 }

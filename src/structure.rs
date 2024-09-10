@@ -5,6 +5,7 @@ use bevy::{
 
 use crate::{
     generator::{Generator, GeneratorType},
+    producer::Producer,
     schedule::InGameSet,
     selectable::Selectable,
 };
@@ -30,18 +31,9 @@ pub enum StructureType {
     WorkerProducer,
 }
 
-impl StructureType {
-    fn get_generator_type(&self) -> GeneratorType {
-        match self {
-            Self::SimpleShrine => GeneratorType::Faith,
-            Self::WorkerProducer => GeneratorType::Worker,
-        }
-    }
-}
-
 impl Default for StructureType {
     fn default() -> Self {
-        StructureType::WorkerProducer
+        StructureType::SimpleShrine
     }
 }
 
@@ -71,29 +63,54 @@ fn spawn_structure(
             StructureType::WorkerProducer => WORKER_PRODUCER_ASSET_PATH,
         });
 
-        commands.spawn((
-            SpriteBundle {
-                texture,
-                transform: Transform::from_translation(vec3(
-                    place.position.x,
-                    place.position.y,
-                    0.0,
-                )),
-                ..default()
-            },
-            Structure {},
-            Generator {
-                gen_type: place.structure_type.get_generator_type(),
-                is_running: true,
-                queue: 0,
-                value: 0.0,
-                rate: 1.0,
-                completion: 10.0,
-            },
-            Selectable {
-                size: SELECTION_SIZE,
-            },
-            Name::new("Structure"),
-        ));
+        match place.structure_type {
+            StructureType::SimpleShrine => {
+                commands.spawn((
+                    SpriteBundle {
+                        texture,
+                        transform: Transform::from_translation(vec3(
+                            place.position.x,
+                            place.position.y,
+                            0.0,
+                        )),
+                        ..default()
+                    },
+                    Structure {},
+                    Generator {
+                        gen_type: GeneratorType::Faith,
+                        is_running: true,
+                        rate: 1.0,
+                    },
+                    Selectable {
+                        size: SELECTION_SIZE,
+                    },
+                    Name::new("SimpleShrine"),
+                ));
+            }
+            StructureType::WorkerProducer => {
+                commands.spawn((
+                    SpriteBundle {
+                        texture,
+                        transform: Transform::from_translation(vec3(
+                            place.position.x,
+                            place.position.y,
+                            0.0,
+                        )),
+                        ..default()
+                    },
+                    Structure {},
+                    Producer {
+                        queue: 0,
+                        cost: 10.,
+                        value: 0.,
+                        rate: 2.5,
+                    },
+                    Selectable {
+                        size: SELECTION_SIZE,
+                    },
+                    Name::new("WorkerProducer"),
+                ));
+            }
+        }
     }
 }

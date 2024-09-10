@@ -1,8 +1,8 @@
 use bevy::{math::vec2, prelude::*};
 
 use crate::{
-    generator::RemoveProducerUI,
     inputs::ProducerSelection,
+    producer::RemoveProducerUI,
     structure::Structure,
     ui::{CurrentUI, UIType},
     unit::Unit,

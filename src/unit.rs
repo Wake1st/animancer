@@ -1,8 +1,6 @@
 use bevy::{math::vec2, prelude::*};
 
-use crate::{
-    generator::GenerateWorker, movement::Moveable, selectable::Selectable, worker::Worker,
-};
+use crate::{movement::Moveable, producer::ProduceWorker, selectable::Selectable, worker::Worker};
 
 pub struct UnitPlugin;
 
@@ -39,13 +37,13 @@ fn spawn_hero(mut commands: Commands, asset_server: Res<AssetServer>) {
 }
 
 fn spawn_worker(
-    mut generation_event: EventReader<GenerateWorker>,
+    mut production_event: EventReader<ProduceWorker>,
     mut commands: Commands,
     asset_server: Res<AssetServer>,
 ) {
     let texture: Handle<Image> = asset_server.load("footman.png");
 
-    for event in generation_event.read() {
+    for event in production_event.read() {
         info!("worker spawning at : {:?}", event.position);
         commands.spawn((
             SpriteBundle {

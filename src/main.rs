@@ -4,6 +4,7 @@ mod generator;
 mod helpers;
 mod inputs;
 mod movement;
+mod producer;
 mod schedule;
 mod selectable;
 mod state;
@@ -20,6 +21,7 @@ use generator::GeneratorPlugin;
 use helpers::HelperPlugin;
 use inputs::InputPlugin;
 use movement::MovementPlugin;
+use producer::ProducerPlugin;
 use schedule::SchedulePlugin;
 use selectable::SelectablePlugin;
 use state::StatePlugin;
@@ -60,6 +62,7 @@ fn main() {
             HelperPlugin,
             StructurePlugin,
             GeneratorPlugin,
+            ProducerPlugin,
             FaithPlugin,
             WorkerPlugin,
         ))
