@@ -34,7 +34,10 @@ impl Plugin for UIPlugin {
             .add_systems(Update, (remove_producer_ui, display_producer_ui).chain())
             .add_systems(
                 Update,
-                (build_button_interactions, producer_button_interactions)
+                (
+                    build_button_interactions,
+                    (producer_button_interactions, producer_queue_display).chain(),
+                )
                     .in_set(InGameSet::UIInput),
             )
             .insert_resource(CurrentUI {
@@ -51,6 +54,9 @@ struct BuildButton {
 
 #[derive(Component)]
 struct ProducerButton {}
+
+#[derive(Component)]
+struct QueueText {}
 
 #[derive(Component)]
 pub struct WorkerUI {}
@@ -215,26 +221,51 @@ fn setup_producer_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
                     ..Default::default()
                 })
                 .with_children(|builder| {
-                    builder.spawn((
-                        ButtonBundle {
-                            style: Style {
-                                width: Val::Px(64.0),
-                                height: Val::Px(64.0),
-                                border: UiRect::all(Val::Px(2.0)),
-                                justify_content: JustifyContent::Center,
-                                align_items: AlignItems::Center,
+                    builder
+                        .spawn((
+                            ButtonBundle {
+                                style: Style {
+                                    width: Val::Px(64.0),
+                                    height: Val::Px(64.0),
+                                    border: UiRect::all(Val::Px(2.0)),
+                                    justify_content: JustifyContent::Center,
+                                    align_items: AlignItems::Center,
+                                    ..default()
+                                },
+                                border_color: Color::Srgba(GRAY_800).into(),
+                                background_color: NORMAL_BUTTON.into(),
+                                image: UiImage {
+                                    texture: worker_texture,
+                                    ..default()
+                                },
                                 ..default()
                             },
-                            border_color: Color::Srgba(GRAY_800).into(),
-                            background_color: NORMAL_BUTTON.into(),
-                            image: UiImage {
-                                texture: worker_texture,
-                                ..default()
-                            },
-                            ..default()
-                        },
-                        ProducerButton {},
-                    ));
+                            ProducerButton {},
+                        ))
+                        .with_children(|builder| {
+                            builder
+                                .spawn(NodeBundle {
+                                    style: Style {
+                                        width: Val::Percent(100.),
+                                        height: Val::Percent(100.),
+                                        padding: UiRect::all(Val::Px(2.)),
+                                        flex_direction: FlexDirection::Column,
+                                        justify_content: JustifyContent::FlexStart,
+                                        align_items: AlignItems::FlexEnd,
+                                        ..default()
+                                    },
+                                    ..default()
+                                })
+                                .with_children(|builder| {
+                                    builder.spawn((
+                                        TextBundle {
+                                            text: Text::from_section("", TextStyle { ..default() }),
+                                            ..default()
+                                        },
+                                        QueueText {},
+                                    ));
+                                });
+                        });
                 });
         });
 }
@@ -331,6 +362,24 @@ fn producer_button_interactions(
             }
             Interaction::None => {
                 border_color.0 = Color::Srgba(GRAY_800);
+            }
+        }
+    }
+}
+
+fn producer_queue_display(
+    mut text_query: Query<&mut Text, With<QueueText>>,
+    selected_structures: Res<SelectedStructures>,
+    generator_query: Query<&Generator>,
+) {
+    for mut text in &mut text_query {
+        for entity in selected_structures.entities.clone() {
+            if let Ok(generator) = generator_query.get(entity) {
+                text.sections[0].value = if generator.queue > 0 {
+                    generator.queue.to_string()
+                } else {
+                    "".into()
+                }
             }
         }
     }
