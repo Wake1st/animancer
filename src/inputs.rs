@@ -1,10 +1,6 @@
 use std::cmp::Ordering;
 
-use bevy::{
-    input::mouse::MouseWheel,
-    math::{vec3, VectorSpace},
-    prelude::*,
-};
+use bevy::{input::mouse::MouseWheel, math::vec3, prelude::*};
 
 use crate::{
     movement::{Formation, UnitMovement},

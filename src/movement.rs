@@ -63,7 +63,6 @@ fn set_moveable_location(
     selected: Res<SelectedUnits>,
 ) {
     for unit_movement in reader.read() {
-        //  TODO: store window size (see example: https://bevyengine.org/examples-webgpu/3d-rendering/split-screen/)
         let unit_count = selected.entities.len() as f32;
         let (aim_angle, strength) = match unit_movement.direction {
             Vec2::ZERO => (0.0, UNIT_BUFFER),

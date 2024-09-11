@@ -13,5 +13,10 @@
   - [x] box
   - [x] NO ~staggered~
 - [x] selection should store selected entities for better control of formations
-- [ ] user can spawn units from a spawner
+- [x] user can spawn units from a spawner
+- [x] units move to building when placing
+- [x] user can queue multiple units from producer
+- [x] user can set post-spawn location
+- [ ] user can see post-spawn location
+- [ ] buildings are constructed before existing
 - [ ] user can direct units to generate "faith" (currency)
