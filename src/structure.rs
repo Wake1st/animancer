@@ -4,11 +4,15 @@ use bevy::{
 };
 
 use crate::{
-    generator::Generator, producer::Producer, schedule::InGameSet, selectable::Selectable,
+    generator::Generator,
+    producer::{PostSpawnMarker, Producer, SPAWN_OFFSET},
+    schedule::InGameSet,
+    selectable::Selectable,
 };
 
 const SIMPLE_SHRINE_ASSET_PATH: &str = "harvester.png";
 const WORKER_PRODUCER_ASSET_PATH: &str = "worker producer.png";
+const POST_SPAWN_MARKER_PATH: &str = "marker.png";
 const SELECTION_SIZE: Vec2 = vec2(64., 64.);
 
 pub struct StructurePlugin;
@@ -55,21 +59,20 @@ fn spawn_structure(
     mut commands: Commands,
 ) {
     for place in placement_event.read() {
+        let marker_texture: Handle<Image> = asset_server.load(POST_SPAWN_MARKER_PATH);
         let texture: Handle<Image> = asset_server.load(match place.structure_type {
             StructureType::SimpleShrine => SIMPLE_SHRINE_ASSET_PATH,
             StructureType::WorkerProducer => WORKER_PRODUCER_ASSET_PATH,
         });
+
+        let pos_3d = vec3(place.position.x, place.position.y, 0.0);
 
         match place.structure_type {
             StructureType::SimpleShrine => {
                 commands.spawn((
                     SpriteBundle {
                         texture,
-                        transform: Transform::from_translation(vec3(
-                            place.position.x,
-                            place.position.y,
-                            0.0,
-                        )),
+                        transform: Transform::from_translation(pos_3d),
                         ..default()
                     },
                     Structure {},
@@ -81,23 +84,35 @@ fn spawn_structure(
                 ));
             }
             StructureType::WorkerProducer => {
-                commands.spawn((
-                    SpriteBundle {
-                        texture,
-                        transform: Transform::from_translation(vec3(
-                            place.position.x,
-                            place.position.y,
-                            0.0,
-                        )),
-                        ..default()
-                    },
-                    Structure {},
-                    Producer { ..default() },
-                    Selectable {
-                        size: SELECTION_SIZE,
-                    },
-                    Name::new("WorkerProducer"),
-                ));
+                commands
+                    .spawn((
+                        SpriteBundle {
+                            texture,
+                            transform: Transform::from_translation(pos_3d),
+                            ..default()
+                        },
+                        Structure {},
+                        Producer {
+                            post_spawn_location: pos_3d + SPAWN_OFFSET,
+                            ..default()
+                        },
+                        Selectable {
+                            size: SELECTION_SIZE,
+                        },
+                        Name::new("WorkerProducer"),
+                    ))
+                    .with_children(|builder| {
+                        builder.spawn((
+                            SpriteBundle {
+                                texture: marker_texture,
+                                transform: Transform::from_translation(SPAWN_OFFSET),
+                                visibility: Visibility::Hidden,
+                                ..default()
+                            },
+                            PostSpawnMarker { not_set: true },
+                            Name::new("PostSpawnMarker"),
+                        ));
+                    });
             }
         }
     }

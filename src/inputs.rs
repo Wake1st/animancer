@@ -4,7 +4,7 @@ use bevy::{input::mouse::MouseWheel, math::vec3, prelude::*};
 
 use crate::{
     movement::{Formation, UnitMovement},
-    producer::Producer,
+    producer::{PostSpawnMarker, Producer},
     schedule::InGameSet,
     selectable::{BoxSelection, SelectedStructures},
     structure::{PlaceStructure, StructureType},
@@ -88,7 +88,8 @@ fn handle_click(
     mut place_structure: EventWriter<PlaceStructure>,
     mut producer_selection: ResMut<ProducerSelection>,
     selected_structures: Res<SelectedStructures>,
-    mut producers: Query<&mut Producer>,
+    mut producers: Query<(&mut Producer, &Children)>,
+    mut post_spawn_markers: Query<&mut PostSpawnMarker>,
 ) {
     let (camera, camera_transform) = camera.single();
     if let Some(pos) = windows
@@ -125,8 +126,14 @@ fn handle_click(
         } else if producer_selection.is_selected {
             if mouse_button_input.just_pressed(MouseButton::Right) {
                 for &entity in selected_structures.entities.iter() {
-                    if let Ok(mut producer) = producers.get_mut(entity) {
-                        producer.post_spawn_location = vec3(pos.x, pos.y, 0.0);
+                    if let Ok((mut producer, children)) = producers.get_mut(entity) {
+                        producer.post_spawn_location = vec3(pos.x, pos.y, 0.1);
+
+                        for &child in children.iter() {
+                            if let Ok(mut marker) = post_spawn_markers.get_mut(child) {
+                                marker.not_set = false;
+                            }
+                        }
                     }
                 }
             } else if mouse_button_input.just_released(MouseButton::Left) {

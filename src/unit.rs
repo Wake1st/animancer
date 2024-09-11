@@ -44,7 +44,10 @@ fn spawn_worker(
     let texture: Handle<Image> = asset_server.load("footman.png");
 
     for event in production_event.read() {
-        info!("worker spawning at : {:?}", event.position);
+        info!(
+            "worker spawning at: {:?}\t and going to: {:?}",
+            event.position, event.location
+        );
         commands.spawn((
             SpriteBundle {
                 texture: texture.clone(),

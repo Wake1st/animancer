@@ -1,19 +1,23 @@
 use bevy::{math::vec3, prelude::*};
 
 use crate::{
+    schedule::InGameSet,
     selectable::SelectedStructures,
     structure::Structure,
     ui::{CurrentUI, UIType},
 };
 
-const SPAWN_OFFSET: Vec3 = vec3(0.0, -40.0, 0.1);
+pub const SPAWN_OFFSET: Vec3 = vec3(0.0, -40.0, 0.1);
 
 pub struct ProducerPlugin;
 
 impl Plugin for ProducerPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Update, display_producer_ui)
-            .add_systems(Update, produce)
+            .add_systems(
+                Update,
+                (produce, display_post_spawn_marker).in_set(InGameSet::EntityUpdates),
+            )
             .add_event::<ProduceWorker>()
             .add_event::<DisplayProducerUI>()
             .add_event::<RemoveProducerUI>();
@@ -39,6 +43,11 @@ impl Default for Producer {
             post_spawn_location: Vec3::ZERO,
         }
     }
+}
+
+#[derive(Component)]
+pub struct PostSpawnMarker {
+    pub not_set: bool,
 }
 
 #[derive(Event)]
@@ -91,6 +100,34 @@ fn display_producer_ui(
             }
             UIType::Worker => (),
             UIType::Producer => (),
+        }
+    }
+}
+
+fn display_post_spawn_marker(
+    selected_structures: Res<SelectedStructures>,
+    producer_query: Query<(&GlobalTransform, &Producer, &Children)>,
+    mut marker_query: Query<
+        (&mut Visibility, &mut Transform, &PostSpawnMarker),
+        With<PostSpawnMarker>,
+    >,
+) {
+    for (mut visibility, _, _) in marker_query.iter_mut() {
+        *visibility = Visibility::Hidden;
+    }
+
+    for &selected_entity in selected_structures.entities.iter() {
+        if let Ok((global_transform, producer, children)) = producer_query.get(selected_entity) {
+            for &child in children.iter() {
+                if let Ok((mut visibility, mut transform, marker)) = marker_query.get_mut(child) {
+                    if !marker.not_set {
+                        *visibility = Visibility::Visible;
+
+                        transform.translation =
+                            producer.post_spawn_location - global_transform.translation();
+                    }
+                }
+            }
         }
     }
 }
