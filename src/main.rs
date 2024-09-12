@@ -1,4 +1,5 @@
 mod camera;
+mod construction;
 mod faith;
 mod generator;
 mod helpers;
@@ -16,6 +17,7 @@ mod worker;
 use bevy::{log::LogPlugin, prelude::*, window::WindowMode};
 
 use camera::CameraPlugin;
+use construction::ConstructionPlugin;
 use faith::FaithPlugin;
 use generator::GeneratorPlugin;
 use helpers::HelperPlugin;
@@ -61,6 +63,7 @@ fn main() {
             MovementPlugin,
             HelperPlugin,
             StructurePlugin,
+            ConstructionPlugin,
             GeneratorPlugin,
             ProducerPlugin,
             FaithPlugin,

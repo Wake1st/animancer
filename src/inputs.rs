@@ -3,12 +3,13 @@ use std::cmp::Ordering;
 use bevy::{input::mouse::MouseWheel, math::vec3, prelude::*};
 
 use crate::{
+    construction::PlaceConstructionSite,
     faith::Faith,
     movement::{Formation, UnitMovement},
     producer::{PostSpawnMarker, Producer},
     schedule::InGameSet,
     selectable::{BoxSelection, SelectedStructures},
-    structure::{PlaceStructure, StructureType},
+    structure::StructureType,
     ui::CurrentUI,
 };
 
@@ -88,7 +89,7 @@ fn handle_click(
     mut box_selection_writer: EventWriter<BoxSelection>,
     mut movement_writer: EventWriter<UnitMovement>,
     mut build_selection: ResMut<BuildSelection>,
-    mut place_structure: EventWriter<PlaceStructure>,
+    mut place_construction_site: EventWriter<PlaceConstructionSite>,
     mut producer_selection: ResMut<ProducerSelection>,
     selected_structures: Res<SelectedStructures>,
     mut producers: Query<(&mut Producer, &Children)>,
@@ -119,9 +120,10 @@ fn handle_click(
             {
                 faith.value -= build_selection.cost;
 
-                place_structure.send(PlaceStructure {
+                place_construction_site.send(PlaceConstructionSite {
                     structure_type: build_selection.structure_type.clone(),
                     position: pos,
+                    effort: build_selection.cost,
                 });
 
                 //  ensure units move to build

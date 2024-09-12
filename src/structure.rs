@@ -1,7 +1,4 @@
-use bevy::{
-    math::{vec2, vec3},
-    prelude::*,
-};
+use bevy::{math::vec2, prelude::*};
 
 use crate::{
     generator::Generator,
@@ -10,8 +7,8 @@ use crate::{
     selectable::Selectable,
 };
 
-const SIMPLE_SHRINE_ASSET_PATH: &str = "harvester.png";
-const WORKER_PRODUCER_ASSET_PATH: &str = "worker producer.png";
+pub const SIMPLE_SHRINE_ASSET_PATH: &str = "harvester.png";
+pub const WORKER_PRODUCER_ASSET_PATH: &str = "worker producer.png";
 const POST_SPAWN_MARKER_PATH: &str = "marker.png";
 const SELECTION_SIZE: Vec2 = vec2(64., 64.);
 
@@ -50,7 +47,7 @@ impl Clone for StructureType {
 #[derive(Event)]
 pub struct PlaceStructure {
     pub structure_type: StructureType,
-    pub position: Vec2,
+    pub position: Vec3,
 }
 
 fn spawn_structure(
@@ -65,14 +62,12 @@ fn spawn_structure(
             StructureType::WorkerProducer => WORKER_PRODUCER_ASSET_PATH,
         });
 
-        let pos_3d = vec3(place.position.x, place.position.y, 0.0);
-
         match place.structure_type {
             StructureType::SimpleShrine => {
                 commands.spawn((
                     SpriteBundle {
                         texture,
-                        transform: Transform::from_translation(pos_3d),
+                        transform: Transform::from_translation(place.position),
                         ..default()
                     },
                     Structure {},
@@ -88,12 +83,12 @@ fn spawn_structure(
                     .spawn((
                         SpriteBundle {
                             texture,
-                            transform: Transform::from_translation(pos_3d),
+                            transform: Transform::from_translation(place.position),
                             ..default()
                         },
                         Structure {},
                         Producer {
-                            post_spawn_location: pos_3d + SPAWN_OFFSET,
+                            post_spawn_location: place.position + SPAWN_OFFSET,
                             ..default()
                         },
                         Selectable {
