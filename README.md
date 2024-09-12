@@ -20,5 +20,8 @@
 - [x] user can see post-spawn location
 - [x] buildings cost resources (faith)
 - [x] buildings are constructed before existing
-- [ ] user can see a silhouette of the building to be constructed
+- [x] user can see a silhouette of the building to be constructed
+- [x] user can assign selected units to "construct" buildings
+- [ ] user can assign new units to construction site
+- [ ] user can remove units from construction site
 - [ ] user can direct units to generate "faith" (currency)
