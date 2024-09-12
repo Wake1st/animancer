@@ -18,5 +18,6 @@
 - [x] user can queue multiple units from producer
 - [x] user can set post-spawn location
 - [x] user can see post-spawn location
+- [ ] buildings cost resources (faith)
 - [ ] buildings are constructed before existing
 - [ ] user can direct units to generate "faith" (currency)

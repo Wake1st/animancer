@@ -3,6 +3,7 @@ use std::cmp::Ordering;
 use bevy::{input::mouse::MouseWheel, math::vec3, prelude::*};
 
 use crate::{
+    faith::Faith,
     movement::{Formation, UnitMovement},
     producer::{PostSpawnMarker, Producer},
     schedule::InGameSet,
@@ -37,6 +38,7 @@ impl Plugin for InputPlugin {
             .insert_resource(BuildSelection {
                 is_selected: false,
                 structure_type: StructureType::SimpleShrine,
+                cost: 0.,
             })
             .insert_resource(ProducerSelection { is_selected: false });
     }
@@ -61,6 +63,7 @@ pub struct UnitAim {
 pub struct BuildSelection {
     pub is_selected: bool,
     pub structure_type: StructureType,
+    pub cost: f32,
 }
 
 #[derive(Resource)]
@@ -90,6 +93,7 @@ fn handle_click(
     selected_structures: Res<SelectedStructures>,
     mut producers: Query<(&mut Producer, &Children)>,
     mut post_spawn_markers: Query<&mut PostSpawnMarker>,
+    mut faith: ResMut<Faith>,
 ) {
     let (camera, camera_transform) = camera.single();
     if let Some(pos) = windows
@@ -110,11 +114,17 @@ fn handle_click(
         };
 
         if build_selection.is_selected {
-            if mouse_button_input.just_pressed(MouseButton::Left) {
+            if mouse_button_input.just_pressed(MouseButton::Left)
+                && faith.value > build_selection.cost
+            {
+                faith.value -= build_selection.cost;
+
                 place_structure.send(PlaceStructure {
                     structure_type: build_selection.structure_type.clone(),
                     position: pos,
                 });
+
+                //  ensure units move to build
                 movement_writer.send(UnitMovement {
                     position: pos,
                     direction: Vec2::ZERO,

@@ -25,6 +25,9 @@ const SIMPLE_SHRINE_ASSET_PATH: &str = "harvester.png";
 const WORKER_PRODUCER_ASSET_PATH: &str = "worker producer.png";
 const WORKER_ASSET_PATH: &str = "footman.png";
 
+pub const SIMPLE_SHRINE_COST: f32 = 40.;
+pub const WORKER_PRODUCER_COST: f32 = 200.;
+
 pub struct UIPlugin;
 
 impl Plugin for UIPlugin {
@@ -51,6 +54,7 @@ impl Plugin for UIPlugin {
 #[derive(Component)]
 struct BuildButton {
     structure_type: StructureType,
+    cost: f32,
 }
 
 #[derive(Component)]
@@ -161,6 +165,7 @@ fn setup_worker_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
                         },
                         BuildButton {
                             structure_type: StructureType::SimpleShrine,
+                            cost: SIMPLE_SHRINE_COST,
                         },
                     ));
                     builder.spawn((
@@ -183,6 +188,7 @@ fn setup_worker_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
                         },
                         BuildButton {
                             structure_type: StructureType::WorkerProducer,
+                            cost: WORKER_PRODUCER_COST,
                         },
                     ));
                 });
@@ -328,6 +334,7 @@ fn build_button_interactions(
                 border_color.0 = Color::Srgba(GREEN_200);
                 build_selection.structure_type = button.structure_type.clone();
                 build_selection.is_selected = true;
+                build_selection.cost = button.cost;
             }
             Interaction::Hovered => {
                 border_color.0 = Color::Srgba(GRAY_200);

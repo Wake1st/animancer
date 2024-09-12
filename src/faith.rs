@@ -4,7 +4,7 @@ pub struct FaithPlugin;
 
 impl Plugin for FaithPlugin {
     fn build(&self, app: &mut App) {
-        app.insert_resource(Faith { value: 0.0 });
+        app.insert_resource(Faith { value: 50.0 });
     }
 }
 
