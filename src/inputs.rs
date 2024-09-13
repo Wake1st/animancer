@@ -8,7 +8,7 @@ use crate::{
     movement::{Formation, UnitMovement},
     producer::{PostSpawnMarker, Producer},
     schedule::InGameSet,
-    selectable::{BoxSelection, SelectedStructures},
+    selectable::{BoxSelection, SelectedStructures, SelectionState, SelectionType},
     structure::StructureType,
     ui::CurrentUI,
 };
@@ -95,6 +95,7 @@ fn handle_click(
     mut producers: Query<(&mut Producer, &Children)>,
     mut post_spawn_markers: Query<&mut PostSpawnMarker>,
     mut faith: ResMut<Faith>,
+    mut selection_state: ResMut<SelectionState>,
 ) {
     let (camera, camera_transform) = camera.single();
     if let Some(pos) = windows
@@ -108,81 +109,90 @@ fn handle_click(
             return;
         }
 
-        let reset_selector = |selector: &mut BoxSelector| {
-            selector.selecting = false;
-            selector.start = Vec2::ZERO;
-            selector.current = Vec2::ZERO;
-        };
+        match selection_state.0 {
+            SelectionType::None => {
+                let reset_selector = |selector: &mut BoxSelector| {
+                    selector.selecting = false;
+                    selector.start = Vec2::ZERO;
+                    selector.current = Vec2::ZERO;
+                };
 
-        if build_selection.is_selected {
-            if mouse_button_input.just_pressed(MouseButton::Left)
-                && faith.value > build_selection.cost
-            {
-                faith.value -= build_selection.cost;
+                if mouse_button_input.pressed(MouseButton::Left) {
+                    if box_selector.selecting == false {
+                        box_selector.selecting = true;
+                        box_selector.start = pos;
+                    } else {
+                        box_selector.current = pos;
+                    }
+                } else if mouse_button_input.just_released(MouseButton::Left)
+                    && box_selector.selecting
+                {
+                    box_selection_writer.send(BoxSelection {
+                        rect: Rect::from_corners(box_selector.start, box_selector.current),
+                    });
 
-                place_construction_site.send(PlaceConstructionSite {
-                    structure_type: build_selection.structure_type.clone(),
-                    position: pos,
-                    effort: build_selection.cost,
-                });
+                    reset_selector(&mut box_selector);
+                } else if mouse_button_input.pressed(MouseButton::Right) {
+                    if unit_aim.aiming == false {
+                        unit_aim.aiming = true;
+                        unit_aim.start = pos;
+                    } else {
+                        unit_aim.current = pos;
+                    }
+                } else if mouse_button_input.just_released(MouseButton::Right) && unit_aim.aiming {
+                    movement_writer.send(UnitMovement {
+                        position: unit_aim.start,
+                        direction: unit_aim.current - unit_aim.start,
+                        formation: box_selector.formation.clone(),
+                    });
 
-                //  ensure units move to build
-                movement_writer.send(UnitMovement {
-                    position: pos,
-                    direction: Vec2::ZERO,
-                    formation: Formation::Ringed,
-                });
-            } else if mouse_button_input.just_released(MouseButton::Right) {
-                build_selection.is_selected = false;
+                    unit_aim.aiming = false;
+                    unit_aim.start = Vec2::ZERO;
+                    unit_aim.current = Vec2::ZERO;
+                }
             }
-        } else if producer_selection.is_selected {
-            if mouse_button_input.just_pressed(MouseButton::Right) {
-                for &entity in selected_structures.entities.iter() {
-                    if let Ok((mut producer, children)) = producers.get_mut(entity) {
-                        producer.post_spawn_location = vec3(pos.x, pos.y, 0.1);
+            SelectionType::BuildingSelection => {
+                if producer_selection.is_selected {
+                    if mouse_button_input.just_pressed(MouseButton::Right) {
+                        for &entity in selected_structures.entities.iter() {
+                            if let Ok((mut producer, children)) = producers.get_mut(entity) {
+                                producer.post_spawn_location = vec3(pos.x, pos.y, 0.1);
 
-                        for &child in children.iter() {
-                            if let Ok(mut marker) = post_spawn_markers.get_mut(child) {
-                                marker.not_set = false;
+                                for &child in children.iter() {
+                                    if let Ok(mut marker) = post_spawn_markers.get_mut(child) {
+                                        marker.not_set = false;
+                                    }
+                                }
                             }
                         }
+                    } else if mouse_button_input.just_released(MouseButton::Left) {
+                        producer_selection.is_selected = false;
                     }
                 }
-            } else if mouse_button_input.just_released(MouseButton::Left) {
-                producer_selection.is_selected = false;
             }
-        } else {
-            if mouse_button_input.pressed(MouseButton::Left) {
-                if box_selector.selecting == false {
-                    box_selector.selecting = true;
-                    box_selector.start = pos;
-                } else {
-                    box_selector.current = pos;
-                }
-            } else if mouse_button_input.just_released(MouseButton::Left) && box_selector.selecting
-            {
-                box_selection_writer.send(BoxSelection {
-                    rect: Rect::from_corners(box_selector.start, box_selector.current),
-                });
+            SelectionType::UnitSelection => {
+                if build_selection.is_selected {
+                    if mouse_button_input.just_pressed(MouseButton::Left)
+                        && faith.value > build_selection.cost
+                    {
+                        faith.value -= build_selection.cost;
 
-                reset_selector(&mut box_selector);
-            } else if mouse_button_input.pressed(MouseButton::Right) {
-                if unit_aim.aiming == false {
-                    unit_aim.aiming = true;
-                    unit_aim.start = pos;
-                } else {
-                    unit_aim.current = pos;
-                }
-            } else if mouse_button_input.just_released(MouseButton::Right) && unit_aim.aiming {
-                movement_writer.send(UnitMovement {
-                    position: unit_aim.start,
-                    direction: unit_aim.current - unit_aim.start,
-                    formation: box_selector.formation.clone(),
-                });
+                        place_construction_site.send(PlaceConstructionSite {
+                            structure_type: build_selection.structure_type.clone(),
+                            position: pos,
+                            effort: build_selection.cost,
+                        });
 
-                unit_aim.aiming = false;
-                unit_aim.start = Vec2::ZERO;
-                unit_aim.current = Vec2::ZERO;
+                        //  ensure units move to build
+                        movement_writer.send(UnitMovement {
+                            position: pos,
+                            direction: Vec2::ZERO,
+                            formation: Formation::Ringed,
+                        });
+                    } else if mouse_button_input.just_released(MouseButton::Right) {
+                        build_selection.is_selected = false;
+                    }
+                }
             }
         }
     }

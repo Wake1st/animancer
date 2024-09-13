@@ -19,7 +19,8 @@ impl Plugin for SelectablePlugin {
             })
             .insert_resource(SelectedStructures {
                 entities: Vec::new(),
-            });
+            })
+            .insert_resource(SelectionState(SelectionType::None));
     }
 }
 
@@ -42,6 +43,15 @@ pub struct SelectedUnits {
 pub struct SelectedStructures {
     pub entities: Vec<Entity>,
 }
+
+pub enum SelectionType {
+    None,
+    UnitSelection,
+    BuildingSelection,
+}
+
+#[derive(Resource)]
+pub struct SelectionState(pub SelectionType);
 
 fn select_entities(
     mut reader: EventReader<BoxSelection>,

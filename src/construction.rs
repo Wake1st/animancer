@@ -9,7 +9,7 @@ use crate::{
     unit::Unit,
 };
 
-const CONSTRUCTION_BOOST: f32 = 2.5;
+const CONSTRUCTION_BOOST: f32 = 20.5;
 const CONSTRUCTION_RANGE: f32 = 80.;
 pub struct ConstructionPlugin;
 
