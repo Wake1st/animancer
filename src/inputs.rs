@@ -111,28 +111,39 @@ fn handle_click(
 
         match selection_state.0 {
             SelectionType::None => {
-                let reset_selector = |selector: &mut BoxSelector| {
-                    selector.selecting = false;
-                    selector.start = Vec2::ZERO;
-                    selector.current = Vec2::ZERO;
-                };
+                click_selection(
+                    pos,
+                    &mouse_button_input,
+                    &box_selector,
+                    box_selection_writer,
+                );
+            }
+            SelectionType::Building => {
+                if mouse_button_input.just_pressed(MouseButton::Right) {
+                    for &entity in selected_structures.entities.iter() {
+                        if let Ok((mut producer, children)) = producers.get_mut(entity) {
+                            producer.post_spawn_location = vec3(pos.x, pos.y, 0.1);
 
-                if mouse_button_input.pressed(MouseButton::Left) {
-                    if box_selector.selecting == false {
-                        box_selector.selecting = true;
-                        box_selector.start = pos;
-                    } else {
-                        box_selector.current = pos;
+                            for &child in children.iter() {
+                                if let Ok(mut marker) = post_spawn_markers.get_mut(child) {
+                                    marker.not_set = false;
+                                }
+                            }
+                        }
                     }
-                } else if mouse_button_input.just_released(MouseButton::Left)
-                    && box_selector.selecting
-                {
-                    box_selection_writer.send(BoxSelection {
-                        rect: Rect::from_corners(box_selector.start, box_selector.current),
-                    });
+                } else if mouse_button_input.just_released(MouseButton::Left) {
+                    selection_state.0 = SelectionType::None;
+                }
+            }
+            SelectionType::Unit => {
+                click_selection(
+                    pos,
+                    &mouse_button_input,
+                    &box_selector,
+                    box_selection_writer,
+                );
 
-                    reset_selector(&mut box_selector);
-                } else if mouse_button_input.pressed(MouseButton::Right) {
+                if mouse_button_input.pressed(MouseButton::Right) {
                     if unit_aim.aiming == false {
                         unit_aim.aiming = true;
                         unit_aim.start = pos;
@@ -151,47 +162,26 @@ fn handle_click(
                     unit_aim.current = Vec2::ZERO;
                 }
             }
-            SelectionType::BuildingSelection => {
-                if producer_selection.is_selected {
-                    if mouse_button_input.just_pressed(MouseButton::Right) {
-                        for &entity in selected_structures.entities.iter() {
-                            if let Ok((mut producer, children)) = producers.get_mut(entity) {
-                                producer.post_spawn_location = vec3(pos.x, pos.y, 0.1);
+            SelectionType::Construction => {
+                if mouse_button_input.just_pressed(MouseButton::Left)
+                    && faith.value > build_selection.cost
+                {
+                    faith.value -= build_selection.cost;
 
-                                for &child in children.iter() {
-                                    if let Ok(mut marker) = post_spawn_markers.get_mut(child) {
-                                        marker.not_set = false;
-                                    }
-                                }
-                            }
-                        }
-                    } else if mouse_button_input.just_released(MouseButton::Left) {
-                        producer_selection.is_selected = false;
-                    }
-                }
-            }
-            SelectionType::UnitSelection => {
-                if build_selection.is_selected {
-                    if mouse_button_input.just_pressed(MouseButton::Left)
-                        && faith.value > build_selection.cost
-                    {
-                        faith.value -= build_selection.cost;
+                    place_construction_site.send(PlaceConstructionSite {
+                        structure_type: build_selection.structure_type.clone(),
+                        position: pos,
+                        effort: build_selection.cost,
+                    });
 
-                        place_construction_site.send(PlaceConstructionSite {
-                            structure_type: build_selection.structure_type.clone(),
-                            position: pos,
-                            effort: build_selection.cost,
-                        });
-
-                        //  ensure units move to build
-                        movement_writer.send(UnitMovement {
-                            position: pos,
-                            direction: Vec2::ZERO,
-                            formation: Formation::Ringed,
-                        });
-                    } else if mouse_button_input.just_released(MouseButton::Right) {
-                        build_selection.is_selected = false;
-                    }
+                    //  ensure units move to build
+                    movement_writer.send(UnitMovement {
+                        position: pos,
+                        direction: Vec2::ZERO,
+                        formation: Formation::Ringed,
+                    });
+                } else if mouse_button_input.just_released(MouseButton::Right) {
+                    selection_state.0 = SelectionType::Unit;
                 }
             }
         }
@@ -212,5 +202,29 @@ fn handle_mouse_wheel(
             (Ordering::Greater, Formation::Box) => Formation::Line,
             _ => box_selector.formation.clone(),
         }
+    }
+}
+
+fn click_selection(
+    pos: Vec2,
+    mouse_button_input: &Res<ButtonInput<MouseButton>>,
+    mut box_selector: &ResMut<BoxSelector>,
+    mut box_selection_writer: EventWriter<BoxSelection>,
+) {
+    if mouse_button_input.pressed(MouseButton::Left) {
+        if box_selector.selecting == false {
+            box_selector.selecting = true;
+            box_selector.start = pos;
+        } else {
+            box_selector.current = pos;
+        }
+    } else if mouse_button_input.just_released(MouseButton::Left) && box_selector.selecting {
+        box_selection_writer.send(BoxSelection {
+            rect: Rect::from_corners(box_selector.start, box_selector.current),
+        });
+
+        box_selector.selecting = false;
+        box_selector.start = Vec2::ZERO;
+        box_selector.current = Vec2::ZERO;
     }
 }

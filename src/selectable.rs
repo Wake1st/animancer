@@ -46,8 +46,9 @@ pub struct SelectedStructures {
 
 pub enum SelectionType {
     None,
-    UnitSelection,
-    BuildingSelection,
+    Unit,
+    Construction,
+    Building,
 }
 
 #[derive(Resource)]
@@ -63,6 +64,7 @@ fn select_entities(
     mut remove_producer_ui: EventWriter<RemoveProducerUI>,
     mut current_ui: ResMut<CurrentUI>,
     mut producer_selection: ResMut<ProducerSelection>,
+    mut selection_state: ResMut<SelectionState>,
 ) {
     for box_selection in reader.read() {
         selected_units.entities.clear();
@@ -85,6 +87,7 @@ fn select_entities(
 
         //  Always prioritize units and never select units AND structures
         if selected_units.entities.len() > 0 {
+            selection_state.0 = SelectionType::Unit;
             return;
         } else {
             remove_worker_ui.send(RemoveWorkerUI {});
@@ -108,8 +111,10 @@ fn select_entities(
 
         if selected_structures.entities.len() > 0 {
             producer_selection.is_selected = true;
+            selection_state.0 = SelectionType::Building;
         } else {
             producer_selection.is_selected = false;
+            selection_state.0 = SelectionType::None;
             remove_producer_ui.send(RemoveProducerUI {});
             current_ui.ui_type = UIType::None;
         }
