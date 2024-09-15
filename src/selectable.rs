@@ -67,6 +67,7 @@ fn select_entities(
     mut selection_state: ResMut<SelectionState>,
 ) {
     for box_selection in reader.read() {
+        info!("into selectable");
         selected_units.entities.clear();
         selected_structures.entities.clear();
 
@@ -112,9 +113,11 @@ fn select_entities(
         if selected_structures.entities.len() > 0 {
             producer_selection.is_selected = true;
             selection_state.0 = SelectionType::Building;
+            info!("selection - BUILDING");
         } else {
             producer_selection.is_selected = false;
             selection_state.0 = SelectionType::None;
+            info!("selection - NONE");
             remove_producer_ui.send(RemoveProducerUI {});
             current_ui.ui_type = UIType::None;
         }

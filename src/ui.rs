@@ -11,7 +11,7 @@ use crate::{
     inputs::BuildSelection,
     producer::{DisplayProducerUI, Producer, RemoveProducerUI},
     schedule::InGameSet,
-    selectable::SelectedStructures,
+    selectable::{SelectedStructures, SelectionState, SelectionType},
     structure::StructureType,
     worker::{DisplayWorkerUI, RemoveWorkerUI},
 };
@@ -327,6 +327,7 @@ fn build_button_interactions(
         (Changed<Interaction>, With<BuildButton>),
     >,
     mut build_selection: ResMut<BuildSelection>,
+    mut selection_state: ResMut<SelectionState>,
 ) {
     for (interaction, mut border_color, button) in &mut interaction_query {
         match *interaction {
@@ -334,6 +335,7 @@ fn build_button_interactions(
                 border_color.0 = Color::Srgba(GREEN_200);
                 build_selection.structure_type = button.structure_type.clone();
                 build_selection.is_selected = true;
+                selection_state.0 = SelectionType::Construction;
                 build_selection.cost = button.cost;
             }
             Interaction::Hovered => {

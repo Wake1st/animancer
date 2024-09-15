@@ -86,11 +86,11 @@ fn handle_click(
     current_ui: Res<CurrentUI>,
     mut box_selector: ResMut<BoxSelector>,
     mut unit_aim: ResMut<UnitAim>,
-    mut box_selection_writer: EventWriter<BoxSelection>,
+    box_selection_writer: EventWriter<BoxSelection>,
     mut movement_writer: EventWriter<UnitMovement>,
-    mut build_selection: ResMut<BuildSelection>,
+    build_selection: ResMut<BuildSelection>,
     mut place_construction_site: EventWriter<PlaceConstructionSite>,
-    mut producer_selection: ResMut<ProducerSelection>,
+    // producer_selection: ResMut<ProducerSelection>,
     selected_structures: Res<SelectedStructures>,
     mut producers: Query<(&mut Producer, &Children)>,
     mut post_spawn_markers: Query<&mut PostSpawnMarker>,
@@ -114,32 +114,15 @@ fn handle_click(
                 click_selection(
                     pos,
                     &mouse_button_input,
-                    &box_selector,
+                    &mut box_selector,
                     box_selection_writer,
                 );
-            }
-            SelectionType::Building => {
-                if mouse_button_input.just_pressed(MouseButton::Right) {
-                    for &entity in selected_structures.entities.iter() {
-                        if let Ok((mut producer, children)) = producers.get_mut(entity) {
-                            producer.post_spawn_location = vec3(pos.x, pos.y, 0.1);
-
-                            for &child in children.iter() {
-                                if let Ok(mut marker) = post_spawn_markers.get_mut(child) {
-                                    marker.not_set = false;
-                                }
-                            }
-                        }
-                    }
-                } else if mouse_button_input.just_released(MouseButton::Left) {
-                    selection_state.0 = SelectionType::None;
-                }
             }
             SelectionType::Unit => {
                 click_selection(
                     pos,
                     &mouse_button_input,
-                    &box_selector,
+                    &mut box_selector,
                     box_selection_writer,
                 );
 
@@ -184,6 +167,32 @@ fn handle_click(
                     selection_state.0 = SelectionType::Unit;
                 }
             }
+            SelectionType::Building => {
+                if mouse_button_input.just_pressed(MouseButton::Right) {
+                    for &entity in selected_structures.entities.iter() {
+                        if let Ok((mut producer, children)) = producers.get_mut(entity) {
+                            producer.post_spawn_location = vec3(pos.x, pos.y, 0.1);
+
+                            for &child in children.iter() {
+                                if let Ok(mut marker) = post_spawn_markers.get_mut(child) {
+                                    marker.not_set = false;
+                                }
+                            }
+                        }
+                    }
+                } else if mouse_button_input.pressed(MouseButton::Left)
+                    || mouse_button_input.just_released(MouseButton::Left)
+                {
+                    selection_state.0 = SelectionType::None;
+
+                    click_selection(
+                        pos,
+                        &mouse_button_input,
+                        &mut box_selector,
+                        box_selection_writer,
+                    );
+                }
+            }
         }
     }
 }
@@ -208,7 +217,7 @@ fn handle_mouse_wheel(
 fn click_selection(
     pos: Vec2,
     mouse_button_input: &Res<ButtonInput<MouseButton>>,
-    mut box_selector: &ResMut<BoxSelector>,
+    box_selector: &mut BoxSelector,
     mut box_selection_writer: EventWriter<BoxSelection>,
 ) {
     if mouse_button_input.pressed(MouseButton::Left) {
