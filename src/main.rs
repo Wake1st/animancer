@@ -10,6 +10,7 @@ mod schedule;
 mod selectable;
 mod state;
 mod structure;
+mod test_scene;
 mod ui;
 mod unit;
 mod worker;
@@ -28,6 +29,7 @@ use schedule::SchedulePlugin;
 use selectable::SelectablePlugin;
 use state::StatePlugin;
 use structure::StructurePlugin;
+use test_scene::TestScenePlugin;
 use ui::UIPlugin;
 use unit::UnitPlugin;
 use worker::WorkerPlugin;
@@ -61,7 +63,6 @@ fn main() {
             UnitPlugin,
             SelectablePlugin,
             MovementPlugin,
-            HelperPlugin,
             StructurePlugin,
             ConstructionPlugin,
             GeneratorPlugin,
@@ -69,5 +70,6 @@ fn main() {
             FaithPlugin,
             WorkerPlugin,
         ))
+        .add_plugins((TestScenePlugin, HelperPlugin))
         .run();
 }

@@ -9,8 +9,8 @@ use crate::{
 
 pub const SIMPLE_SHRINE_ASSET_PATH: &str = "harvester.png";
 pub const WORKER_PRODUCER_ASSET_PATH: &str = "worker producer.png";
-const POST_SPAWN_MARKER_PATH: &str = "marker.png";
-const SELECTION_SIZE: Vec2 = vec2(64., 64.);
+pub const POST_SPAWN_MARKER_PATH: &str = "marker.png";
+pub const SELECTION_SIZE: Vec2 = vec2(64., 64.);
 
 pub struct StructurePlugin;
 
