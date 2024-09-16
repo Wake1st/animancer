@@ -9,7 +9,7 @@ use crate::{
     inputs::{BoxSelector, BuildSelection, ProducerSelection, UnitAim},
     movement::Formation,
     structure::StructureType,
-    ui::CurrentUI,
+    ui::{CurrentUI, UIType},
 };
 
 pub struct HelperPlugin;
@@ -60,6 +60,8 @@ fn setup_debug_helper_text(mut commands: Commands) {
             TextSection::new("_", TextStyle { ..default() }), //  8
             TextSection::new("\nUI Focused = ", TextStyle { ..default() }),
             TextSection::new("_", TextStyle { ..default() }), //  10
+            TextSection::new("\nUI Type::", TextStyle { ..default() }),
+            TextSection::new("_", TextStyle { ..default() }), //  12
         ]),
         DebugText,
     ));
@@ -102,5 +104,12 @@ fn debug_text(
         text.sections[8].value = faith.value.to_string();
 
         text.sections[10].value = current_ui.focused.to_string();
+
+        text.sections[12].value = (match current_ui.ui_type {
+            UIType::None => "None",
+            UIType::Worker => "Worker",
+            UIType::Producer => "Producer",
+        })
+        .to_string();
     }
 }

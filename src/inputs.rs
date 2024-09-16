@@ -8,7 +8,9 @@ use crate::{
     movement::{Formation, UnitMovement},
     producer::{PostSpawnMarker, Producer},
     schedule::InGameSet,
-    selectable::{BoxSelection, SelectedStructures, SelectionState, SelectionType},
+    selectable::{
+        BoxSelection, SelectedStructures, SelectionState, SelectionStateChanged, SelectionType,
+    },
     structure::StructureType,
     ui::CurrentUI,
 };
@@ -90,12 +92,12 @@ fn handle_click(
     mut movement_writer: EventWriter<UnitMovement>,
     build_selection: ResMut<BuildSelection>,
     mut place_construction_site: EventWriter<PlaceConstructionSite>,
-    // producer_selection: ResMut<ProducerSelection>,
     selected_structures: Res<SelectedStructures>,
     mut producers: Query<(&mut Producer, &Children)>,
     mut post_spawn_markers: Query<&mut PostSpawnMarker>,
     mut faith: ResMut<Faith>,
-    mut selection_state: ResMut<SelectionState>,
+    selection_state: Res<SelectionState>,
+    mut selection_state_changed: EventWriter<SelectionStateChanged>,
 ) {
     let (camera, camera_transform) = camera.single();
     if let Some(pos) = windows
@@ -164,7 +166,9 @@ fn handle_click(
                         formation: Formation::Ringed,
                     });
                 } else if mouse_button_input.just_released(MouseButton::Right) {
-                    selection_state.0 = SelectionType::Unit;
+                    selection_state_changed.send(SelectionStateChanged {
+                        new_type: SelectionType::Unit,
+                    });
                 }
             }
             SelectionType::Building => {
@@ -183,7 +187,9 @@ fn handle_click(
                 } else if mouse_button_input.pressed(MouseButton::Left)
                     || mouse_button_input.just_released(MouseButton::Left)
                 {
-                    selection_state.0 = SelectionType::None;
+                    selection_state_changed.send(SelectionStateChanged {
+                        new_type: SelectionType::None,
+                    });
 
                     click_selection(
                         pos,

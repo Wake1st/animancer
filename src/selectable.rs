@@ -1,19 +1,13 @@
 use bevy::{math::vec2, prelude::*};
 
-use crate::{
-    inputs::ProducerSelection,
-    producer::RemoveProducerUI,
-    structure::Structure,
-    ui::{CurrentUI, UIType},
-    unit::Unit,
-    worker::RemoveWorkerUI,
-};
+use crate::{inputs::ProducerSelection, structure::Structure, unit::Unit};
 pub struct SelectablePlugin;
 
 impl Plugin for SelectablePlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Update, select_entities)
             .add_event::<BoxSelection>()
+            .add_event::<SelectionStateChanged>()
             .insert_resource(SelectedUnits {
                 entities: Vec::new(),
             })
@@ -54,17 +48,20 @@ pub enum SelectionType {
 #[derive(Resource)]
 pub struct SelectionState(pub SelectionType);
 
+#[derive(Event)]
+pub struct SelectionStateChanged {
+    pub new_type: SelectionType,
+}
+
 fn select_entities(
     mut reader: EventReader<BoxSelection>,
     mut query_units: Query<(Entity, &GlobalTransform, &Selectable), With<Unit>>,
     mut query_structures: Query<(Entity, &GlobalTransform, &Selectable), With<Structure>>,
     mut selected_units: ResMut<SelectedUnits>,
     mut selected_structures: ResMut<SelectedStructures>,
-    mut remove_worker_ui: EventWriter<RemoveWorkerUI>,
-    mut remove_producer_ui: EventWriter<RemoveProducerUI>,
-    mut current_ui: ResMut<CurrentUI>,
     mut producer_selection: ResMut<ProducerSelection>,
     mut selection_state: ResMut<SelectionState>,
+    mut selection_state_changed: EventWriter<SelectionStateChanged>,
 ) {
     for box_selection in reader.read() {
         info!("into selectable");
@@ -88,11 +85,12 @@ fn select_entities(
 
         //  Always prioritize units and never select units AND structures
         if selected_units.entities.len() > 0 {
-            selection_state.0 = SelectionType::Unit;
+            selection_state_changed.send(SelectionStateChanged {
+                new_type: SelectionType::Unit,
+            });
             return;
         } else {
-            remove_worker_ui.send(RemoveWorkerUI {});
-            current_ui.ui_type = UIType::None;
+            // current_ui.ui_type = UIType::None;
         }
 
         for (entity, global_transform, selectable) in query_structures.iter_mut() {
@@ -112,14 +110,16 @@ fn select_entities(
 
         if selected_structures.entities.len() > 0 {
             producer_selection.is_selected = true;
-            selection_state.0 = SelectionType::Building;
+            selection_state_changed.send(SelectionStateChanged {
+                new_type: SelectionType::Building,
+            });
             info!("selection - BUILDING");
         } else {
             producer_selection.is_selected = false;
-            selection_state.0 = SelectionType::None;
+            selection_state_changed.send(SelectionStateChanged {
+                new_type: SelectionType::None,
+            });
             info!("selection - NONE");
-            remove_producer_ui.send(RemoveProducerUI {});
-            current_ui.ui_type = UIType::None;
         }
     }
 }

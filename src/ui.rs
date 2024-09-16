@@ -11,7 +11,7 @@ use crate::{
     inputs::BuildSelection,
     producer::{DisplayProducerUI, Producer, RemoveProducerUI},
     schedule::InGameSet,
-    selectable::{SelectedStructures, SelectionState, SelectionType},
+    selectable::{SelectedStructures, SelectionState, SelectionStateChanged, SelectionType},
     structure::StructureType,
     worker::{DisplayWorkerUI, RemoveWorkerUI},
 };
@@ -34,8 +34,16 @@ impl Plugin for UIPlugin {
     fn build(&self, app: &mut App) {
         // Only run the app when there is user input. This will significantly reduce CPU/GPU use.
         app.add_systems(Startup, (setup_ui_base, setup_worker_ui, setup_producer_ui))
-            .add_systems(Update, (remove_worker_ui, display_worker_ui).chain())
-            .add_systems(Update, (remove_producer_ui, display_producer_ui).chain())
+            .add_systems(
+                Update,
+                (
+                    update_ui,
+                    (remove_worker_ui, display_worker_ui).chain(),
+                    (remove_producer_ui, display_producer_ui).chain(),
+                )
+                    .chain()
+                    .after(InGameSet::UserInput),
+            )
             .add_systems(
                 Update,
                 (
@@ -277,6 +285,54 @@ fn setup_producer_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
         });
 }
 
+fn update_ui(
+    mut selection_state_changed: EventReader<SelectionStateChanged>,
+    mut current_ui: ResMut<CurrentUI>,
+    mut remove_worker_ui: EventWriter<RemoveWorkerUI>,
+    mut display_worker_ui: EventWriter<DisplayWorkerUI>,
+    mut remove_producer_ui: EventWriter<RemoveProducerUI>,
+    mut display_producer_ui: EventWriter<DisplayProducerUI>,
+) {
+    for selection_change in selection_state_changed.read() {
+        match (&selection_change.new_type, &current_ui.ui_type) {
+            (SelectionType::None, UIType::None) => {
+                current_ui.ui_type = UIType::None;
+            }
+            (SelectionType::None, UIType::Worker) => {
+                remove_worker_ui.send(RemoveWorkerUI {});
+                current_ui.ui_type = UIType::None;
+            }
+            (SelectionType::None, UIType::Producer) => {
+                remove_producer_ui.send(RemoveProducerUI {});
+                current_ui.ui_type = UIType::None;
+            }
+            (SelectionType::Unit, UIType::None) => {
+                display_worker_ui.send(DisplayWorkerUI {});
+                current_ui.ui_type = UIType::Worker;
+            }
+            (SelectionType::Unit, UIType::Worker) => (),
+            (SelectionType::Unit, UIType::Producer) => {
+                remove_producer_ui.send(RemoveProducerUI {});
+                display_worker_ui.send(DisplayWorkerUI {});
+                current_ui.ui_type = UIType::Worker;
+            }
+            (SelectionType::Construction, UIType::None) => (),
+            (SelectionType::Construction, UIType::Worker) => (),
+            (SelectionType::Construction, UIType::Producer) => (),
+            (SelectionType::Building, UIType::None) => {
+                display_producer_ui.send(DisplayProducerUI {});
+                current_ui.ui_type = UIType::Producer;
+            }
+            (SelectionType::Building, UIType::Worker) => {
+                remove_worker_ui.send(RemoveWorkerUI {});
+                display_producer_ui.send(DisplayProducerUI {});
+                current_ui.ui_type = UIType::Producer;
+            }
+            (SelectionType::Building, UIType::Producer) => (),
+        }
+    }
+}
+
 fn display_worker_ui(
     mut display_worker_ui: EventReader<DisplayWorkerUI>,
     mut worker_ui_query: Query<&mut Style, With<WorkerUI>>,
@@ -305,6 +361,7 @@ fn display_producer_ui(
 ) {
     for _ in display_producer_ui.read() {
         for mut style in &mut producer_ui_query {
+            info!("display producer ui");
             style.display = Display::Flex;
         }
     }
@@ -316,6 +373,7 @@ fn remove_producer_ui(
 ) {
     for _ in remove_producer_ui.read() {
         for mut style in &mut producer_ui_query {
+            info!("remove producer ui");
             style.display = Display::None;
         }
     }
