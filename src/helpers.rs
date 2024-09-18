@@ -8,6 +8,7 @@ use crate::{
     faith::Faith,
     inputs::{BoxSelector, BuildSelection, ProducerSelection, UnitAim},
     movement::Formation,
+    selectable::{SelectionState, SelectionType},
     structure::StructureType,
     ui::{CurrentUI, UIType},
 };
@@ -62,6 +63,8 @@ fn setup_debug_helper_text(mut commands: Commands) {
             TextSection::new("_", TextStyle { ..default() }), //  10
             TextSection::new("\nUI Type::", TextStyle { ..default() }),
             TextSection::new("_", TextStyle { ..default() }), //  12
+            TextSection::new("\nSelectionState::", TextStyle { ..default() }),
+            TextSection::new("_", TextStyle { ..default() }), //  14
         ]),
         DebugText,
     ));
@@ -73,6 +76,7 @@ fn debug_text(
     producer_selection: Res<ProducerSelection>,
     faith: Res<Faith>,
     current_ui: Res<CurrentUI>,
+    selection_state: Res<SelectionState>,
     mut query: Query<&mut Text, With<DebugText>>,
 ) {
     for mut text in &mut query {
@@ -109,6 +113,14 @@ fn debug_text(
             UIType::None => "None",
             UIType::Worker => "Worker",
             UIType::Producer => "Producer",
+        })
+        .to_string();
+
+        text.sections[14].value = (match selection_state.0 {
+            SelectionType::None => "None",
+            SelectionType::Unit => "Unit",
+            SelectionType::Construction => "Construction",
+            SelectionType::Building => "Building",
         })
         .to_string();
     }
