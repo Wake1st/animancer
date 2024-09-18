@@ -287,6 +287,7 @@ fn setup_producer_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
 
 fn update_ui(
     mut selection_state_changed: EventReader<SelectionStateChanged>,
+    mut selection_state: ResMut<SelectionState>,
     mut current_ui: ResMut<CurrentUI>,
     mut remove_worker_ui: EventWriter<RemoveWorkerUI>,
     mut display_worker_ui: EventWriter<DisplayWorkerUI>,
@@ -294,6 +295,8 @@ fn update_ui(
     mut display_producer_ui: EventWriter<DisplayProducerUI>,
 ) {
     for selection_change in selection_state_changed.read() {
+        selection_state.0 = selection_change.new_type.clone();
+
         match (&selection_change.new_type, &current_ui.ui_type) {
             (SelectionType::None, UIType::None) => {
                 current_ui.ui_type = UIType::None;

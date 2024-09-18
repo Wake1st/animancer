@@ -45,6 +45,17 @@ pub enum SelectionType {
     Building,
 }
 
+impl Clone for SelectionType {
+    fn clone(&self) -> Self {
+        match self {
+            Self::None => Self::None,
+            Self::Unit => Self::Unit,
+            Self::Construction => Self::Construction,
+            Self::Building => Self::Building,
+        }
+    }
+}
+
 #[derive(Resource)]
 pub struct SelectionState(pub SelectionType);
 
@@ -60,7 +71,6 @@ fn select_entities(
     mut selected_units: ResMut<SelectedUnits>,
     mut selected_structures: ResMut<SelectedStructures>,
     mut producer_selection: ResMut<ProducerSelection>,
-    mut selection_state: ResMut<SelectionState>,
     mut selection_state_changed: EventWriter<SelectionStateChanged>,
 ) {
     for box_selection in reader.read() {
