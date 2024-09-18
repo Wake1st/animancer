@@ -364,7 +364,6 @@ fn display_producer_ui(
 ) {
     for _ in display_producer_ui.read() {
         for mut style in &mut producer_ui_query {
-            info!("display producer ui");
             style.display = Display::Flex;
         }
     }
@@ -376,7 +375,6 @@ fn remove_producer_ui(
 ) {
     for _ in remove_producer_ui.read() {
         for mut style in &mut producer_ui_query {
-            info!("remove producer ui");
             style.display = Display::None;
         }
     }

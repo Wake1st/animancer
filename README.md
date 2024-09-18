@@ -22,6 +22,7 @@
 - [x] buildings are constructed before existing
 - [x] user can see a silhouette of the building to be constructed
 - [x] user can assign selected units to "construct" buildings
-- [ ] user can assign new units to construction site
-- [ ] user can remove units from construction site
+- [x] user can assign new units to construction site
+- [x] not needed ~user can remove units from construction site~
 - [ ] user can direct units to generate "faith" (currency)
+- [ ] needs to reorg the inputs and selection states (things are messy, and difficult to expand upon)
