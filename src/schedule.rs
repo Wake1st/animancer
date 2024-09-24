@@ -11,6 +11,8 @@ impl Plugin for SchedulePlugin {
             (
                 InGameSet::UIInput,
                 InGameSet::UserInput,
+                InGameSet::SelectionState,
+                InGameSet::ProcessUserAction,
                 InGameSet::EntityUpdates,
             )
                 .chain()
@@ -23,5 +25,7 @@ impl Plugin for SchedulePlugin {
 pub enum InGameSet {
     UIInput,
     UserInput,
+    SelectionState,
+    ProcessUserAction,
     EntityUpdates,
 }
