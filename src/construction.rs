@@ -154,7 +154,7 @@ fn set_working_units(
         }
 
         //	swap the assigned units to working units
-        for (index, entity) in swapping.iter() {
+        for (index, entity) in swapping.iter().rev() {
             site.working_units.push(*entity);
             site.assigned_units.remove(*index);
         }
