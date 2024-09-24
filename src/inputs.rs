@@ -31,7 +31,7 @@ impl Plugin for InputPlugin {
         )
         .add_systems(
             Update,
-            (handle_click, handle_mouse_wheel).in_set(InGameSet::UserInput),
+            (handle_click, handle_mouse_wheel, set_selection_state).in_set(InGameSet::UserInput),
         )
         .insert_resource(BoxSelector {
             selecting: false,
@@ -122,7 +122,6 @@ fn handle_click(
     mut post_spawn_markers: Query<&mut PostSpawnMarker>,
     mut faith: ResMut<Faith>,
     selection_state: Res<SelectionState>,
-    mut selection_state_changed: EventWriter<SelectionStateChanged>,
     mut unit_action: EventWriter<UnitAction>,
 ) {
     //  ensure cursor is not hovered over ui
@@ -188,10 +187,6 @@ fn handle_click(
                     direction: Vec2::ZERO,
                     formation: Formation::Ringed,
                 });
-            } else if mouse_button_input.just_released(MouseButton::Right) {
-                selection_state_changed.send(SelectionStateChanged {
-                    new_type: SelectionType::Unit,
-                });
             }
         }
         SelectionType::Building => {
@@ -210,10 +205,6 @@ fn handle_click(
             } else if mouse_button_input.pressed(MouseButton::Left)
                 || mouse_button_input.just_released(MouseButton::Left)
             {
-                selection_state_changed.send(SelectionStateChanged {
-                    new_type: SelectionType::None,
-                });
-
                 click_selection(
                     pos,
                     &mouse_button_input,
@@ -222,6 +213,38 @@ fn handle_click(
                 );
             }
         }
+    }
+}
+
+fn set_selection_state(
+    current_ui: Res<CurrentUI>,
+    mouse_button_input: Res<ButtonInput<MouseButton>>,
+    selection_state: Res<SelectionState>,
+    mut selection_state_changed: EventWriter<SelectionStateChanged>,
+) {
+    //  ensure cursor is not hovered over ui
+    if current_ui.focused {
+        return;
+    }
+
+    match selection_state.0 {
+        SelectionType::Construction => {
+            if mouse_button_input.just_released(MouseButton::Right) {
+                selection_state_changed.send(SelectionStateChanged {
+                    new_type: SelectionType::Unit,
+                });
+            }
+        }
+        SelectionType::Building => {
+            if mouse_button_input.pressed(MouseButton::Left)
+                || mouse_button_input.just_released(MouseButton::Left)
+            {
+                selection_state_changed.send(SelectionStateChanged {
+                    new_type: SelectionType::None,
+                });
+            }
+        }
+        _ => (),
     }
 }
 
