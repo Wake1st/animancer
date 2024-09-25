@@ -219,8 +219,11 @@ fn handle_click(
 fn set_selection_state(
     current_ui: Res<CurrentUI>,
     mouse_button_input: Res<ButtonInput<MouseButton>>,
+    keys: Res<ButtonInput<KeyCode>>,
     selection_state: Res<SelectionState>,
     mut selection_state_changed: EventWriter<SelectionStateChanged>,
+    faith: Res<Faith>,
+    build_selection: ResMut<BuildSelection>,
 ) {
     //  ensure cursor is not hovered over ui
     if current_ui.focused {
@@ -230,6 +233,13 @@ fn set_selection_state(
     match selection_state.0 {
         SelectionType::Construction => {
             if mouse_button_input.just_released(MouseButton::Right) {
+                selection_state_changed.send(SelectionStateChanged {
+                    new_type: SelectionType::Unit,
+                });
+            } else if mouse_button_input.just_pressed(MouseButton::Left)
+                && faith.value > build_selection.cost
+                && !keys.pressed(KeyCode::ShiftLeft)
+            {
                 selection_state_changed.send(SelectionStateChanged {
                     new_type: SelectionType::Unit,
                 });
