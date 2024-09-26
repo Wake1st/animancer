@@ -31,7 +31,9 @@ impl Plugin for InputPlugin {
         )
         .add_systems(
             Update,
-            (handle_click, handle_mouse_wheel, set_selection_state).in_set(InGameSet::UserInput),
+            ((handle_click, handle_mouse_wheel), set_selection_state)
+                .chain()
+                .in_set(InGameSet::UserInput),
         )
         .insert_resource(BoxSelector {
             selecting: false,
@@ -170,7 +172,7 @@ fn handle_click(
             }
         }
         SelectionType::Construction => {
-            if mouse_button_input.just_pressed(MouseButton::Left)
+            if mouse_button_input.just_released(MouseButton::Left)
                 && faith.value > build_selection.cost
             {
                 faith.value -= build_selection.cost;
@@ -232,14 +234,12 @@ fn set_selection_state(
 
     match selection_state.0 {
         SelectionType::Construction => {
-            if mouse_button_input.just_released(MouseButton::Right) {
-                selection_state_changed.send(SelectionStateChanged {
-                    new_type: SelectionType::Unit,
-                });
-            } else if mouse_button_input.just_pressed(MouseButton::Left)
+            let deselect_construction = mouse_button_input.just_released(MouseButton::Right);
+            let place_structure = mouse_button_input.just_released(MouseButton::Left)
                 && faith.value > build_selection.cost
-                && !keys.pressed(KeyCode::ShiftLeft)
-            {
+                && !keys.pressed(KeyCode::ShiftLeft);
+
+            if deselect_construction || place_structure {
                 selection_state_changed.send(SelectionStateChanged {
                     new_type: SelectionType::Unit,
                 });

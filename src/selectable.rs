@@ -43,7 +43,7 @@ pub struct SelectedStructures {
     pub entities: Vec<Entity>,
 }
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Debug)]
 pub enum SelectionType {
     None,
     Unit,
@@ -128,6 +128,7 @@ fn select_entities(
             });
         } else {
             producer_selection.is_selected = false;
+            info!("nothing selected");
             selection_state_changed.send(SelectionStateChanged {
                 new_type: SelectionType::None,
             });

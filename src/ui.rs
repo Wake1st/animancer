@@ -77,6 +77,7 @@ pub struct WorkerUI {}
 #[derive(Component)]
 pub struct ProducerUI {}
 
+#[derive(Debug)]
 pub enum UIType {
     None,
     Worker,
