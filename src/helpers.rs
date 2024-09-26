@@ -5,9 +5,9 @@ use bevy::{
 };
 
 use crate::{
-    faith::Faith,
     inputs::{BoxSelector, BuildSelection, ProducerSelection, UnitAim},
     movement::Formation,
+    currency::Faith,
     selectable::{SelectionState, SelectionType},
     structure::StructureType,
     ui::{CurrentUI, UIType},

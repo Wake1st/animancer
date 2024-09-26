@@ -7,7 +7,7 @@ use bevy::{
 };
 
 use crate::{
-    faith::Faith,
+    currency::Faith,
     inputs::BuildSelection,
     producer::{DisplayProducerUI, Producer, RemoveProducerUI},
     schedule::InGameSet,

@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{faith::Faith, structure::Structure};
+use crate::{currency::Faith, structure::Structure};
 
 pub struct GeneratorPlugin;
 

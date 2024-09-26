@@ -1,8 +1,8 @@
 use bevy::prelude::*;
 
-pub struct FaithPlugin;
+pub struct CurrencyPlugin;
 
-impl Plugin for FaithPlugin {
+impl Plugin for CurrencyPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(Faith { value: 500.0 });
     }

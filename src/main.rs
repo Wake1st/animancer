@@ -1,6 +1,6 @@
 mod camera;
 mod construction;
-mod faith;
+mod currency;
 mod generator;
 mod helpers;
 mod inputs;
@@ -19,7 +19,7 @@ use bevy::{log::LogPlugin, prelude::*, window::WindowMode};
 
 use camera::CameraPlugin;
 use construction::ConstructionPlugin;
-use faith::FaithPlugin;
+use currency::CurrencyPlugin;
 use generator::GeneratorPlugin;
 use helpers::HelperPlugin;
 use inputs::InputPlugin;
@@ -67,7 +67,7 @@ fn main() {
             ConstructionPlugin,
             GeneratorPlugin,
             ProducerPlugin,
-            FaithPlugin,
+            CurrencyPlugin,
             WorkerPlugin,
         ))
         .add_plugins((TestScenePlugin, HelperPlugin))

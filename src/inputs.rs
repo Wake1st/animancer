@@ -4,7 +4,7 @@ use bevy::{input::mouse::MouseWheel, math::vec3, prelude::*};
 
 use crate::{
     construction::PlaceConstructionSite,
-    faith::Faith,
+    currency::Faith,
     movement::{Formation, UnitMovement},
     producer::{PostSpawnMarker, Producer},
     schedule::InGameSet,
