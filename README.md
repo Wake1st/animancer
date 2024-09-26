@@ -25,5 +25,5 @@
 - [x] user can assign new units to construction site
 - [x] not needed ~user can remove units from construction site~
 - [x] user should be able to place one building with left click, or hold shift + click to plant another
-- [ ] user can direct units to generate "faith" (currency)
+- [x] user can direct units to generate "faith" (currency)
 - [ ] needs to reorg the inputs and selection states (things are messy, and difficult to expand upon)

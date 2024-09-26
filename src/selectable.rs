@@ -1,7 +1,8 @@
 use bevy::{math::vec2, prelude::*};
 
 use crate::{
-    construction::{AssignWorkers, ConstructionSite},
+    construction::{AssignConstructionWorkers, ConstructionSite},
+    generator::{AssignGeneratorWorkers, Generator},
     inputs::ProducerSelection,
     structure::Structure,
     unit::{Unit, UnitAction},
@@ -128,7 +129,6 @@ fn select_entities(
             });
         } else {
             producer_selection.is_selected = false;
-            info!("nothing selected");
             selection_state_changed.send(SelectionStateChanged {
                 new_type: SelectionType::None,
             });
@@ -139,7 +139,9 @@ fn select_entities(
 fn unit_action_selection(
     mut unit_action: EventReader<UnitAction>,
     sites: Query<(Entity, &Transform, &Selectable), With<ConstructionSite>>,
-    mut assign_worker: EventWriter<AssignWorkers>,
+    mut assign_construction_worker: EventWriter<AssignConstructionWorkers>,
+    generators: Query<(Entity, &Transform, &Selectable), With<Generator>>,
+    mut assign_generator_workers: EventWriter<AssignGeneratorWorkers>,
     selected_units: Res<SelectedUnits>,
 ) {
     for action in unit_action.read() {
@@ -147,9 +149,20 @@ fn unit_action_selection(
             let structure_pos = vec2(transfrom.translation.x, transfrom.translation.y);
             let structure_rect = Rect::from_center_size(structure_pos, selectable.size);
             if structure_rect.contains(action.position) {
-                assign_worker.send(AssignWorkers {
+                assign_construction_worker.send(AssignConstructionWorkers {
                     site: entity,
                     units: selected_units.entities.clone(),
+                });
+            }
+        }
+
+        for (entity, transfrom, selectable) in generators.iter() {
+            let structure_pos = vec2(transfrom.translation.x, transfrom.translation.y);
+            let structure_rect = Rect::from_center_size(structure_pos, selectable.size);
+            if structure_rect.contains(action.position) {
+                assign_generator_workers.send(AssignGeneratorWorkers {
+                    generator: entity,
+                    workers: selected_units.entities.clone(),
                 });
             }
         }

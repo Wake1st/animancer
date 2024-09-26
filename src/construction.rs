@@ -29,7 +29,7 @@ impl Plugin for ConstructionPlugin {
                 .in_set(InGameSet::EntityUpdates),
         )
         .add_event::<PlaceConstructionSite>()
-        .add_event::<AssignWorkers>();
+        .add_event::<AssignConstructionWorkers>();
     }
 }
 
@@ -49,7 +49,7 @@ pub struct PlaceConstructionSite {
 }
 
 #[derive(Event)]
-pub struct AssignWorkers {
+pub struct AssignConstructionWorkers {
     pub site: Entity,
     pub units: Vec<Entity>,
 }
@@ -93,7 +93,7 @@ fn place_structure(
 }
 
 fn assign_new_workers(
-    mut assign_workers: EventReader<AssignWorkers>,
+    mut assign_workers: EventReader<AssignConstructionWorkers>,
     mut sites: Query<&mut ConstructionSite>,
 ) {
     for assignment in assign_workers.read() {

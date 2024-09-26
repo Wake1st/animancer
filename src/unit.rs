@@ -34,7 +34,7 @@ fn spawn_worker(
                 ..default()
             },
             Unit {},
-            Worker {},
+            Worker { effort: 1.5 },
             Moveable {
                 speed: 100.0,
                 location: event.location,
