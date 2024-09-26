@@ -26,4 +26,9 @@
 - [x] not needed ~user can remove units from construction site~
 - [x] user should be able to place one building with left click, or hold shift + click to plant another
 - [x] user can direct units to generate "faith" (currency)
+- [ ] user should be able to see unit generation in the ui
+- [ ] user should be able to see the building silhouette of a building before placing it
+- [ ] navmesh 
+  - [ ] effect unit movement
+  - [ ] be effected by buildings
 - [ ] needs to reorg the inputs and selection states (things are messy, and difficult to expand upon)
