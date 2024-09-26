@@ -7,7 +7,6 @@ use bevy::{
 
 use crate::selectable::SelectedUnits;
 
-const LOCATION_CLOSENESS: f32 = 1.0;
 const UNIT_BUFFER: f32 = 40.0;
 const LINE_STRENGTH_SCALE: f32 = 2.4;
 const RINGED_STRENGTH_SCALE: f32 = 0.9;
@@ -17,19 +16,24 @@ pub struct MovementPlugin;
 
 impl Plugin for MovementPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, (set_moveable_location, move_unit))
-            .add_event::<UnitMovement>();
+        app.add_systems(
+            Update,
+            (
+                set_moveable_location,
+                // move_unit
+            ),
+        )
+        .add_event::<SetUnitPosition>();
     }
 }
 
 #[derive(Component, Default)]
 pub struct Moveable {
-    pub speed: f32,
     pub location: Vec3,
 }
 
 #[derive(Event)]
-pub struct UnitMovement {
+pub struct SetUnitPosition {
     pub position: Vec2,
     pub direction: Vec2,
     pub formation: Formation,
@@ -58,7 +62,7 @@ impl Clone for Formation {
 }
 
 fn set_moveable_location(
-    mut reader: EventReader<UnitMovement>,
+    mut reader: EventReader<SetUnitPosition>,
     mut query: Query<&mut Moveable>,
     selected: Res<SelectedUnits>,
 ) {
@@ -163,11 +167,11 @@ fn set_moveable_location(
     }
 }
 
-fn move_unit(mut query: Query<(&mut Transform, &Moveable)>, time: Res<Time>) {
-    for (mut transform, moveable) in query.iter_mut() {
-        if transform.translation.distance(moveable.location) > LOCATION_CLOSENESS {
-            let direction = (moveable.location - transform.translation).normalize();
-            transform.translation += direction * moveable.speed * time.delta_seconds();
-        };
-    }
-}
+// fn move_unit(mut query: Query<(&mut Transform, &Moveable)>, time: Res<Time>) {
+//     for (mut transform, moveable) in query.iter_mut() {
+//         if transform.translation.distance(moveable.location) > LOCATION_CLOSENESS {
+//             let direction = (moveable.location - transform.translation).normalize();
+//             transform.translation += direction * moveable.speed * time.delta_seconds();
+//         };
+//     }
+// }

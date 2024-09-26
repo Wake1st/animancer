@@ -6,6 +6,7 @@ use bevy::{
 use crate::{
     generator::Generator,
     movement::Moveable,
+    nav_agent::Navigator,
     producer::{PostSpawnMarker, Producer, SPAWN_OFFSET},
     selectable::Selectable,
     structure::{
@@ -36,12 +37,12 @@ fn spawn_hero(mut commands: Commands, asset_server: Res<AssetServer>) {
         Unit {},
         Worker { effort: 4.5 },
         Moveable {
-            speed: 100.0,
             location: Vec3::ZERO,
         },
         Selectable {
             size: vec2(32., 32.),
         },
+        Navigator { speed: 120.0 },
         Name::new("Hero"),
     ));
 }
@@ -60,13 +61,11 @@ fn spawn_workers(mut commands: Commands, asset_server: Res<AssetServer>) {
             },
             Unit {},
             Worker { effort: 1.5 },
-            Moveable {
-                speed: 100.0,
-                location: position,
-            },
+            Moveable { location: position },
             Selectable {
                 size: vec2(32., 32.),
             },
+            Navigator { speed: 100.0 },
             Name::new("Worker"),
         ));
     }

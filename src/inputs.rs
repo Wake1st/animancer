@@ -5,7 +5,7 @@ use bevy::{input::mouse::MouseWheel, math::vec3, prelude::*};
 use crate::{
     construction::PlaceConstructionSite,
     currency::Faith,
-    movement::{Formation, UnitMovement},
+    movement::{Formation, SetUnitPosition},
     producer::{PostSpawnMarker, Producer},
     schedule::InGameSet,
     selectable::{
@@ -116,7 +116,7 @@ fn handle_click(
     mut box_selector: ResMut<BoxSelector>,
     mut unit_aim: ResMut<UnitAim>,
     box_selection_writer: EventWriter<BoxSelection>,
-    mut movement_writer: EventWriter<UnitMovement>,
+    mut movement_writer: EventWriter<SetUnitPosition>,
     build_selection: ResMut<BuildSelection>,
     mut place_construction_site: EventWriter<PlaceConstructionSite>,
     selected_structures: Res<SelectedStructures>,
@@ -160,7 +160,7 @@ fn handle_click(
                     unit_aim.current = pos;
                 }
             } else if mouse_button_input.just_released(MouseButton::Right) && unit_aim.aiming {
-                movement_writer.send(UnitMovement {
+                movement_writer.send(SetUnitPosition {
                     position: unit_aim.start,
                     direction: unit_aim.current - unit_aim.start,
                     formation: box_selector.formation.clone(),
@@ -184,9 +184,9 @@ fn handle_click(
                 });
 
                 //  ensure units move to build
-                movement_writer.send(UnitMovement {
+                movement_writer.send(SetUnitPosition {
                     position: pos,
-                    direction: Vec2::ZERO,
+                    direction: Vec2::ONE * 60.0,
                     formation: Formation::Ringed,
                 });
             }

@@ -5,6 +5,7 @@ mod generator;
 mod helpers;
 mod inputs;
 mod movement;
+mod nav_agent;
 mod producer;
 mod schedule;
 mod selectable;
@@ -15,7 +16,7 @@ mod ui;
 mod unit;
 mod worker;
 
-use bevy::{log::LogPlugin, prelude::*, window::WindowMode};
+use bevy::{log::LogPlugin, prelude::*, render::primitives::Aabb, window::WindowMode};
 
 use camera::CameraPlugin;
 use construction::ConstructionPlugin;
@@ -24,6 +25,7 @@ use generator::GeneratorPlugin;
 use helpers::HelperPlugin;
 use inputs::InputPlugin;
 use movement::MovementPlugin;
+use nav_agent::{NavAgentPlugin, Obstacle};
 use producer::ProducerPlugin;
 use schedule::SchedulePlugin;
 use selectable::SelectablePlugin;
@@ -32,6 +34,7 @@ use structure::StructurePlugin;
 use test_scene::TestScenePlugin;
 use ui::UIPlugin;
 use unit::UnitPlugin;
+use vleue_navigator::{prelude::NavmeshUpdaterPlugin, VleueNavigatorPlugin};
 use worker::WorkerPlugin;
 
 fn main() {
@@ -54,6 +57,14 @@ fn main() {
                 })
                 .build(),
         )
+        .add_plugins((
+            VleueNavigatorPlugin,
+            // Auto update the navmesh.
+            // Obstacles will be entities with the `Obstacle` marker component,
+            // and use the `Aabb` component as the obstacle data source.
+            NavmeshUpdaterPlugin::<Aabb, Obstacle>::default(),
+            NavAgentPlugin,
+        ))
         .add_plugins((
             StatePlugin,
             SchedulePlugin,

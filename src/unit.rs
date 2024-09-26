@@ -1,6 +1,11 @@
 use bevy::{math::vec2, prelude::*};
 
-use crate::{movement::Moveable, producer::ProduceWorker, selectable::Selectable, worker::Worker};
+use crate::{
+    movement::Moveable, nav_agent::Navigator, producer::ProduceWorker, selectable::Selectable,
+    worker::Worker,
+};
+
+const WORKER_SPEED: f32 = 100.0;
 
 pub struct UnitPlugin;
 
@@ -36,11 +41,13 @@ fn spawn_worker(
             Unit {},
             Worker { effort: 1.5 },
             Moveable {
-                speed: 100.0,
                 location: event.location,
             },
             Selectable {
                 size: vec2(32., 32.),
+            },
+            Navigator {
+                speed: WORKER_SPEED,
             },
             Name::new("Worker"),
         ));
