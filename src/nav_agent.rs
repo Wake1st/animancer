@@ -1,16 +1,17 @@
-use bevy::{color::palettes, prelude::*};
+use bevy::{color::palettes, math::vec2, prelude::*};
 use vleue_navigator::prelude::*;
 
 use crate::movement::Moveable;
 
-const MESH_WIDTH: u32 = 15;
-const MESH_HEIGHT: u32 = 10;
+const MESH_WIDTH: u32 = 1680;
+const MESH_HEIGHT: u32 = 840;
+const FACTOR: f32 = 1.0;
 
 pub struct NavAgentPlugin;
 
 impl Plugin for NavAgentPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(
+        app.add_systems(Startup, spawn_navmesh).add_systems(
             Update,
             (
                 give_target_to_navigator::<10, MESH_WIDTH, MESH_HEIGHT>,
@@ -37,7 +38,32 @@ pub struct Path {
     target: Entity,
 }
 
-pub fn give_target_to_navigator<const SIZE: u32, const X: u32, const Y: u32>(
+fn spawn_navmesh(mut commands: Commands) {
+    commands.spawn(NavMeshBundle {
+        settings: NavMeshSettings {
+            // Define the outer borders of the navmesh.
+            fixed: Triangulation::from_outer_edges(&[
+                vec2(0.0, 0.0),
+                vec2(MESH_WIDTH as f32, 0.0),
+                vec2(MESH_WIDTH as f32, MESH_HEIGHT as f32),
+                vec2(0.0, MESH_HEIGHT as f32),
+            ]),
+            ..default()
+        },
+        // Mark it for update as soon as obstacles are changed.
+        // Other modes can be debounced or manually triggered.
+        update_mode: NavMeshUpdateMode::Direct,
+        transform: Transform::from_translation(Vec3::new(
+            -(MESH_WIDTH as f32) / 2.0 * FACTOR,
+            -(MESH_HEIGHT as f32) / 2.0 * FACTOR,
+            0.0,
+        ))
+        .with_scale(Vec3::splat(FACTOR)),
+        ..NavMeshBundle::with_default_id()
+    });
+}
+
+fn give_target_to_navigator<const SIZE: u32, const X: u32, const Y: u32>(
     mut commands: Commands,
     navigator: Query<(Entity, &Transform, &Moveable), (With<Navigator>, Without<Path>)>,
     navmeshes: Res<Assets<NavMesh>>,
@@ -49,11 +75,13 @@ pub fn give_target_to_navigator<const SIZE: u32, const X: u32, const Y: u32>(
         };
 
         //	Check if movement position is in mesh
+        // info!("move: {:?}", moveable.location.xy());
         if !navmesh.is_in_mesh(moveable.location.xy()) {
             continue;
         }
 
         //	Create a path that the mesh understands
+        // info!("checking path");
         let Some(path) = navmesh.transformed_path(
             transform.translation.xyz(),
             navmesh.transform().transform_point(moveable.location),
@@ -63,6 +91,7 @@ pub fn give_target_to_navigator<const SIZE: u32, const X: u32, const Y: u32>(
         };
 
         //	Setting the path
+        info!("set the path");
         if let Some((first, remaining)) = path.path.split_first() {
             let mut remaining = remaining.iter().map(|p| p.xy()).collect::<Vec<_>>();
 
@@ -90,7 +119,7 @@ pub fn give_target_to_navigator<const SIZE: u32, const X: u32, const Y: u32>(
     }
 }
 
-pub fn refresh_path<const SIZE: u32, const X: u32, const Y: u32>(
+fn refresh_path<const SIZE: u32, const X: u32, const Y: u32>(
     mut commands: Commands,
     mut navigator: Query<(Entity, &Transform, &mut Path), With<Navigator>>,
     mut navmeshes: ResMut<Assets<NavMesh>>,
@@ -135,7 +164,7 @@ pub fn refresh_path<const SIZE: u32, const X: u32, const Y: u32>(
     }
 }
 
-pub fn move_navigator(
+fn move_navigator(
     mut commands: Commands,
     mut navigator: Query<(&mut Transform, &mut Path, Entity, &Navigator)>,
     time: Res<Time>,
@@ -156,7 +185,7 @@ pub fn move_navigator(
     }
 }
 
-pub fn display_navigator_path(navigator: Query<(&Transform, &Path)>, mut gizmos: Gizmos) {
+fn display_navigator_path(navigator: Query<(&Transform, &Path)>, mut gizmos: Gizmos) {
     let Ok((transform, path)) = navigator.get_single() else {
         return;
     };

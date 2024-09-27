@@ -1,6 +1,7 @@
-use bevy::{math::vec3, prelude::*};
+use bevy::{prelude::*, render::primitives::Aabb};
 
 use crate::{
+    nav_agent::Obstacle,
     schedule::InGameSet,
     selectable::{Selectable, SelectedUnits},
     structure::{
@@ -66,7 +67,7 @@ fn place_structure(
             StructureType::WorkerProducer => WORKER_PRODUCER_ASSET_PATH,
         });
 
-        let pos_3d = vec3(placement.position.x, placement.position.y, 0.0);
+        let pos_3d = placement.position.extend(0.0);
 
         commands.spawn((
             SpriteBundle {
@@ -78,6 +79,11 @@ fn place_structure(
                 transform: Transform::from_translation(pos_3d),
                 ..default()
             },
+            Obstacle,
+            Aabb::from_min_max(
+                Vec3::new(-SELECTION_SIZE.x, -SELECTION_SIZE.y, 0.0),
+                Vec3::new(SELECTION_SIZE.x, SELECTION_SIZE.y, 0.0),
+            ),
             ConstructionSite {
                 structure_type: placement.structure_type.clone(),
                 effort: placement.effort,

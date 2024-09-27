@@ -1,12 +1,13 @@
 use bevy::{
     math::{vec2, vec3},
     prelude::*,
+    render::primitives::Aabb,
 };
 
 use crate::{
     generator::Generator,
     movement::Moveable,
-    nav_agent::Navigator,
+    nav_agent::{Navigator, Obstacle},
     producer::{PostSpawnMarker, Producer, SPAWN_OFFSET},
     selectable::Selectable,
     structure::{
@@ -83,6 +84,11 @@ fn spawn_structures(asset_server: Res<AssetServer>, mut commands: Commands) {
             transform: Transform::from_translation(spawn_position_base),
             ..default()
         },
+        Obstacle,
+        Aabb::from_min_max(
+            Vec3::new(-SELECTION_SIZE.x, -SELECTION_SIZE.y, 0.0),
+            Vec3::new(SELECTION_SIZE.x, SELECTION_SIZE.y, 0.0),
+        ),
         Structure {},
         Generator { ..default() },
         Selectable {
@@ -101,6 +107,11 @@ fn spawn_structures(asset_server: Res<AssetServer>, mut commands: Commands) {
                 transform: Transform::from_translation(spawn_position_base),
                 ..default()
             },
+            Obstacle,
+            Aabb::from_min_max(
+                Vec3::new(-SELECTION_SIZE.x, -SELECTION_SIZE.y, 0.0),
+                Vec3::new(SELECTION_SIZE.x, SELECTION_SIZE.y, 0.0),
+            ),
             Structure {},
             Producer {
                 post_spawn_location: spawn_position_base + SPAWN_OFFSET,

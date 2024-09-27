@@ -67,6 +67,8 @@ fn set_moveable_location(
     selected: Res<SelectedUnits>,
 ) {
     for unit_movement in reader.read() {
+        info!("clicked at: {:?}", unit_movement.position);
+
         let unit_count = selected.entities.len() as f32;
         let (aim_angle, strength) = match unit_movement.direction {
             Vec2::ZERO => (0.0, UNIT_BUFFER),
@@ -166,12 +168,3 @@ fn set_moveable_location(
         }
     }
 }
-
-// fn move_unit(mut query: Query<(&mut Transform, &Moveable)>, time: Res<Time>) {
-//     for (mut transform, moveable) in query.iter_mut() {
-//         if transform.translation.distance(moveable.location) > LOCATION_CLOSENESS {
-//             let direction = (moveable.location - transform.translation).normalize();
-//             transform.translation += direction * moveable.speed * time.delta_seconds();
-//         };
-//     }
-// }

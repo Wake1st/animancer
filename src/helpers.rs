@@ -1,13 +1,19 @@
 use bevy::{
-    color::palettes::tailwind::{GRAY_100, GREEN_300},
+    color::palettes::{
+        self,
+        tailwind::{GRAY_100, GREEN_300},
+    },
     math::vec2,
     prelude::*,
+    sprite::MaterialMesh2dBundle,
+    window::WindowResized,
 };
+use vleue_navigator::{prelude::NavMeshStatus, NavMesh};
 
 use crate::{
+    currency::Faith,
     inputs::{BoxSelector, BuildSelection, ProducerSelection, UnitAim},
     movement::Formation,
-    currency::Faith,
     selectable::{SelectionState, SelectionType},
     structure::StructureType,
     ui::{CurrentUI, UIType},
@@ -18,7 +24,15 @@ pub struct HelperPlugin;
 impl Plugin for HelperPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, setup_debug_helper_text)
-            .add_systems(Update, (draw_box_selection, draw_unit_aim, debug_text));
+            .add_systems(
+                Update,
+                (
+                    draw_box_selection,
+                    draw_unit_aim,
+                    debug_text,
+                    // display_mesh
+                ),
+            );
     }
 }
 
@@ -124,4 +138,48 @@ fn debug_text(
         })
         .to_string();
     }
+}
+
+fn display_mesh(
+    mut commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    navmeshes: Res<Assets<NavMesh>>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
+    mut current_mesh_entity: Local<Option<Entity>>,
+    window_resized: EventReader<WindowResized>,
+    navmesh: Query<(&Handle<NavMesh>, Ref<NavMeshStatus>)>,
+) {
+    let (navmesh_handle, status) = navmesh.single();
+    if (!status.is_changed() || *status != NavMeshStatus::Built) && window_resized.is_empty() {
+        return;
+    }
+
+    let Some(navmesh) = navmeshes.get(navmesh_handle) else {
+        return;
+    };
+    if let Some(entity) = *current_mesh_entity {
+        commands.entity(entity).despawn_recursive();
+    }
+
+    *current_mesh_entity = Some(
+        commands
+            .spawn(MaterialMesh2dBundle {
+                mesh: meshes.add(navmesh.to_mesh()).into(),
+                material: materials.add(ColorMaterial::from(Color::Srgba(
+                    palettes::tailwind::BLUE_800,
+                ))),
+                ..default()
+            })
+            .with_children(|main_mesh| {
+                main_mesh.spawn(MaterialMesh2dBundle {
+                    mesh: meshes.add(navmesh.to_wireframe_mesh()).into(),
+                    transform: Transform::from_translation(Vec3::new(0.0, 0.0, 11.1)),
+                    material: materials.add(ColorMaterial::from(Color::Srgba(
+                        palettes::tailwind::TEAL_300,
+                    ))),
+                    ..default()
+                });
+            })
+            .id(),
+    );
 }

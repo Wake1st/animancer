@@ -1,7 +1,8 @@
-use bevy::{math::vec2, prelude::*};
+use bevy::{math::vec2, prelude::*, render::primitives::Aabb};
 
 use crate::{
     generator::Generator,
+    nav_agent::Obstacle,
     producer::{PostSpawnMarker, Producer, SPAWN_OFFSET},
     schedule::InGameSet,
     selectable::Selectable,
@@ -70,6 +71,11 @@ fn spawn_structure(
                         transform: Transform::from_translation(place.position),
                         ..default()
                     },
+                    Obstacle,
+                    Aabb::from_min_max(
+                        Vec3::new(-SELECTION_SIZE.x, -SELECTION_SIZE.y, 0.0),
+                        Vec3::new(SELECTION_SIZE.x, SELECTION_SIZE.y, 0.0),
+                    ),
                     Structure {},
                     Generator { ..default() },
                     Selectable {
@@ -86,6 +92,11 @@ fn spawn_structure(
                             transform: Transform::from_translation(place.position),
                             ..default()
                         },
+                        Obstacle,
+                        Aabb::from_min_max(
+                            Vec3::new(-SELECTION_SIZE.x, -SELECTION_SIZE.y, 0.0),
+                            Vec3::new(SELECTION_SIZE.x, SELECTION_SIZE.y, 0.0),
+                        ),
                         Structure {},
                         Producer {
                             post_spawn_location: place.position + SPAWN_OFFSET,
