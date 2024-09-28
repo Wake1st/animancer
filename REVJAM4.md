@@ -5,3 +5,37 @@
     - [ ] menu theme
     - [ ] ambient
     - [ ] battle (should match the ambient when fading in/out)
+- [ ] art
+  - [ ] character art/animations
+    - [ ] hero (types?)
+    - [ ] worker
+    - [ ] fighter
+    - [ ] priest
+  - [ ] buildings
+    - [ ] generator
+    - [ ] producer
+    - [ ] monastery (tech)
+  - [ ] ground
+    - [ ] plain
+    - [ ] resource vein
+    - [ ] rocks
+- [ ] programming 
+  - [ ] fog of war
+  - [ ] needs AI (something simple, ok if it's random and a bit unpredictable)
+  - [ ] map
+    - [ ] general layout
+      - [ ] starting locations
+      - [ ] resources
+      - [ ] obstacles (just stick to cliffs)
+    - [ ] minimap
+  - [ ] combat mechanics
+  - [ ] main menu
+  - [ ] pause menu
+  - [ ] win state
+    - [ ] obliteration (enemy cannot do the following)
+      - [ ] cannot make new units
+      - [ ] no more units
+    - [ ] capture the flag
+      - [ ] hold some number of capture points
+    - [ ] king of the hill
+      - [ ] destroy the enemy hero

@@ -26,8 +26,15 @@
 - [x] not needed ~user can remove units from construction site~
 - [x] user should be able to place one building with left click, or hold shift + click to plant another
 - [x] user can direct units to generate "faith" (currency)
-- [ ] user should be able to see unit generation in the ui
-- [ ] user should be able to see the building silhouette of a building before placing it
 - [x] navmesh [bevy_pathmesh](https://docs.rs/bevy_pathmesh/latest/bevy_pathmesh/)
   - [x] effect unit movement
   - [x] be effected by buildings
+- [ ] user should be able to see the building silhouette of a building before placing it
+- [ ] user should be able to "snap" buildings together if close enough (should have space for unit pass through?)
+- [ ] units should be an `Obstacle` on the nevmesh
+  - [ ] performance is stable
+  - [ ] unit movement is still clean and "flowy"
+- [ ] user should be able to move about a map
+  - [ ] minimap
+  - [ ] actual map, with natural obstacles
+- [ ] user should be able to see unit generation in the ui
