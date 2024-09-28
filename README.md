@@ -30,7 +30,7 @@
   - [x] effect unit movement
   - [x] be effected by buildings
 - [ ] user should be able to see the building silhouette of a building before placing it
-- [ ] user should be able to "snap" buildings together if close enough (should have space for unit pass through?)
+- [ ] user should not be able to layer buildings
 - [ ] units should be an `Obstacle` on the nevmesh
   - [ ] performance is stable
   - [ ] unit movement is still clean and "flowy"
@@ -38,3 +38,5 @@
   - [ ] minimap
   - [ ] actual map, with natural obstacles
 - [ ] user should be able to see unit generation in the ui
+- [ ] user should be able to "snap" buildings together if close enough
+- [ ] user should be able to rotate buildings when placing them

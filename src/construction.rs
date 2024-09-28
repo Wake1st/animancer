@@ -1,9 +1,10 @@
 use bevy::{prelude::*, render::primitives::Aabb};
 
 use crate::{
+    inputs::{BuildSelection, MousePosition},
     nav_agent::Obstacle,
     schedule::InGameSet,
-    selectable::{Selectable, SelectedUnits},
+    selectable::{Selectable, SelectedUnits, SelectionStateChanged, SelectionType},
     structure::{
         PlaceStructure, StructureType, SELECTION_SIZE, SIMPLE_SHRINE_ASSET_PATH,
         WORKER_PRODUCER_ASSET_PATH,
@@ -20,6 +21,8 @@ impl Plugin for ConstructionPlugin {
         app.add_systems(
             Update,
             (
+                display_construction_silhouette,
+                move_construction_silhouette,
                 place_structure,
                 assign_new_workers,
                 (set_assigned_units, set_working_units).chain(),
@@ -33,6 +36,9 @@ impl Plugin for ConstructionPlugin {
         .add_event::<AssignConstructionWorkers>();
     }
 }
+
+#[derive(Component)]
+pub struct ConstructionSilhouette {}
 
 #[derive(Component)]
 pub struct ConstructionSite {
@@ -53,6 +59,49 @@ pub struct PlaceConstructionSite {
 pub struct AssignConstructionWorkers {
     pub site: Entity,
     pub units: Vec<Entity>,
+}
+
+fn display_construction_silhouette(
+    mut selection_state_updated: EventReader<SelectionStateChanged>,
+    mut silhouettes: Query<Entity, With<ConstructionSilhouette>>,
+    build_selection: Res<BuildSelection>,
+    asset_server: Res<AssetServer>,
+    mut commands: Commands,
+) {
+    for event in selection_state_updated.read() {
+        //  will always need to remove upon change, even if the new state is still construction
+        for entity in silhouettes.iter_mut() {
+            commands.entity(entity).despawn_recursive();
+        }
+
+        if event.new_type == SelectionType::Construction {
+            let texture: Handle<Image> = asset_server.load(match build_selection.structure_type {
+                StructureType::SimpleShrine => SIMPLE_SHRINE_ASSET_PATH,
+                StructureType::WorkerProducer => WORKER_PRODUCER_ASSET_PATH,
+            });
+
+            commands.spawn((
+                SpriteBundle {
+                    texture,
+                    sprite: Sprite {
+                        color: Color::linear_rgba(0.1, 0.4, 0.0, 0.4),
+                        ..default()
+                    },
+                    ..default()
+                },
+                ConstructionSilhouette {},
+            ));
+        }
+    }
+}
+
+fn move_construction_silhouette(
+    mut silhouette: Query<&mut Transform, With<ConstructionSilhouette>>,
+    mouse_position: Res<MousePosition>,
+) {
+    for mut transform in silhouette.iter_mut() {
+        transform.translation = mouse_position.0.extend(0.0);
+    }
 }
 
 fn place_structure(

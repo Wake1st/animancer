@@ -387,7 +387,7 @@ fn build_button_interactions(
         (Changed<Interaction>, With<BuildButton>),
     >,
     mut build_selection: ResMut<BuildSelection>,
-    mut selection_state: ResMut<SelectionState>,
+    mut update_selection_state: EventWriter<SelectionStateChanged>,
 ) {
     for (interaction, mut border_color, button) in &mut interaction_query {
         match *interaction {
@@ -395,8 +395,11 @@ fn build_button_interactions(
                 border_color.0 = Color::Srgba(GREEN_200);
                 build_selection.structure_type = button.structure_type.clone();
                 build_selection.is_selected = true;
-                selection_state.0 = SelectionType::Construction;
                 build_selection.cost = button.cost;
+
+                update_selection_state.send(SelectionStateChanged {
+                    new_type: SelectionType::Construction,
+                });
             }
             Interaction::Hovered => {
                 border_color.0 = Color::Srgba(GRAY_200);
