@@ -12,7 +12,7 @@ use crate::{
 };
 
 const CONSTRUCTION_BOOST: f32 = 20.5;
-const CONSTRUCTION_RANGE: f32 = 80.;
+pub const CONSTRUCTION_RANGE: f32 = 80.;
 pub struct ConstructionPlugin;
 
 impl Plugin for ConstructionPlugin {

@@ -3,7 +3,7 @@ use std::cmp::Ordering;
 use bevy::{input::mouse::MouseWheel, math::vec3, prelude::*};
 
 use crate::{
-    construction::PlaceConstructionSite,
+    construction::{PlaceConstructionSite, CONSTRUCTION_RANGE},
     currency::Faith,
     movement::{Formation, SetUnitPosition},
     producer::{PostSpawnMarker, Producer},
@@ -184,7 +184,7 @@ fn handle_click(
                 //  ensure units move to build
                 movement_writer.send(SetUnitPosition {
                     position: pos,
-                    direction: Vec2::ONE * 60.0,
+                    direction: Vec2::ONE * CONSTRUCTION_RANGE / 2.,
                     formation: Formation::Ringed,
                 });
             }
