@@ -5,7 +5,6 @@ use crate::movement::Moveable;
 
 const MESH_WIDTH: u32 = 1680;
 const MESH_HEIGHT: u32 = 840;
-const FACTOR: f32 = 1.0;
 
 pub struct NavAgentPlugin;
 
@@ -54,11 +53,10 @@ fn spawn_navmesh(mut commands: Commands) {
         // Other modes can be debounced or manually triggered.
         update_mode: NavMeshUpdateMode::Direct,
         transform: Transform::from_translation(Vec3::new(
-            -(MESH_WIDTH as f32) / 2.0 * FACTOR,
-            -(MESH_HEIGHT as f32) / 2.0 * FACTOR,
+            -(MESH_WIDTH as f32) / 2.0,
+            -(MESH_HEIGHT as f32) / 2.0,
             0.0,
-        ))
-        .with_scale(Vec3::splat(FACTOR)),
+        )),
         ..NavMeshBundle::with_default_id()
     });
 }
@@ -73,10 +71,12 @@ fn give_target_to_navigator<const SIZE: u32, const X: u32, const Y: u32>(
         let Some(navmesh) = navmeshes.get(navmesh.single()) else {
             continue;
         };
+        let position = moveable.location
+            + Vec3::new((MESH_WIDTH as f32) / 2.0, (MESH_HEIGHT as f32) / 2.0, 0.0);
 
         //	Check if movement position is in mesh
         // info!("move: {:?}", moveable.location.xy());
-        if !navmesh.is_in_mesh(moveable.location.xy()) {
+        if !navmesh.is_in_mesh(position.xy()) {
             continue;
         }
 
@@ -84,7 +84,7 @@ fn give_target_to_navigator<const SIZE: u32, const X: u32, const Y: u32>(
         // info!("checking path");
         let Some(path) = navmesh.transformed_path(
             transform.translation.xyz(),
-            navmesh.transform().transform_point(moveable.location),
+            navmesh.transform().transform_point(position),
         ) else {
             //	we need some way of handling the no-path scenario
             break;
