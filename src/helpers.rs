@@ -14,6 +14,7 @@ use crate::{
     currency::Faith,
     inputs::{BoxSelector, BuildSelection, ProducerSelection, UnitAim},
     movement::Formation,
+    nav_agent::Path,
     selectable::{SelectionState, SelectionType},
     structure::StructureType,
     ui::{CurrentUI, UIType},
@@ -30,7 +31,8 @@ impl Plugin for HelperPlugin {
                     draw_box_selection,
                     draw_unit_aim,
                     debug_text,
-                    // display_mesh
+                    // display_mesh,
+                    // display_navigator_path,
                 ),
             );
     }
@@ -182,4 +184,17 @@ fn display_mesh(
             })
             .id(),
     );
+}
+
+fn display_navigator_path(navigator: Query<(&Transform, &Path)>, mut gizmos: Gizmos) {
+    let Ok((transform, path)) = navigator.get_single() else {
+        return;
+    };
+    let mut to_display = path.next.clone();
+    to_display.push(path.current);
+    to_display.push(transform.translation.xy());
+    to_display.reverse();
+    if !to_display.is_empty() {
+        gizmos.linestrip_2d(to_display, palettes::css::YELLOW);
+    }
 }

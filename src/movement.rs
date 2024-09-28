@@ -5,7 +5,7 @@ use bevy::{
     prelude::*,
 };
 
-use crate::selectable::SelectedUnits;
+use crate::{nav_agent::AssignNavigatorPath, selectable::SelectedUnits};
 
 const UNIT_BUFFER: f32 = 40.0;
 const LINE_STRENGTH_SCALE: f32 = 2.4;
@@ -65,10 +65,9 @@ fn set_moveable_location(
     mut reader: EventReader<SetUnitPosition>,
     mut query: Query<&mut Moveable>,
     selected: Res<SelectedUnits>,
+    mut nav_path_assigner: EventWriter<AssignNavigatorPath>,
 ) {
     for unit_movement in reader.read() {
-        info!("clicked at: {:?}", unit_movement.position);
-
         let unit_count = selected.entities.len() as f32;
         let (aim_angle, strength) = match unit_movement.direction {
             Vec2::ZERO => (0.0, UNIT_BUFFER),
@@ -89,6 +88,11 @@ fn set_moveable_location(
                             unit_movement.position.y + radius * f32::sin(order * theta + aim_angle),
                             0.0,
                         );
+
+                        nav_path_assigner.send(AssignNavigatorPath {
+                            entity,
+                            location: moveable.location,
+                        });
                     }
                     order += 1.0;
                 }
@@ -123,6 +127,11 @@ fn set_moveable_location(
                                     * f32::sin(aim_angle - PI / 2. + position.to_angle()),
                             0.0,
                         );
+
+                        nav_path_assigner.send(AssignNavigatorPath {
+                            entity,
+                            location: moveable.location,
+                        });
                     }
                     order += 1.0;
                 }
@@ -162,6 +171,11 @@ fn set_moveable_location(
                                     * f32::sin(aim_angle - PI / 2. + position.to_angle()),
                             0.0,
                         );
+
+                        nav_path_assigner.send(AssignNavigatorPath {
+                            entity,
+                            location: moveable.location,
+                        });
                     }
                 }
             }

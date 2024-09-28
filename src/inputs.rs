@@ -152,13 +152,11 @@ fn handle_click(
 
             if mouse_button_input.just_pressed(MouseButton::Right) {
                 unit_action.send(UnitAction { position: pos });
+
+                unit_aim.aiming = true;
+                unit_aim.start = pos;
             } else if mouse_button_input.pressed(MouseButton::Right) {
-                if unit_aim.aiming == false {
-                    unit_aim.aiming = true;
-                    unit_aim.start = pos;
-                } else {
-                    unit_aim.current = pos;
-                }
+                unit_aim.current = pos;
             } else if mouse_button_input.just_released(MouseButton::Right) && unit_aim.aiming {
                 movement_writer.send(SetUnitPosition {
                     position: unit_aim.start,
