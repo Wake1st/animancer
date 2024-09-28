@@ -28,7 +28,6 @@
 - [x] user can direct units to generate "faith" (currency)
 - [ ] user should be able to see unit generation in the ui
 - [ ] user should be able to see the building silhouette of a building before placing it
-- [ ] navmesh [bevy_pathmesh](https://docs.rs/bevy_pathmesh/latest/bevy_pathmesh/)
-  - [ ] effect unit movement
-  - [ ] be effected by buildings
-- [ ] needs to reorg the inputs and selection states (things are messy, and difficult to expand upon)
+- [x] navmesh [bevy_pathmesh](https://docs.rs/bevy_pathmesh/latest/bevy_pathmesh/)
+  - [x] effect unit movement
+  - [x] be effected by buildings
