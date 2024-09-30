@@ -1,4 +1,8 @@
-use bevy::{prelude::*, render::primitives::Aabb};
+use bevy::{
+    math::bounding::{Aabb2d, AabbCast2d, RayCast2d},
+    prelude::*,
+    render::primitives::Aabb,
+};
 
 use crate::{
     inputs::{BuildSelection, MousePosition},
@@ -14,6 +18,9 @@ use crate::{
 
 const CONSTRUCTION_BOOST: f32 = 20.5;
 pub const CONSTRUCTION_RANGE: f32 = 80.;
+const BUILD_APPROVED_COLOR: Color = Color::linear_rgba(0.1, 0.7, 0.0, 0.4);
+const BUILD_DENIED_COLOR: Color = Color::linear_rgba(0.7, 0.1, 0.0, 0.4);
+
 pub struct ConstructionPlugin;
 
 impl Plugin for ConstructionPlugin {
@@ -84,7 +91,7 @@ fn display_construction_silhouette(
                 SpriteBundle {
                     texture,
                     sprite: Sprite {
-                        color: Color::linear_rgba(0.1, 0.4, 0.0, 0.4),
+                        color: Color::linear_rgba(0.1, 0.1, 0.1, 0.2),
                         ..default()
                     },
                     ..default()
@@ -96,11 +103,57 @@ fn display_construction_silhouette(
 }
 
 fn move_construction_silhouette(
-    mut silhouette: Query<&mut Transform, With<ConstructionSilhouette>>,
+    mut silhouettes: Query<&mut Transform, With<ConstructionSilhouette>>,
     mouse_position: Res<MousePosition>,
 ) {
-    for mut transform in silhouette.iter_mut() {
+    for mut transform in silhouettes.iter_mut() {
         transform.translation = mouse_position.0.extend(0.0);
+    }
+}
+
+//  WIP: https://bevyengine.org/examples-webgpu/2d-rendering/bounding-2d/
+fn check_site_validity(
+    mut silhouettes: Query<(&mut Sprite, &GlobalTransform), With<ConstructionSilhouette>>,
+    obstacles: Query<&GlobalTransform, With<Obstacle>>,
+    // mut volumes: Query<(&CurrentVolume, &mut Intersects)>,
+) {
+    for (mut sprite, silhouette_transform) in silhouettes.iter_mut() {
+        sprite.color = BUILD_APPROVED_COLOR;
+
+        let silhouette_aabb = Aabb::from_min_max(
+            Vec3::new(-SELECTION_SIZE.x, -SELECTION_SIZE.y, 0.0),
+            Vec3::new(SELECTION_SIZE.x, SELECTION_SIZE.y, 0.0),
+        );
+
+        for obstacle_transform in obstacles.iter() {
+            let obstacle_position = obstacle_transform.translation().xy();
+
+            let aabb_ray = Ray2d {
+                origin: obstacle_position,
+                direction: Dir2::new_unchecked(
+                    silhouette_transform.translation().xy() - obstacle_position,
+                ),
+            };
+
+            let aabb_cast = AabbCast2d {
+                aabb: Aabb2d::new(Vec2::ZERO, Vec2::splat(15.)),
+                ray: RayCast2d::from_ray(aabb_ray, 300.0),
+            };
+
+            // for (volume, mut intersects) in volumes.iter_mut() {
+            //     let toi = aabb_cast.aabb_collision_at(a);
+
+            //     **intersects = toi.is_some();
+            //     if let Some(toi) = toi {
+            //         gizmos.rect_2d(
+            //             aabb_cast.ray.ray.origin + *aabb_cast.ray.ray.direction * toi,
+            //             0.,
+            //             aabb_cast.aabb.half_size() * 2.,
+            //             LIME,
+            //         );
+            //     }
+            // }
+        }
     }
 }
 

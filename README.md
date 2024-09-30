@@ -29,7 +29,7 @@
 - [x] navmesh [bevy_pathmesh](https://docs.rs/bevy_pathmesh/latest/bevy_pathmesh/)
   - [x] effect unit movement
   - [x] be effected by buildings
-- [ ] user should be able to see the building silhouette of a building before placing it
+- [x] user should be able to see the building silhouette of a building before placing it
 - [ ] user should not be able to layer buildings
 - [ ] units should be an `Obstacle` on the nevmesh
   - [ ] performance is stable
