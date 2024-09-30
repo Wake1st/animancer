@@ -184,7 +184,7 @@ fn handle_click(
                 //  ensure units move to build
                 movement_writer.send(SetUnitPosition {
                     position: pos,
-                    direction: Vec2::ONE * CONSTRUCTION_RANGE / 2.,
+                    direction: Vec2::ONE * CONSTRUCTION_RANGE - 30.0,
                     formation: Formation::Ringed,
                 });
             }
