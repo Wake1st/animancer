@@ -1,5 +1,6 @@
 use bevy::{
-    math::bounding::{Aabb2d, AabbCast2d, RayCast2d},
+    color::palettes::css::LIME,
+    math::bounding::{Aabb2d, AabbCast2d, BoundingVolume, RayCast2d},
     prelude::*,
     render::primitives::Aabb,
 };
@@ -30,6 +31,7 @@ impl Plugin for ConstructionPlugin {
             (
                 display_construction_silhouette,
                 move_construction_silhouette,
+                check_site_validity,
                 place_structure,
                 assign_new_workers,
                 (set_assigned_units, set_working_units).chain(),
@@ -114,7 +116,8 @@ fn move_construction_silhouette(
 //  WIP: https://bevyengine.org/examples-webgpu/2d-rendering/bounding-2d/
 fn check_site_validity(
     mut silhouettes: Query<(&mut Sprite, &GlobalTransform), With<ConstructionSilhouette>>,
-    obstacles: Query<&GlobalTransform, With<Obstacle>>,
+    obstacles: Query<(&GlobalTransform, &Aabb), With<Obstacle>>,
+    mut gizmos: Gizmos,
     // mut volumes: Query<(&CurrentVolume, &mut Intersects)>,
 ) {
     for (mut sprite, silhouette_transform) in silhouettes.iter_mut() {
@@ -125,34 +128,37 @@ fn check_site_validity(
             Vec3::new(SELECTION_SIZE.x, SELECTION_SIZE.y, 0.0),
         );
 
-        for obstacle_transform in obstacles.iter() {
+        for (obstacle_transform, obstacle_aabb) in obstacles.iter() {
             let obstacle_position = obstacle_transform.translation().xy();
 
             let aabb_ray = Ray2d {
                 origin: obstacle_position,
                 direction: Dir2::new_unchecked(
-                    silhouette_transform.translation().xy() - obstacle_position,
+                    (silhouette_transform.translation().xy() - obstacle_position).normalize(),
                 ),
             };
 
             let aabb_cast = AabbCast2d {
-                aabb: Aabb2d::new(Vec2::ZERO, Vec2::splat(15.)),
+                aabb: Aabb2d::new(
+                    silhouette_aabb.center.xy(),
+                    silhouette_aabb.half_extents.xy(),
+                ),
                 ray: RayCast2d::from_ray(aabb_ray, 300.0),
             };
 
-            // for (volume, mut intersects) in volumes.iter_mut() {
-            //     let toi = aabb_cast.aabb_collision_at(a);
+            let toi = aabb_cast.aabb_collision_at(Aabb2d::new(
+                obstacle_aabb.center.xy(),
+                obstacle_aabb.half_extents.xy(),
+            ));
 
-            //     **intersects = toi.is_some();
-            //     if let Some(toi) = toi {
-            //         gizmos.rect_2d(
-            //             aabb_cast.ray.ray.origin + *aabb_cast.ray.ray.direction * toi,
-            //             0.,
-            //             aabb_cast.aabb.half_size() * 2.,
-            //             LIME,
-            //         );
-            //     }
-            // }
+            if let Some(toi) = toi {
+                gizmos.rect_2d(
+                    aabb_cast.ray.ray.origin + *aabb_cast.ray.ray.direction * toi,
+                    0.,
+                    aabb_cast.aabb.half_size() * 2.,
+                    LIME,
+                );
+            }
         }
     }
 }
