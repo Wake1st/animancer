@@ -1,6 +1,5 @@
 use bevy::{
-    color::palettes::css::LIME,
-    math::bounding::{Aabb2d, AabbCast2d, BoundingVolume, RayCast2d},
+    math::bounding::{Aabb2d, BoundingVolume, IntersectsVolume},
     prelude::*,
     render::primitives::Aabb,
 };
@@ -31,7 +30,7 @@ impl Plugin for ConstructionPlugin {
             (
                 display_construction_silhouette,
                 move_construction_silhouette,
-                check_site_validity,
+                display_site_validity,
                 place_structure,
                 assign_new_workers,
                 (set_assigned_units, set_working_units).chain(),
@@ -114,52 +113,33 @@ fn move_construction_silhouette(
 }
 
 //  WIP: https://bevyengine.org/examples-webgpu/2d-rendering/bounding-2d/
-fn check_site_validity(
+fn display_site_validity(
     mut silhouettes: Query<(&mut Sprite, &GlobalTransform), With<ConstructionSilhouette>>,
     obstacles: Query<(&GlobalTransform, &Aabb), With<Obstacle>>,
-    mut gizmos: Gizmos,
-    // mut volumes: Query<(&CurrentVolume, &mut Intersects)>,
 ) {
     for (mut sprite, silhouette_transform) in silhouettes.iter_mut() {
-        sprite.color = BUILD_APPROVED_COLOR;
+        let center = silhouette_transform.translation().xy();
+        let silhouette_aabb2d = Aabb2d::new(center, SELECTION_SIZE / 2.0);
 
-        let silhouette_aabb = Aabb::from_min_max(
-            Vec3::new(-SELECTION_SIZE.x, -SELECTION_SIZE.y, 0.0),
-            Vec3::new(SELECTION_SIZE.x, SELECTION_SIZE.y, 0.0),
-        );
-
+        let mut intersects: bool = false;
         for (obstacle_transform, obstacle_aabb) in obstacles.iter() {
-            let obstacle_position = obstacle_transform.translation().xy();
-
-            let aabb_ray = Ray2d {
-                origin: obstacle_position,
-                direction: Dir2::new_unchecked(
-                    (silhouette_transform.translation().xy() - obstacle_position).normalize(),
-                ),
-            };
-
-            let aabb_cast = AabbCast2d {
-                aabb: Aabb2d::new(
-                    silhouette_aabb.center.xy(),
-                    silhouette_aabb.half_extents.xy(),
-                ),
-                ray: RayCast2d::from_ray(aabb_ray, 300.0),
-            };
-
-            let toi = aabb_cast.aabb_collision_at(Aabb2d::new(
-                obstacle_aabb.center.xy(),
+            let obstacle_aabb2d = Aabb2d::new(
+                obstacle_transform.translation().xy(),
                 obstacle_aabb.half_extents.xy(),
-            ));
+            );
+            intersects = silhouette_aabb2d.intersects(&obstacle_aabb2d);
 
-            if let Some(toi) = toi {
-                gizmos.rect_2d(
-                    aabb_cast.ray.ray.origin + *aabb_cast.ray.ray.direction * toi,
-                    0.,
-                    aabb_cast.aabb.half_size() * 2.,
-                    LIME,
-                );
+            if intersects {
+                break;
             }
         }
+
+        //  TODO - set an Intersects component to be checked elsewhere
+        sprite.color = if intersects {
+            BUILD_DENIED_COLOR
+        } else {
+            BUILD_APPROVED_COLOR
+        };
     }
 }
 
