@@ -3,7 +3,7 @@ use std::cmp::Ordering;
 use bevy::{input::mouse::MouseWheel, math::vec3, prelude::*};
 
 use crate::{
-    construction::{PlaceConstructionSite, CONSTRUCTION_RANGE},
+    construction::AttemptSitePlacement,
     currency::Faith,
     movement::{Formation, SetUnitPosition},
     producer::{PostSpawnMarker, Producer},
@@ -117,12 +117,10 @@ fn handle_click(
     mut unit_aim: ResMut<UnitAim>,
     box_selection_writer: EventWriter<BoxSelection>,
     mut movement_writer: EventWriter<SetUnitPosition>,
-    build_selection: ResMut<BuildSelection>,
-    mut place_construction_site: EventWriter<PlaceConstructionSite>,
+    mut attempt_placement: EventWriter<AttemptSitePlacement>,
     selected_structures: Res<SelectedStructures>,
     mut producers: Query<(&mut Producer, &Children)>,
     mut post_spawn_markers: Query<&mut PostSpawnMarker>,
-    mut faith: ResMut<Faith>,
     selection_state: Res<SelectionState>,
     mut unit_action: EventWriter<UnitAction>,
 ) {
@@ -170,23 +168,8 @@ fn handle_click(
             }
         }
         SelectionType::Construction => {
-            if mouse_button_input.just_released(MouseButton::Left)
-                && faith.value > build_selection.cost
-            {
-                faith.value -= build_selection.cost;
-
-                place_construction_site.send(PlaceConstructionSite {
-                    structure_type: build_selection.structure_type.clone(),
-                    position: pos,
-                    effort: build_selection.cost,
-                });
-
-                //  ensure units move to build
-                movement_writer.send(SetUnitPosition {
-                    position: pos,
-                    direction: Vec2::ONE * CONSTRUCTION_RANGE - 30.0,
-                    formation: Formation::Ringed,
-                });
+            if mouse_button_input.just_released(MouseButton::Left) {
+                attempt_placement.send(AttemptSitePlacement { position: pos });
             }
         }
         SelectionType::Building => {

@@ -85,11 +85,9 @@ fn give_target_to_navigator<const SIZE: u32, const X: u32, const Y: u32>(
                 + Vec3::new((MESH_WIDTH as f32) / 2.0, (MESH_HEIGHT as f32) / 2.0, 0.0);
 
             //	Check if movement position is in mesh
-            info!("checking position");
             if !navmesh.is_in_mesh(position.xy()) {
                 continue;
             }
-            info!("is in mesh");
 
             //	Create a path that the mesh understands
             let Some(path) = navmesh.transformed_path(

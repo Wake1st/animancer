@@ -1,11 +1,13 @@
 use bevy::{
-    math::bounding::{Aabb2d, BoundingVolume, IntersectsVolume},
+    math::bounding::{Aabb2d, IntersectsVolume},
     prelude::*,
     render::primitives::Aabb,
 };
 
 use crate::{
+    currency::Faith,
     inputs::{BuildSelection, MousePosition},
+    movement::{Formation, SetUnitPosition},
     nav_agent::Obstacle,
     schedule::InGameSet,
     selectable::{Selectable, SelectedUnits, SelectionStateChanged, SelectionType},
@@ -31,7 +33,7 @@ impl Plugin for ConstructionPlugin {
                 display_construction_silhouette,
                 move_construction_silhouette,
                 display_site_validity,
-                place_structure,
+                (attempt_construction_placement, place_structure),
                 assign_new_workers,
                 (set_assigned_units, set_working_units).chain(),
                 increment_effort,
@@ -40,6 +42,7 @@ impl Plugin for ConstructionPlugin {
                 .chain()
                 .in_set(InGameSet::EntityUpdates),
         )
+        .add_event::<AttemptSitePlacement>()
         .add_event::<PlaceConstructionSite>()
         .add_event::<AssignConstructionWorkers>();
     }
@@ -47,6 +50,9 @@ impl Plugin for ConstructionPlugin {
 
 #[derive(Component)]
 pub struct ConstructionSilhouette {}
+
+#[derive(Component)]
+pub struct Intersects(pub bool);
 
 #[derive(Component)]
 pub struct ConstructionSite {
@@ -57,9 +63,14 @@ pub struct ConstructionSite {
 }
 
 #[derive(Event)]
-pub struct PlaceConstructionSite {
+pub struct AttemptSitePlacement {
     pub position: Vec2,
+}
+
+#[derive(Event)]
+pub struct PlaceConstructionSite {
     pub structure_type: StructureType,
+    pub position: Vec2,
     pub effort: f32,
 }
 
@@ -98,6 +109,7 @@ fn display_construction_silhouette(
                     ..default()
                 },
                 ConstructionSilhouette {},
+                Intersects(false),
             ));
         }
     }
@@ -114,32 +126,68 @@ fn move_construction_silhouette(
 
 //  WIP: https://bevyengine.org/examples-webgpu/2d-rendering/bounding-2d/
 fn display_site_validity(
-    mut silhouettes: Query<(&mut Sprite, &GlobalTransform), With<ConstructionSilhouette>>,
+    mut silhouettes: Query<
+        (&mut Sprite, &mut Intersects, &GlobalTransform),
+        With<ConstructionSilhouette>,
+    >,
     obstacles: Query<(&GlobalTransform, &Aabb), With<Obstacle>>,
 ) {
-    for (mut sprite, silhouette_transform) in silhouettes.iter_mut() {
+    for (mut sprite, mut intersects, silhouette_transform) in silhouettes.iter_mut() {
         let center = silhouette_transform.translation().xy();
         let silhouette_aabb2d = Aabb2d::new(center, SELECTION_SIZE / 2.0);
 
-        let mut intersects: bool = false;
+        let mut hits: bool = false;
         for (obstacle_transform, obstacle_aabb) in obstacles.iter() {
             let obstacle_aabb2d = Aabb2d::new(
                 obstacle_transform.translation().xy(),
                 obstacle_aabb.half_extents.xy(),
             );
-            intersects = silhouette_aabb2d.intersects(&obstacle_aabb2d);
+            hits = silhouette_aabb2d.intersects(&obstacle_aabb2d);
 
-            if intersects {
+            if hits {
                 break;
             }
         }
 
-        //  TODO - set an Intersects component to be checked elsewhere
-        sprite.color = if intersects {
+        intersects.0 = hits;
+
+        sprite.color = if hits {
             BUILD_DENIED_COLOR
         } else {
             BUILD_APPROVED_COLOR
         };
+    }
+}
+
+fn attempt_construction_placement(
+    mut placement_attempt: EventReader<AttemptSitePlacement>,
+    silhouettes: Query<&Intersects, With<ConstructionSilhouette>>,
+    mut faith: ResMut<Faith>,
+    build_selection: Res<BuildSelection>,
+    mut place_construction_site: EventWriter<PlaceConstructionSite>,
+    mut movement_writer: EventWriter<SetUnitPosition>,
+) {
+    for attempt in placement_attempt.read() {
+        info!("attempting...");
+        for intersects in silhouettes.iter() {
+            info!("intersects: {:?}", intersects.0);
+            if !intersects.0 && faith.value > build_selection.cost {
+                faith.value -= build_selection.cost;
+
+                place_construction_site.send(PlaceConstructionSite {
+                    structure_type: build_selection.structure_type.clone(),
+                    position: attempt.position,
+                    effort: build_selection.cost,
+                });
+
+                //  ensure units move to build
+                movement_writer.send(SetUnitPosition {
+                    position: attempt.position,
+                    direction: Vec2::ONE * (CONSTRUCTION_RANGE - 30.0),
+                    formation: Formation::Ringed,
+                });
+            }
+        }
     }
 }
 

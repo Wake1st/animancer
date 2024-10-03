@@ -11,6 +11,7 @@ use bevy::{
 use vleue_navigator::{prelude::NavMeshStatus, NavMesh};
 
 use crate::{
+    construction::{ConstructionSilhouette, Intersects},
     currency::Faith,
     inputs::{BoxSelector, BuildSelection, ProducerSelection, UnitAim},
     movement::Formation,
@@ -81,6 +82,8 @@ fn setup_debug_helper_text(mut commands: Commands) {
             TextSection::new("_", TextStyle { ..default() }), //  12
             TextSection::new("\nSelectionState::", TextStyle { ..default() }),
             TextSection::new("_", TextStyle { ..default() }), //  14
+            TextSection::new("\nIntersection = ", TextStyle { ..default() }),
+            TextSection::new("_", TextStyle { ..default() }), //  16
         ]),
         DebugText,
     ));
@@ -93,6 +96,7 @@ fn debug_text(
     faith: Res<Faith>,
     current_ui: Res<CurrentUI>,
     selection_state: Res<SelectionState>,
+    construction_silhouettes: Query<&Intersects, With<ConstructionSilhouette>>,
     mut query: Query<&mut Text, With<DebugText>>,
 ) {
     for mut text in &mut query {
@@ -139,6 +143,14 @@ fn debug_text(
             SelectionType::Building => "Building",
         })
         .to_string();
+
+        for intersects in construction_silhouettes.iter() {
+            text.sections[16].value = (match intersects.0 {
+                true => "true",
+                false => "false",
+            })
+            .into();
+        }
     }
 }
 
