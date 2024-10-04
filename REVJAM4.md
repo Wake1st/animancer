@@ -6,15 +6,14 @@
     - [ ] ambient
     - [ ] battle (should match the ambient when fading in/out)
 - [ ] art
-  - [ ] character art/animations
-    - [ ] hero (types?)
+  - [ ] character art
+    - [ ] hero
     - [ ] worker
     - [ ] fighter
     - [ ] priest
   - [ ] buildings
     - [ ] generator
     - [ ] producer
-    - [ ] monastery (tech)
   - [ ] ground
     - [ ] plain
     - [ ] resource vein
