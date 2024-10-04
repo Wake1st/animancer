@@ -67,9 +67,8 @@ fn main() {
             NavmeshUpdaterPlugin::<Aabb, Obstacle>::default(),
             NavAgentPlugin,
         ))
+        .add_plugins((StatePlugin, SchedulePlugin))
         .add_plugins((
-            StatePlugin,
-            SchedulePlugin,
             UIPlugin,
             InputPlugin,
             CameraPlugin,
@@ -82,7 +81,7 @@ fn main() {
             ProducerPlugin,
             CurrencyPlugin,
             WorkerPlugin,
-            FogOfWarPlugin,
+            // FogOfWarPlugin,
         ))
         .add_plugins((TestScenePlugin, HelperPlugin))
         .run();

@@ -1,6 +1,6 @@
 # Revival Jam 4 Notes
 - [ ] music
-  - [ ] get references for Marce
+  - [x] get references for Marce
   - [ ] songs
     - [ ] menu theme
     - [ ] ambient
@@ -19,10 +19,10 @@
     - [ ] resource vein
     - [ ] rocks
 - [ ] programming 
-  - [ ] fog of war
   - [ ] music mechanics (plugins?)
   - [ ] needs AI (something simple, ok if it's random and a bit unpredictable)
   - [ ] map
+    -[x] user needs to move around map
     - [ ] general layout
       - [ ] starting locations
       - [ ] resources
@@ -35,3 +35,4 @@
     - [ ] obliteration (enemy cannot do the following)
       - [ ] cannot make new units
       - [ ] no more units
+  - [ ] fog of war

@@ -3,6 +3,7 @@ use std::cmp::Ordering;
 use bevy::{input::mouse::MouseWheel, math::vec3, prelude::*};
 
 use crate::{
+    camera::CameraDirection,
     construction::AttemptSitePlacement,
     currency::Faith,
     movement::{Formation, SetUnitPosition},
@@ -31,7 +32,10 @@ impl Plugin for InputPlugin {
         )
         .add_systems(
             Update,
-            ((handle_click, handle_mouse_wheel), set_selection_state)
+            (
+                (handle_click, handle_mouse_wheel, handle_keys),
+                set_selection_state,
+            )
                 .chain()
                 .in_set(InGameSet::UserInput),
         )
@@ -239,6 +243,7 @@ fn set_selection_state(
     }
 }
 
+//  TODO: UI for formation, scroll wheel for zooming
 fn handle_mouse_wheel(
     mut mouse_wheel_input: EventReader<MouseWheel>,
     mut box_selector: ResMut<BoxSelector>,
@@ -254,6 +259,29 @@ fn handle_mouse_wheel(
             _ => box_selector.formation.clone(),
         }
     }
+}
+
+fn handle_keys(
+    keys: Res<ButtonInput<KeyCode>>,
+    mut camera_direction: Query<&mut CameraDirection, With<Camera2d>>,
+) {
+    let mut camera = camera_direction.single_mut();
+    let mut dir = Vec2::ZERO;
+
+    if keys.pressed(KeyCode::ArrowUp) || keys.pressed(KeyCode::KeyW) {
+        dir.y += 1.0;
+    }
+    if keys.pressed(KeyCode::ArrowDown) || keys.pressed(KeyCode::KeyS) {
+        dir.y -= 1.0;
+    }
+    if keys.pressed(KeyCode::ArrowLeft) || keys.pressed(KeyCode::KeyA) {
+        dir.x -= 1.0;
+    }
+    if keys.pressed(KeyCode::ArrowRight) || keys.pressed(KeyCode::KeyD) {
+        dir.x += 1.0;
+    }
+
+    camera.planar = dir;
 }
 
 fn click_selection(
