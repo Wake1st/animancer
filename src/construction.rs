@@ -30,14 +30,13 @@ impl Plugin for ConstructionPlugin {
         app.add_systems(
             Update,
             (
-                display_construction_silhouette,
                 move_construction_silhouette,
-                display_site_validity,
                 (attempt_construction_placement, place_structure),
                 assign_new_workers,
                 (set_assigned_units, set_working_units).chain(),
                 increment_effort,
                 place_building,
+                (display_construction_silhouette, display_site_validity),
             )
                 .chain()
                 .in_set(InGameSet::EntityUpdates),
