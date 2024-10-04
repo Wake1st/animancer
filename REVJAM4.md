@@ -21,6 +21,7 @@
     - [ ] rocks
 - [ ] programming 
   - [ ] fog of war
+  - [ ] music mechanics (plugins?)
   - [ ] needs AI (something simple, ok if it's random and a bit unpredictable)
   - [ ] map
     - [ ] general layout
@@ -35,7 +36,3 @@
     - [ ] obliteration (enemy cannot do the following)
       - [ ] cannot make new units
       - [ ] no more units
-    - [ ] capture the flag
-      - [ ] hold some number of capture points
-    - [ ] king of the hill
-      - [ ] destroy the enemy hero

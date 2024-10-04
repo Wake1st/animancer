@@ -123,7 +123,7 @@ fn move_construction_silhouette(
     }
 }
 
-//  WIP: https://bevyengine.org/examples-webgpu/2d-rendering/bounding-2d/
+//  docs: https://bevyengine.org/examples-webgpu/2d-rendering/bounding-2d/
 fn display_site_validity(
     mut silhouettes: Query<
         (&mut Sprite, &mut Intersects, &GlobalTransform),

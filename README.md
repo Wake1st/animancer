@@ -30,7 +30,7 @@
   - [x] effect unit movement
   - [x] be effected by buildings
 - [x] user should be able to see the building silhouette of a building before placing it
-- [ ] user should not be able to layer buildings
+- [x] user should not be able to layer buildings
 - [ ] units should be an `Obstacle` on the nevmesh
   - [ ] performance is stable
   - [ ] unit movement is still clean and "flowy"
@@ -40,3 +40,11 @@
 - [ ] user should be able to see unit generation in the ui
 - [ ] user should be able to "snap" buildings together if close enough
 - [ ] user should be able to rotate buildings when placing them
+- [ ] user should be able to win the game
+  - [ ] obliteration (enemy cannot do the following)
+    - [ ] cannot make new units
+    - [ ] no more units
+  - [ ] capture the flag
+    - [ ] hold some number of capture points
+  - [ ] king of the hill
+    - [ ] destroy the enemy hero
