@@ -34,7 +34,7 @@ fn spawn_worker(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
 ) {
-    let texture: Handle<Image> = asset_server.load("footman.png");
+    let texture: Handle<Image> = asset_server.load("worker.png");
 
     for event in production_event.read() {
         let id = commands

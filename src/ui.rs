@@ -23,7 +23,7 @@ const NORMAL_BUTTON: Color = Color::srgb(0.15, 0.35, 0.35);
 
 const SIMPLE_SHRINE_ASSET_PATH: &str = "harvester.png";
 const WORKER_PRODUCER_ASSET_PATH: &str = "worker producer.png";
-const WORKER_ASSET_PATH: &str = "footman.png";
+const WORKER_ASSET_PATH: &str = "worker.png";
 
 pub const SIMPLE_SHRINE_COST: f32 = 40.;
 pub const WORKER_PRODUCER_COST: f32 = 200.;
