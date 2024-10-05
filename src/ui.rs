@@ -23,8 +23,9 @@ const NORMAL_BUTTON: Color = Color::srgb(0.15, 0.35, 0.35);
 
 const SIMPLE_SHRINE_ASSET_PATH: &str = "harvester.png";
 const WORKER_PRODUCER_ASSET_PATH: &str = "worker producer.png";
-const WORKER_ASSET_PATH: &str = "worker.png";
-const PRIEST_ASSET_PATH: &str = "priest.png";
+
+pub const WORKER_ASSET_PATH: &str = "worker.png";
+pub const PRIEST_ASSET_PATH: &str = "priest.png";
 
 pub const SIMPLE_SHRINE_COST: f32 = 40.;
 pub const WORKER_PRODUCER_COST: f32 = 200.;
@@ -427,14 +428,14 @@ fn build_button_interactions(
 
 fn producer_button_interactions(
     mut interaction_query: Query<
-        (&Interaction, &mut BorderColor),
+        (&Interaction, &mut BorderColor, &ProducerButton),
         (Changed<Interaction>, With<ProducerButton>),
     >,
     selected_structures: Res<SelectedStructures>,
     mut producer_query: Query<&mut Producer>,
     mut faith: ResMut<Faith>,
 ) {
-    for (interaction, mut border_color) in &mut interaction_query {
+    for (interaction, mut border_color, button) in &mut interaction_query {
         match *interaction {
             Interaction::Pressed => {
                 border_color.0 = Color::Srgba(GREEN_200);
@@ -445,13 +446,16 @@ fn producer_button_interactions(
                         let mut added_productions: Vec<ProductionType> = Vec::new();
 
                         for production in producer.productions.iter_mut() {
-                            if faith.value > production.cost {
+                            if production.production_type == button.production_type
+                                && faith.value > production.cost
+                            {
                                 faith.value -= production.cost;
 
                                 production.queue += 1;
                                 added_productions.push(production.production_type.clone());
 
                                 produced = true;
+                                info!("produced");
                             }
                         }
 

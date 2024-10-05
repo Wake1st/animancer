@@ -21,7 +21,7 @@ impl Plugin for ProducerPlugin {
                 Update,
                 (produce, display_post_spawn_marker).in_set(InGameSet::EntityUpdates),
             )
-            .add_event::<ProduceWorker>()
+            .add_event::<Produce>()
             .add_event::<DisplayProducerUI>()
             .add_event::<RemoveProducerUI>();
     }
@@ -98,7 +98,8 @@ pub struct DisplayProducerUI {}
 pub struct RemoveProducerUI {}
 
 #[derive(Event)]
-pub struct ProduceWorker {
+pub struct Produce {
+    pub production_type: ProductionType,
     pub position: Vec3,
     pub location: Vec3,
 }
@@ -106,7 +107,7 @@ pub struct ProduceWorker {
 fn produce(
     time: Res<Time>,
     mut query: Query<(&mut Producer, &GlobalTransform), With<Structure>>,
-    mut producer_writer: EventWriter<ProduceWorker>,
+    mut producer_writer: EventWriter<Produce>,
 ) {
     let delta_time = time.delta_seconds();
 
@@ -125,7 +126,8 @@ fn produce(
                         production.queue -= 1;
 
                         //  create unit
-                        producer_writer.send(ProduceWorker {
+                        producer_writer.send(Produce {
+                            production_type: producer.current_production.clone(),
                             position: transform.translation() + SPAWN_OFFSET,
                             location: spawn_location,
                         });

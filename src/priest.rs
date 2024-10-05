@@ -10,5 +10,5 @@ impl Plugin for PriestPlugin {
 
 #[derive(Component)]
 pub struct Priest {
-    pub effort: f32,
+    pub persuation: f32,
 }

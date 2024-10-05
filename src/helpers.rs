@@ -113,7 +113,7 @@ fn debug_text(
 
         text.sections[3].value = (match build_selection.structure_type {
             StructureType::SimpleShrine => "SimpleShrine - ",
-            StructureType::WorkerProducer => "WorkerProducer - ",
+            StructureType::Producer => "WorkerProducer - ",
         })
         .into();
 

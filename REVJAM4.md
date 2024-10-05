@@ -27,6 +27,10 @@
       - [x] starting locations
       - [x] resources
       - [x] obstacles (just stick to cliffs)
+  - [x] producers should produce each unit type
+    - [x] worker
+    - [ ] priest
+    - [ ] warrior 
   - [ ] combat mechanics
   - [ ] main menu
   - [ ] pause menu

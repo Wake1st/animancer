@@ -14,6 +14,7 @@ use crate::{
         Structure, POST_SPAWN_MARKER_PATH, SELECTION_SIZE, SIMPLE_SHRINE_ASSET_PATH,
         WORKER_PRODUCER_ASSET_PATH,
     },
+    ui::{PRIEST_ASSET_PATH, WORKER_ASSET_PATH},
     unit::Unit,
     worker::Worker,
 };
@@ -22,7 +23,10 @@ pub struct TestScenePlugin;
 
 impl Plugin for TestScenePlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, (spawn_hero, spawn_workers, spawn_structures));
+        app.add_systems(
+            Startup,
+            (spawn_hero, spawn_workers, spawn_priests, spawn_structures),
+        );
     }
 }
 
@@ -49,7 +53,7 @@ fn spawn_hero(mut commands: Commands, asset_server: Res<AssetServer>) {
 }
 
 fn spawn_workers(mut commands: Commands, asset_server: Res<AssetServer>) {
-    let texture: Handle<Image> = asset_server.load("footman.png");
+    let texture: Handle<Image> = asset_server.load(WORKER_ASSET_PATH);
     let spawn_position_base = vec3(200., -200., 0.);
 
     for n in 0..20 {
@@ -68,6 +72,30 @@ fn spawn_workers(mut commands: Commands, asset_server: Res<AssetServer>) {
             },
             Navigator { speed: 100.0 },
             Name::new("Worker"),
+        ));
+    }
+}
+
+fn spawn_priests(mut commands: Commands, asset_server: Res<AssetServer>) {
+    let texture: Handle<Image> = asset_server.load(PRIEST_ASSET_PATH);
+    let spawn_position_base = vec3(-200., -200., 0.);
+
+    for n in 0..10 {
+        let position = spawn_position_base + vec3(30. * (n % 5) as f32, 30. * (n / 5) as f32, 0.);
+        commands.spawn((
+            SpriteBundle {
+                texture: texture.clone(),
+                transform: Transform::from_translation(position),
+                ..default()
+            },
+            Unit {},
+            Worker { effort: 1.5 },
+            Moveable { location: position },
+            Selectable {
+                size: vec2(32., 32.),
+            },
+            Navigator { speed: 85.0 },
+            Name::new("Priest"),
         ));
     }
 }
