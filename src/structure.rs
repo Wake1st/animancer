@@ -3,7 +3,10 @@ use bevy::{math::vec2, prelude::*, render::primitives::Aabb};
 use crate::{
     generator::Generator,
     nav_agent::Obstacle,
-    producer::{PostSpawnMarker, Producer, SPAWN_OFFSET},
+    producer::{
+        PostSpawnMarker, Producer, Production, ProductionType, PRIEST_COST, SPAWN_OFFSET,
+        WORKER_COST,
+    },
     schedule::InGameSet,
     selectable::Selectable,
 };
@@ -28,7 +31,7 @@ pub struct Structure;
 #[derive(PartialEq)]
 pub enum StructureType {
     SimpleShrine,
-    WorkerProducer,
+    Producer,
 }
 
 impl Default for StructureType {
@@ -41,7 +44,7 @@ impl Clone for StructureType {
     fn clone(&self) -> Self {
         match self {
             Self::SimpleShrine => Self::SimpleShrine,
-            Self::WorkerProducer => Self::WorkerProducer,
+            Self::Producer => Self::Producer,
         }
     }
 }
@@ -61,7 +64,7 @@ fn spawn_structure(
         let marker_texture: Handle<Image> = asset_server.load(POST_SPAWN_MARKER_PATH);
         let texture: Handle<Image> = asset_server.load(match place.structure_type {
             StructureType::SimpleShrine => SIMPLE_SHRINE_ASSET_PATH,
-            StructureType::WorkerProducer => WORKER_PRODUCER_ASSET_PATH,
+            StructureType::Producer => WORKER_PRODUCER_ASSET_PATH,
         });
 
         match place.structure_type {
@@ -85,7 +88,7 @@ fn spawn_structure(
                     Name::new("SimpleShrine"),
                 ));
             }
-            StructureType::WorkerProducer => {
+            StructureType::Producer => {
                 commands
                     .spawn((
                         SpriteBundle {
@@ -100,13 +103,25 @@ fn spawn_structure(
                         ),
                         Structure {},
                         Producer {
+                            productions: vec![
+                                Production {
+                                    production_type: ProductionType::Worker,
+                                    cost: WORKER_COST,
+                                    queue: 0,
+                                },
+                                Production {
+                                    production_type: ProductionType::Priest,
+                                    cost: PRIEST_COST,
+                                    queue: 0,
+                                },
+                            ],
                             post_spawn_location: place.position + SPAWN_OFFSET,
                             ..default()
                         },
                         Selectable {
                             size: SELECTION_SIZE,
                         },
-                        Name::new("WorkerProducer"),
+                        Name::new("Producer"),
                     ))
                     .with_children(|builder| {
                         builder.spawn((

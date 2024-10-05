@@ -9,6 +9,9 @@ use crate::{
 
 pub const SPAWN_OFFSET: Vec3 = vec3(0.0, -40.0, 0.1);
 
+pub const WORKER_COST: f32 = 10.0;
+pub const PRIEST_COST: f32 = 18.0;
+
 pub struct ProducerPlugin;
 
 impl Plugin for ProducerPlugin {
@@ -26,8 +29,9 @@ impl Plugin for ProducerPlugin {
 
 #[derive(Component)]
 pub struct Producer {
-    pub queue: i32,
-    pub cost: f32,
+    pub productions: Vec<Production>,
+    pub current_production: ProductionType,
+    pub queue: Vec<ProductionType>,
     pub value: f32,
     pub rate: f32,
     pub post_spawn_location: Vec3,
@@ -36,11 +40,48 @@ pub struct Producer {
 impl Default for Producer {
     fn default() -> Self {
         Self {
-            queue: 0,
-            cost: 10.0,
+            productions: Vec::new(),
+            current_production: ProductionType::None,
+            queue: Vec::new(),
             value: 0.0,
             rate: 2.0,
             post_spawn_location: Vec3::ZERO,
+        }
+    }
+}
+
+#[derive(Component)]
+pub struct Production {
+    pub production_type: ProductionType,
+    pub cost: f32,
+    pub queue: i32,
+}
+
+impl Clone for Production {
+    fn clone(&self) -> Self {
+        Self {
+            production_type: self.production_type.clone(),
+            cost: self.cost.clone(),
+            queue: self.queue.clone(),
+        }
+    }
+}
+
+#[derive(PartialEq)]
+pub enum ProductionType {
+    None,
+    Worker,
+    Priest,
+    Warrior,
+}
+
+impl Clone for ProductionType {
+    fn clone(&self) -> Self {
+        match self {
+            Self::None => Self::None,
+            Self::Worker => Self::Worker,
+            Self::Priest => Self::Priest,
+            Self::Warrior => Self::Warrior,
         }
     }
 }
@@ -70,18 +111,34 @@ fn produce(
     let delta_time = time.delta_seconds();
 
     for (mut producer, transform) in query.iter_mut() {
-        if producer.queue > 0 {
-            producer.value += producer.rate * delta_time;
+        let spawn_location = producer.post_spawn_location;
+        let current_production = producer.current_production.clone();
+        let mut productions = producer.productions.clone();
 
-            if producer.value >= producer.cost {
-                //	leave the remainder, so as to avoid value loss over time
-                producer.value = producer.value % producer.cost;
-                producer.queue -= 1;
+        if producer.queue.len() > 0 {
+            for production in productions.iter_mut() {
+                if production.production_type == current_production {
+                    producer.value += producer.rate * delta_time;
+                    if producer.value >= production.cost {
+                        //	leave the remainder, so as to avoid value loss over time
+                        producer.value = producer.value % production.cost;
+                        production.queue -= 1;
 
-                producer_writer.send(ProduceWorker {
-                    position: transform.translation() + SPAWN_OFFSET,
-                    location: producer.post_spawn_location,
-                });
+                        //  create unit
+                        producer_writer.send(ProduceWorker {
+                            position: transform.translation() + SPAWN_OFFSET,
+                            location: spawn_location,
+                        });
+
+                        //  shift production
+                        producer.queue.remove(0);
+                        if producer.queue.len() == 0 {
+                            producer.current_production = ProductionType::None;
+                        } else {
+                            producer.current_production = producer.queue[0].clone();
+                        }
+                    }
+                }
             }
         }
     }

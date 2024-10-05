@@ -9,7 +9,7 @@ use bevy::{
 use crate::{
     currency::Faith,
     inputs::BuildSelection,
-    producer::{DisplayProducerUI, Producer, RemoveProducerUI},
+    producer::{DisplayProducerUI, Producer, Production, ProductionType, RemoveProducerUI},
     schedule::InGameSet,
     selectable::{SelectedStructures, SelectionState, SelectionStateChanged, SelectionType},
     structure::StructureType,
@@ -24,6 +24,7 @@ const NORMAL_BUTTON: Color = Color::srgb(0.15, 0.35, 0.35);
 const SIMPLE_SHRINE_ASSET_PATH: &str = "harvester.png";
 const WORKER_PRODUCER_ASSET_PATH: &str = "worker producer.png";
 const WORKER_ASSET_PATH: &str = "worker.png";
+const PRIEST_ASSET_PATH: &str = "priest.png";
 
 pub const SIMPLE_SHRINE_COST: f32 = 40.;
 pub const WORKER_PRODUCER_COST: f32 = 200.;
@@ -48,7 +49,7 @@ impl Plugin for UIPlugin {
                 Update,
                 (
                     build_button_interactions,
-                    (producer_button_interactions, producer_queue_display).chain(),
+                    (producer_button_interactions, production_queue_display).chain(),
                 )
                     .in_set(InGameSet::UIInput),
             )
@@ -66,7 +67,9 @@ struct BuildButton {
 }
 
 #[derive(Component)]
-struct ProducerButton {}
+struct ProducerButton {
+    pub production_type: ProductionType,
+}
 
 #[derive(Component)]
 struct QueueText {}
@@ -196,7 +199,7 @@ fn setup_worker_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
                             ..default()
                         },
                         BuildButton {
-                            structure_type: StructureType::WorkerProducer,
+                            structure_type: StructureType::Producer,
                             cost: WORKER_PRODUCER_COST,
                         },
                     ));
@@ -206,6 +209,7 @@ fn setup_worker_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
 
 fn setup_producer_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
     let worker_texture: Handle<Image> = asset_server.load(WORKER_ASSET_PATH);
+    let priest_texture: Handle<Image> = asset_server.load(PRIEST_ASSET_PATH);
 
     commands
         .spawn((
@@ -237,51 +241,60 @@ fn setup_producer_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
                     ..Default::default()
                 })
                 .with_children(|builder| {
-                    builder
-                        .spawn((
-                            ButtonBundle {
-                                style: Style {
-                                    width: Val::Px(64.0),
-                                    height: Val::Px(64.0),
-                                    border: UiRect::all(Val::Px(2.0)),
-                                    justify_content: JustifyContent::Center,
-                                    align_items: AlignItems::Center,
-                                    ..default()
-                                },
-                                border_color: Color::Srgba(GRAY_800).into(),
-                                background_color: NORMAL_BUTTON.into(),
-                                image: UiImage {
-                                    texture: worker_texture,
-                                    ..default()
-                                },
-                                ..default()
-                            },
-                            ProducerButton {},
-                        ))
-                        .with_children(|builder| {
-                            builder
-                                .spawn(NodeBundle {
-                                    style: Style {
-                                        width: Val::Percent(100.),
-                                        height: Val::Percent(100.),
-                                        padding: UiRect::all(Val::Px(2.)),
-                                        flex_direction: FlexDirection::Column,
-                                        justify_content: JustifyContent::FlexStart,
-                                        align_items: AlignItems::FlexEnd,
-                                        ..default()
-                                    },
-                                    ..default()
-                                })
-                                .with_children(|builder| {
-                                    builder.spawn((
-                                        TextBundle {
-                                            text: Text::from_section("", TextStyle { ..default() }),
-                                            ..default()
-                                        },
-                                        QueueText {},
-                                    ));
-                                });
-                        });
+                    production_button(builder, worker_texture, ProductionType::Worker);
+                    production_button(builder, priest_texture, ProductionType::Priest);
+                });
+        });
+}
+
+fn production_button(
+    parent: &mut ChildBuilder,
+    texture: Handle<Image>,
+    production_type: ProductionType,
+) {
+    parent
+        .spawn((
+            ButtonBundle {
+                style: Style {
+                    width: Val::Px(64.0),
+                    height: Val::Px(64.0),
+                    border: UiRect::all(Val::Px(2.0)),
+                    justify_content: JustifyContent::Center,
+                    align_items: AlignItems::Center,
+                    ..default()
+                },
+                border_color: Color::Srgba(GRAY_800).into(),
+                background_color: NORMAL_BUTTON.into(),
+                image: UiImage {
+                    texture,
+                    ..default()
+                },
+                ..default()
+            },
+            ProducerButton { production_type },
+        ))
+        .with_children(|builder| {
+            builder
+                .spawn(NodeBundle {
+                    style: Style {
+                        width: Val::Percent(100.),
+                        height: Val::Percent(100.),
+                        padding: UiRect::all(Val::Px(2.)),
+                        flex_direction: FlexDirection::Column,
+                        justify_content: JustifyContent::FlexStart,
+                        align_items: AlignItems::FlexEnd,
+                        ..default()
+                    },
+                    ..default()
+                })
+                .with_children(|builder| {
+                    builder.spawn((
+                        TextBundle {
+                            text: Text::from_section("", TextStyle { ..default() }),
+                            ..default()
+                        },
+                        QueueText {},
+                    ));
                 });
         });
 }
@@ -393,6 +406,7 @@ fn build_button_interactions(
         match *interaction {
             Interaction::Pressed => {
                 border_color.0 = Color::Srgba(GREEN_200);
+
                 build_selection.structure_type = button.structure_type.clone();
                 build_selection.is_selected = true;
                 build_selection.cost = button.cost;
@@ -427,9 +441,22 @@ fn producer_button_interactions(
 
                 for entity in selected_structures.entities.clone() {
                     if let Ok(mut producer) = producer_query.get_mut(entity) {
-                        if faith.value > producer.cost {
-                            producer.queue += 1;
-                            faith.value -= producer.cost;
+                        let mut produced: bool = false;
+                        let mut added_productions: Vec<ProductionType> = Vec::new();
+
+                        for production in producer.productions.iter_mut() {
+                            if faith.value > production.cost {
+                                faith.value -= production.cost;
+
+                                production.queue += 1;
+                                added_productions.push(production.production_type.clone());
+
+                                produced = true;
+                            }
+                        }
+
+                        if produced {
+                            producer.queue.append(&mut added_productions);
                         }
                     }
                 }
@@ -444,16 +471,16 @@ fn producer_button_interactions(
     }
 }
 
-fn producer_queue_display(
+fn production_queue_display(
     mut text_query: Query<&mut Text, With<QueueText>>,
     selected_structures: Res<SelectedStructures>,
-    producer_query: Query<&Producer>,
+    production_query: Query<&Production>,
 ) {
     for mut text in &mut text_query {
         for entity in selected_structures.entities.clone() {
-            if let Ok(producer) = producer_query.get(entity) {
-                text.sections[0].value = if producer.queue > 0 {
-                    producer.queue.to_string()
+            if let Ok(production) = production_query.get(entity) {
+                text.sections[0].value = if production.queue > 0 {
+                    production.queue.to_string()
                 } else {
                     "".into()
                 }

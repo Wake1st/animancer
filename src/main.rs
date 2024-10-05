@@ -7,6 +7,7 @@ mod helpers;
 mod inputs;
 mod movement;
 mod nav_agent;
+mod priest;
 mod producer;
 mod schedule;
 mod selectable;
@@ -28,6 +29,7 @@ use helpers::HelperPlugin;
 use inputs::InputPlugin;
 use movement::MovementPlugin;
 use nav_agent::{NavAgentPlugin, Obstacle};
+use priest::PriestPlugin;
 use producer::ProducerPlugin;
 use schedule::SchedulePlugin;
 use selectable::SelectablePlugin;
@@ -81,6 +83,7 @@ fn main() {
             ProducerPlugin,
             CurrencyPlugin,
             WorkerPlugin,
+            PriestPlugin,
             // FogOfWarPlugin,
         ))
         .add_plugins((TestScenePlugin, HelperPlugin))
