@@ -23,11 +23,10 @@
   - [ ] needs AI (something simple, ok if it's random and a bit unpredictable)
   - [ ] map
     -[x] user needs to move around map
-    - [ ] general layout
-      - [ ] starting locations
-      - [ ] resources
-      - [ ] obstacles (just stick to cliffs)
-    - [ ] minimap
+    - [x] general layout
+      - [x] starting locations
+      - [x] resources
+      - [x] obstacles (just stick to cliffs)
   - [ ] combat mechanics
   - [ ] main menu
   - [ ] pause menu

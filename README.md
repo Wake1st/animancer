@@ -34,9 +34,10 @@
 - [ ] units should be an `Obstacle` on the nevmesh
   - [ ] performance is stable
   - [ ] unit movement is still clean and "flowy"
-- [ ] user should be able to move about a map
-  - [ ] minimap
+- [x] user should be able to move about a map
+- [ ] game map
   - [ ] actual map, with natural obstacles
+  - [ ] minimap
 - [ ] user should be able to see unit generation in the ui
 - [ ] user should be able to "snap" buildings together if close enough
 - [ ] user should be able to rotate buildings when placing them
@@ -47,4 +48,6 @@
   - [ ] capture the flag
     - [ ] hold some number of capture points
   - [ ] king of the hill
+    - [ ] control region(s) for a constistant amount of time
+  - [ ] regicide
     - [ ] destroy the enemy hero
