@@ -29,7 +29,7 @@
       - [x] obstacles (just stick to cliffs)
   - [x] producers should produce each unit type
     - [x] worker
-    - [ ] priest
+    - [x] priest
     - [ ] warrior 
   - [ ] combat mechanics
   - [ ] main menu

@@ -433,7 +433,8 @@ fn producer_button_interactions(
         (Changed<Interaction>, With<ProducerButton>),
     >,
     selected_structures: Res<SelectedStructures>,
-    mut producer_query: Query<&mut Producer>,
+    mut producer_query: Query<(&mut Producer, &Children)>,
+    mut production_query: Query<&mut Production>,
     mut faith: ResMut<Faith>,
 ) {
     for (interaction, mut border_color, button) in &mut interaction_query {
@@ -442,29 +443,22 @@ fn producer_button_interactions(
                 border_color.0 = Color::Srgba(GREEN_200);
 
                 for entity in selected_structures.entities.clone() {
-                    if let Ok(mut producer) = producer_query.get_mut(entity) {
-                        let mut produced: bool = false;
-                        let mut added_productions: Vec<ProductionType> = Vec::new();
+                    if let Ok((mut producer, children)) = producer_query.get_mut(entity) {
+                        for &child in children.iter() {
+                            if let Ok(mut production) = production_query.get_mut(child) {
+                                if production.production_type == button.production_type
+                                    && faith.value > production.cost
+                                {
+                                    faith.value -= production.cost;
+                                    production.queue += 1;
 
-                        for production in producer.productions.iter_mut() {
-                            if production.production_type == button.production_type
-                                && faith.value > production.cost
-                            {
-                                faith.value -= production.cost;
+                                    producer.queue.push(production.production_type.clone());
 
-                                production.queue += 1;
-                                added_productions.push(production.production_type.clone());
-
-                                produced = true;
-                            }
-                        }
-
-                        if produced {
-                            producer.queue.append(&mut added_productions);
-
-                            //  only set if it's the first
-                            if producer.queue.len() == 1 {
-                                producer.current_production = producer.queue[0].clone();
+                                    //  only set if it's the first
+                                    if producer.queue.len() == 1 {
+                                        producer.current_production = producer.queue[0].clone();
+                                    }
+                                }
                             }
                         }
                     }
@@ -483,18 +477,20 @@ fn producer_button_interactions(
 fn production_queue_display(
     mut text_query: Query<(&mut Text, &QueueText)>,
     selected_structures: Res<SelectedStructures>,
-    producer_query: Query<&Producer>,
+    producer_query: Query<&Children, With<Producer>>,
+    production_query: Query<&Production>,
 ) {
     for entity in selected_structures.entities.clone() {
-        if let Ok(producer) = producer_query.get(entity) {
-            for production in producer.productions.iter() {
-                for (mut text, queue_text) in &mut text_query {
-                    if queue_text.production_type == production.production_type {
-                        info!("queue: {:?}", production.queue);
-                        text.sections[0].value = if production.queue > 0 {
-                            production.queue.to_string()
-                        } else {
-                            "".into()
+        if let Ok(children) = producer_query.get(entity) {
+            for &child in children.iter() {
+                if let Ok(production) = production_query.get(child) {
+                    for (mut text, queue_text) in &mut text_query {
+                        if queue_text.production_type == production.production_type {
+                            text.sections[0].value = if production.queue > 0 {
+                                production.queue.to_string()
+                            } else {
+                                "".into()
+                            }
                         }
                     }
                 }

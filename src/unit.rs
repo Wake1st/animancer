@@ -79,7 +79,6 @@ fn spawn_worker(
             })
             .id();
 
-        info!("location: {:?}", event.location);
         nav_path_assigner.send(AssignNavigatorPath {
             entity: id,
             location: event.location + Vec3::new(0.0, -1.0, 0.0),

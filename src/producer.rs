@@ -29,7 +29,6 @@ impl Plugin for ProducerPlugin {
 
 #[derive(Component)]
 pub struct Producer {
-    pub productions: Vec<Production>,
     pub current_production: ProductionType,
     pub queue: Vec<ProductionType>,
     pub value: f32,
@@ -40,7 +39,6 @@ pub struct Producer {
 impl Default for Producer {
     fn default() -> Self {
         Self {
-            productions: Vec::new(),
             current_production: ProductionType::None,
             queue: Vec::new(),
             value: 0.0,
@@ -53,7 +51,6 @@ impl Default for Producer {
 impl Clone for Producer {
     fn clone(&self) -> Self {
         Self {
-            productions: self.productions.clone(),
             current_production: self.current_production.clone(),
             queue: self.queue.clone(),
             value: self.value.clone(),
@@ -119,36 +116,39 @@ pub struct Produce {
 
 fn produce(
     time: Res<Time>,
-    mut producer_query: Query<(&mut Producer, &GlobalTransform), With<Structure>>,
+    mut producer_query: Query<(&mut Producer, &GlobalTransform, &Children), With<Structure>>,
+    mut production_query: Query<&mut Production>,
     mut producer_writer: EventWriter<Produce>,
 ) {
     let delta_time = time.delta_seconds();
 
-    for (mut producer, transform) in producer_query.iter_mut() {
+    for (mut producer, transform, children) in producer_query.iter_mut() {
         let current_production = producer.current_production.clone();
 
         if producer.queue.len() > 0 {
-            for production in producer.productions.iter_mut() {
-                if production.production_type == current_production {
-                    producer.value += producer.rate * delta_time;
-                    if producer.value >= production.cost {
-                        //	leave the remainder, so as to avoid value loss over time
-                        producer.value = producer.value % production.cost;
-                        production.queue -= 1;
+            for &child in children.iter() {
+                if let Ok(mut production) = production_query.get_mut(child) {
+                    if production.production_type == current_production {
+                        producer.value += producer.rate * delta_time;
+                        if producer.value >= production.cost {
+                            //	leave the remainder, so as to avoid value loss over time
+                            producer.value = producer.value % production.cost;
+                            production.queue -= 1;
 
-                        //  create unit
-                        producer_writer.send(Produce {
-                            production_type: producer.current_production.clone(),
-                            position: transform.translation() + SPAWN_OFFSET,
-                            location: producer.post_spawn_location,
-                        });
+                            //  create unit
+                            producer_writer.send(Produce {
+                                production_type: producer.current_production.clone(),
+                                position: transform.translation() + SPAWN_OFFSET,
+                                location: producer.post_spawn_location,
+                            });
 
-                        //  shift production
-                        producer.queue.remove(0);
-                        if producer.queue.len() == 0 {
-                            producer.current_production = ProductionType::None;
-                        } else {
-                            producer.current_production = producer.queue[0].clone();
+                            //  shift production
+                            producer.queue.remove(0);
+                            if producer.queue.len() == 0 {
+                                producer.current_production = ProductionType::None;
+                            } else {
+                                producer.current_production = producer.queue[0].clone();
+                            }
                         }
                     }
                 }

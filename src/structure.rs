@@ -103,18 +103,6 @@ fn spawn_structure(
                         ),
                         Structure {},
                         Producer {
-                            productions: vec![
-                                Production {
-                                    production_type: ProductionType::Worker,
-                                    cost: WORKER_COST,
-                                    queue: 0,
-                                },
-                                Production {
-                                    production_type: ProductionType::Priest,
-                                    cost: PRIEST_COST,
-                                    queue: 0,
-                                },
-                            ],
                             post_spawn_location: place.position + SPAWN_OFFSET,
                             ..default()
                         },
@@ -134,6 +122,17 @@ fn spawn_structure(
                             PostSpawnMarker { not_set: true },
                             Name::new("PostSpawnMarker"),
                         ));
+
+                        builder.spawn(Production {
+                            production_type: ProductionType::Worker,
+                            cost: WORKER_COST,
+                            queue: 0,
+                        });
+                        builder.spawn(Production {
+                            production_type: ProductionType::Priest,
+                            cost: PRIEST_COST,
+                            queue: 0,
+                        });
                     });
             }
         }
