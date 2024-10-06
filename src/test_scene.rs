@@ -8,11 +8,14 @@ use crate::{
     generator::Generator,
     movement::Moveable,
     nav_agent::{Navigator, Obstacle},
-    producer::{PostSpawnMarker, Producer, SPAWN_OFFSET},
+    producer::{
+        PostSpawnMarker, Producer, Production, ProductionType, PRIEST_COST, SPAWN_OFFSET,
+        WORKER_COST,
+    },
     selectable::Selectable,
     structure::{
-        Structure, POST_SPAWN_MARKER_PATH, SELECTION_SIZE, SIMPLE_SHRINE_ASSET_PATH,
-        WORKER_PRODUCER_ASSET_PATH,
+        Structure, POST_SPAWN_MARKER_PATH, PRODUCER_ASSET_PATH, SELECTION_SIZE,
+        SIMPLE_SHRINE_ASSET_PATH,
     },
     ui::{PRIEST_ASSET_PATH, WORKER_ASSET_PATH},
     unit::Unit,
@@ -125,13 +128,13 @@ fn spawn_structures(asset_server: Res<AssetServer>, mut commands: Commands) {
         Name::new("SimpleShrine"),
     ));
 
-    //  WORKER PRODUCER
-    let worker_producer_texture: Handle<Image> = asset_server.load(WORKER_PRODUCER_ASSET_PATH);
+    //  PRODUCER
+    let producer_texture: Handle<Image> = asset_server.load(PRODUCER_ASSET_PATH);
     spawn_position_base += vec3(100., 0., 0.);
     commands
         .spawn((
             SpriteBundle {
-                texture: worker_producer_texture,
+                texture: producer_texture,
                 transform: Transform::from_translation(spawn_position_base),
                 ..default()
             },
@@ -142,13 +145,25 @@ fn spawn_structures(asset_server: Res<AssetServer>, mut commands: Commands) {
             ),
             Structure {},
             Producer {
+                productions: vec![
+                    Production {
+                        production_type: ProductionType::Worker,
+                        cost: WORKER_COST,
+                        queue: 0,
+                    },
+                    Production {
+                        production_type: ProductionType::Priest,
+                        cost: PRIEST_COST,
+                        queue: 0,
+                    },
+                ],
                 post_spawn_location: spawn_position_base + SPAWN_OFFSET,
                 ..default()
             },
             Selectable {
                 size: SELECTION_SIZE,
             },
-            Name::new("WorkerProducer"),
+            Name::new("Producer"),
         ))
         .with_children(|builder| {
             builder.spawn((

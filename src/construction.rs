@@ -12,8 +12,8 @@ use crate::{
     schedule::InGameSet,
     selectable::{Selectable, SelectedUnits, SelectionStateChanged, SelectionType},
     structure::{
-        PlaceStructure, StructureType, SELECTION_SIZE, SIMPLE_SHRINE_ASSET_PATH,
-        WORKER_PRODUCER_ASSET_PATH,
+        PlaceStructure, StructureType, PRODUCER_ASSET_PATH, SELECTION_SIZE,
+        SIMPLE_SHRINE_ASSET_PATH,
     },
     unit::Unit,
 };
@@ -95,7 +95,7 @@ fn display_construction_silhouette(
         if event.new_type == SelectionType::Construction {
             let texture: Handle<Image> = asset_server.load(match build_selection.structure_type {
                 StructureType::SimpleShrine => SIMPLE_SHRINE_ASSET_PATH,
-                StructureType::Producer => WORKER_PRODUCER_ASSET_PATH,
+                StructureType::Producer => PRODUCER_ASSET_PATH,
             });
 
             commands.spawn((
@@ -197,7 +197,7 @@ fn place_structure(
     for placement in placement_reader.read() {
         let texture: Handle<Image> = asset_server.load(match placement.structure_type {
             StructureType::SimpleShrine => SIMPLE_SHRINE_ASSET_PATH,
-            StructureType::Producer => WORKER_PRODUCER_ASSET_PATH,
+            StructureType::Producer => PRODUCER_ASSET_PATH,
         });
 
         let pos_3d = placement.position.extend(0.0);

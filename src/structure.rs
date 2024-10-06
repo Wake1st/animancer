@@ -12,7 +12,7 @@ use crate::{
 };
 
 pub const SIMPLE_SHRINE_ASSET_PATH: &str = "harvester.png";
-pub const WORKER_PRODUCER_ASSET_PATH: &str = "worker producer.png";
+pub const PRODUCER_ASSET_PATH: &str = "worker producer.png";
 pub const POST_SPAWN_MARKER_PATH: &str = "marker.png";
 pub const SELECTION_SIZE: Vec2 = vec2(64., 64.);
 
@@ -64,7 +64,7 @@ fn spawn_structure(
         let marker_texture: Handle<Image> = asset_server.load(POST_SPAWN_MARKER_PATH);
         let texture: Handle<Image> = asset_server.load(match place.structure_type {
             StructureType::SimpleShrine => SIMPLE_SHRINE_ASSET_PATH,
-            StructureType::Producer => WORKER_PRODUCER_ASSET_PATH,
+            StructureType::Producer => PRODUCER_ASSET_PATH,
         });
 
         match place.structure_type {

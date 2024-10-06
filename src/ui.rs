@@ -12,7 +12,7 @@ use crate::{
     producer::{DisplayProducerUI, Producer, Production, ProductionType, RemoveProducerUI},
     schedule::InGameSet,
     selectable::{SelectedStructures, SelectionState, SelectionStateChanged, SelectionType},
-    structure::StructureType,
+    structure::{StructureType, PRODUCER_ASSET_PATH, SIMPLE_SHRINE_ASSET_PATH},
     worker::{DisplayWorkerUI, RemoveWorkerUI},
 };
 
@@ -21,14 +21,11 @@ const UI_BASE_HEIGHT: f32 = 88.;
 const MARGIN: Val = Val::Px(12.);
 const NORMAL_BUTTON: Color = Color::srgb(0.15, 0.35, 0.35);
 
-const SIMPLE_SHRINE_ASSET_PATH: &str = "harvester.png";
-const WORKER_PRODUCER_ASSET_PATH: &str = "worker producer.png";
-
 pub const WORKER_ASSET_PATH: &str = "worker.png";
 pub const PRIEST_ASSET_PATH: &str = "priest.png";
 
 pub const SIMPLE_SHRINE_COST: f32 = 40.;
-pub const WORKER_PRODUCER_COST: f32 = 200.;
+pub const PRODUCER_COST: f32 = 200.;
 
 pub struct UIPlugin;
 
@@ -73,7 +70,9 @@ struct ProducerButton {
 }
 
 #[derive(Component)]
-struct QueueText {}
+struct QueueText {
+    pub production_type: ProductionType,
+}
 
 #[derive(Component)]
 pub struct WorkerUI {}
@@ -126,7 +125,7 @@ fn setup_ui_base(mut commands: Commands) {
 
 fn setup_worker_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
     let simple_shrine_texture: Handle<Image> = asset_server.load(SIMPLE_SHRINE_ASSET_PATH);
-    let worker_producer_texture: Handle<Image> = asset_server.load(WORKER_PRODUCER_ASSET_PATH);
+    let producer_texture: Handle<Image> = asset_server.load(PRODUCER_ASSET_PATH);
 
     commands
         .spawn((
@@ -194,14 +193,14 @@ fn setup_worker_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
                             border_color: Color::Srgba(GRAY_800).into(),
                             background_color: NORMAL_BUTTON.into(),
                             image: UiImage {
-                                texture: worker_producer_texture,
+                                texture: producer_texture,
                                 ..default()
                             },
                             ..default()
                         },
                         BuildButton {
                             structure_type: StructureType::Producer,
-                            cost: WORKER_PRODUCER_COST,
+                            cost: PRODUCER_COST,
                         },
                     ));
                 });
@@ -272,7 +271,9 @@ fn production_button(
                 },
                 ..default()
             },
-            ProducerButton { production_type },
+            ProducerButton {
+                production_type: production_type.clone(),
+            },
         ))
         .with_children(|builder| {
             builder
@@ -294,7 +295,7 @@ fn production_button(
                             text: Text::from_section("", TextStyle { ..default() }),
                             ..default()
                         },
-                        QueueText {},
+                        QueueText { production_type },
                     ));
                 });
         });
@@ -455,12 +456,16 @@ fn producer_button_interactions(
                                 added_productions.push(production.production_type.clone());
 
                                 produced = true;
-                                info!("produced");
                             }
                         }
 
                         if produced {
                             producer.queue.append(&mut added_productions);
+
+                            //  only set if it's the first
+                            if producer.queue.len() == 1 {
+                                producer.current_production = producer.queue[0].clone();
+                            }
                         }
                     }
                 }
@@ -476,17 +481,22 @@ fn producer_button_interactions(
 }
 
 fn production_queue_display(
-    mut text_query: Query<&mut Text, With<QueueText>>,
+    mut text_query: Query<(&mut Text, &QueueText)>,
     selected_structures: Res<SelectedStructures>,
-    production_query: Query<&Production>,
+    producer_query: Query<&Producer>,
 ) {
-    for mut text in &mut text_query {
-        for entity in selected_structures.entities.clone() {
-            if let Ok(production) = production_query.get(entity) {
-                text.sections[0].value = if production.queue > 0 {
-                    production.queue.to_string()
-                } else {
-                    "".into()
+    for entity in selected_structures.entities.clone() {
+        if let Ok(producer) = producer_query.get(entity) {
+            for production in producer.productions.iter() {
+                for (mut text, queue_text) in &mut text_query {
+                    if queue_text.production_type == production.production_type {
+                        info!("queue: {:?}", production.queue);
+                        text.sections[0].value = if production.queue > 0 {
+                            production.queue.to_string()
+                        } else {
+                            "".into()
+                        }
+                    }
                 }
             }
         }

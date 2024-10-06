@@ -7,7 +7,7 @@ use crate::{
     ui::{CurrentUI, UIType},
 };
 
-pub const SPAWN_OFFSET: Vec3 = vec3(0.0, -40.0, 0.1);
+pub const SPAWN_OFFSET: Vec3 = vec3(0.0, -50.0, 0.1);
 
 pub const WORKER_COST: f32 = 10.0;
 pub const PRIEST_COST: f32 = 18.0;
@@ -50,6 +50,19 @@ impl Default for Producer {
     }
 }
 
+impl Clone for Producer {
+    fn clone(&self) -> Self {
+        Self {
+            productions: self.productions.clone(),
+            current_production: self.current_production.clone(),
+            queue: self.queue.clone(),
+            value: self.value.clone(),
+            rate: self.rate.clone(),
+            post_spawn_location: self.post_spawn_location.clone(),
+        }
+    }
+}
+
 #[derive(Component)]
 pub struct Production {
     pub production_type: ProductionType,
@@ -67,7 +80,7 @@ impl Clone for Production {
     }
 }
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Debug)]
 pub enum ProductionType {
     None,
     Worker,
@@ -106,18 +119,16 @@ pub struct Produce {
 
 fn produce(
     time: Res<Time>,
-    mut query: Query<(&mut Producer, &GlobalTransform), With<Structure>>,
+    mut producer_query: Query<(&mut Producer, &GlobalTransform), With<Structure>>,
     mut producer_writer: EventWriter<Produce>,
 ) {
     let delta_time = time.delta_seconds();
 
-    for (mut producer, transform) in query.iter_mut() {
-        let spawn_location = producer.post_spawn_location;
+    for (mut producer, transform) in producer_query.iter_mut() {
         let current_production = producer.current_production.clone();
-        let mut productions = producer.productions.clone();
 
         if producer.queue.len() > 0 {
-            for production in productions.iter_mut() {
+            for production in producer.productions.iter_mut() {
                 if production.production_type == current_production {
                     producer.value += producer.rate * delta_time;
                     if producer.value >= production.cost {
@@ -129,7 +140,7 @@ fn produce(
                         producer_writer.send(Produce {
                             production_type: producer.current_production.clone(),
                             position: transform.translation() + SPAWN_OFFSET,
-                            location: spawn_location,
+                            location: producer.post_spawn_location,
                         });
 
                         //  shift production
