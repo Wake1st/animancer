@@ -11,6 +11,7 @@ pub const SPAWN_OFFSET: Vec3 = vec3(0.0, -50.0, 0.1);
 
 pub const WORKER_COST: f32 = 10.0;
 pub const PRIEST_COST: f32 = 18.0;
+pub const WARRIOR_COST: f32 = 14.0;
 
 pub struct ProducerPlugin;
 

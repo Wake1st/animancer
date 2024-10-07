@@ -16,6 +16,7 @@ mod structure;
 mod test_scene;
 mod ui;
 mod unit;
+mod warrior;
 mod worker;
 
 use bevy::{log::LogPlugin, prelude::*, render::primitives::Aabb, window::WindowMode};
@@ -39,6 +40,7 @@ use test_scene::TestScenePlugin;
 use ui::UIPlugin;
 use unit::UnitPlugin;
 use vleue_navigator::{prelude::NavmeshUpdaterPlugin, VleueNavigatorPlugin};
+use warrior::WarriorPlugin;
 use worker::WorkerPlugin;
 
 fn main() {
@@ -84,6 +86,7 @@ fn main() {
             CurrencyPlugin,
             WorkerPlugin,
             PriestPlugin,
+            WarriorPlugin,
             // FogOfWarPlugin,
         ))
         .add_plugins((TestScenePlugin, HelperPlugin))

@@ -23,6 +23,7 @@ const NORMAL_BUTTON: Color = Color::srgb(0.15, 0.35, 0.35);
 
 pub const WORKER_ASSET_PATH: &str = "worker.png";
 pub const PRIEST_ASSET_PATH: &str = "priest.png";
+pub const WARRIOR_ASSET_PATH: &str = "warrior.png";
 
 pub const SIMPLE_SHRINE_COST: f32 = 40.;
 pub const PRODUCER_COST: f32 = 200.;
@@ -210,6 +211,7 @@ fn setup_worker_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
 fn setup_producer_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
     let worker_texture: Handle<Image> = asset_server.load(WORKER_ASSET_PATH);
     let priest_texture: Handle<Image> = asset_server.load(PRIEST_ASSET_PATH);
+    let warrior_texture: Handle<Image> = asset_server.load(WARRIOR_ASSET_PATH);
 
     commands
         .spawn((
@@ -243,6 +245,7 @@ fn setup_producer_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
                 .with_children(|builder| {
                     production_button(builder, worker_texture, ProductionType::Worker);
                     production_button(builder, priest_texture, ProductionType::Priest);
+                    production_button(builder, warrior_texture, ProductionType::Warrior);
                 });
         });
 }

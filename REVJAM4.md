@@ -30,7 +30,7 @@
   - [x] producers should produce each unit type
     - [x] worker
     - [x] priest
-    - [ ] warrior 
+    - [x] warrior 
   - [ ] combat mechanics
   - [ ] main menu
   - [ ] pause menu

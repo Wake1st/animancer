@@ -10,14 +10,14 @@ use crate::{
     nav_agent::{Navigator, Obstacle},
     producer::{
         PostSpawnMarker, Producer, Production, ProductionType, PRIEST_COST, SPAWN_OFFSET,
-        WORKER_COST,
+        WARRIOR_COST, WORKER_COST,
     },
     selectable::Selectable,
     structure::{
         Structure, POST_SPAWN_MARKER_PATH, PRODUCER_ASSET_PATH, SELECTION_SIZE,
         SIMPLE_SHRINE_ASSET_PATH,
     },
-    ui::{PRIEST_ASSET_PATH, WORKER_ASSET_PATH},
+    ui::{PRIEST_ASSET_PATH, WARRIOR_ASSET_PATH, WORKER_ASSET_PATH},
     unit::Unit,
     worker::Worker,
 };
@@ -28,7 +28,13 @@ impl Plugin for TestScenePlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Startup,
-            (spawn_hero, spawn_workers, spawn_priests, spawn_structures),
+            (
+                spawn_hero,
+                spawn_workers,
+                spawn_priests,
+                spawn_warriors,
+                spawn_structures,
+            ),
         );
     }
 }
@@ -59,7 +65,7 @@ fn spawn_workers(mut commands: Commands, asset_server: Res<AssetServer>) {
     let texture: Handle<Image> = asset_server.load(WORKER_ASSET_PATH);
     let spawn_position_base = vec3(200., -200., 0.);
 
-    for n in 0..20 {
+    for n in 0..10 {
         let position = spawn_position_base + vec3(30. * (n % 5) as f32, 30. * (n / 5) as f32, 0.);
         commands.spawn((
             SpriteBundle {
@@ -82,6 +88,30 @@ fn spawn_workers(mut commands: Commands, asset_server: Res<AssetServer>) {
 fn spawn_priests(mut commands: Commands, asset_server: Res<AssetServer>) {
     let texture: Handle<Image> = asset_server.load(PRIEST_ASSET_PATH);
     let spawn_position_base = vec3(-200., -200., 0.);
+
+    for n in 0..10 {
+        let position = spawn_position_base + vec3(30. * (n % 5) as f32, 30. * (n / 5) as f32, 0.);
+        commands.spawn((
+            SpriteBundle {
+                texture: texture.clone(),
+                transform: Transform::from_translation(position),
+                ..default()
+            },
+            Unit {},
+            Worker { effort: 1.5 },
+            Moveable { location: position },
+            Selectable {
+                size: vec2(32., 32.),
+            },
+            Navigator { speed: 85.0 },
+            Name::new("Priest"),
+        ));
+    }
+}
+
+fn spawn_warriors(mut commands: Commands, asset_server: Res<AssetServer>) {
+    let texture: Handle<Image> = asset_server.load(WARRIOR_ASSET_PATH);
+    let spawn_position_base = vec3(-200., 200., 0.);
 
     for n in 0..10 {
         let position = spawn_position_base + vec3(30. * (n % 5) as f32, 30. * (n / 5) as f32, 0.);
@@ -173,6 +203,11 @@ fn spawn_structures(asset_server: Res<AssetServer>, mut commands: Commands) {
             builder.spawn(Production {
                 production_type: ProductionType::Priest,
                 cost: PRIEST_COST,
+                queue: 0,
+            });
+            builder.spawn(Production {
+                production_type: ProductionType::Warrior,
+                cost: WARRIOR_COST,
                 queue: 0,
             });
         });

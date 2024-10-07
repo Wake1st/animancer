@@ -5,7 +5,7 @@ use crate::{
     nav_agent::Obstacle,
     producer::{
         PostSpawnMarker, Producer, Production, ProductionType, PRIEST_COST, SPAWN_OFFSET,
-        WORKER_COST,
+        WARRIOR_COST, WORKER_COST,
     },
     schedule::InGameSet,
     selectable::Selectable,
@@ -131,6 +131,11 @@ fn spawn_structure(
                         builder.spawn(Production {
                             production_type: ProductionType::Priest,
                             cost: PRIEST_COST,
+                            queue: 0,
+                        });
+                        builder.spawn(Production {
+                            production_type: ProductionType::Warrior,
+                            cost: WARRIOR_COST,
                             queue: 0,
                         });
                     });

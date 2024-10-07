@@ -7,12 +7,14 @@ use crate::{
     producer::{Produce, ProductionType},
     schedule::InGameSet,
     selectable::Selectable,
-    ui::{PRIEST_ASSET_PATH, WORKER_ASSET_PATH},
+    ui::{PRIEST_ASSET_PATH, WARRIOR_ASSET_PATH, WORKER_ASSET_PATH},
+    warrior::Warrior,
     worker::Worker,
 };
 
 const WORKER_SPEED: f32 = 100.0;
 const PRIEST_SPEED: f32 = 85.0;
+const WARRIOR_SPEED: f32 = 120.0;
 
 pub struct UnitPlugin;
 
@@ -41,7 +43,7 @@ fn spawn_worker(
         let (texture_path, speed, name) = match event.production_type {
             ProductionType::Worker => (WORKER_ASSET_PATH, WORKER_SPEED, "Worker"),
             ProductionType::Priest => (PRIEST_ASSET_PATH, PRIEST_SPEED, "Priest"),
-            ProductionType::Warrior => ("", 0.0, "Warrior"),
+            ProductionType::Warrior => (WARRIOR_ASSET_PATH, WARRIOR_SPEED, "Warrior"),
             ProductionType::None => ("", 0.0, "None"),
         };
         let texture = asset_server.load(texture_path);
@@ -70,10 +72,10 @@ fn spawn_worker(
                 ProductionType::Priest => {
                     Priest { persuation: 3.0 };
                 }
-                ProductionType::None => {
-                    todo!();
-                }
                 ProductionType::Warrior => {
+                    Warrior { strength: 2.5 };
+                }
+                ProductionType::None => {
                     todo!();
                 }
             })
