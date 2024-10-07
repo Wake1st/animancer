@@ -171,6 +171,7 @@ fn display_producer_ui(
             }
             UIType::Worker => (),
             UIType::Producer => (),
+            UIType::Generator => (),
         }
     }
 }

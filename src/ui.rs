@@ -86,6 +86,7 @@ pub enum UIType {
     None,
     Worker,
     Producer,
+    Generator,
 }
 
 #[derive(Resource)]
@@ -328,29 +329,61 @@ fn update_ui(
                 remove_producer_ui.send(RemoveProducerUI {});
                 current_ui.ui_type = UIType::None;
             }
-            (SelectionType::Unit, UIType::None) => {
+            (SelectionType::None, UIType::Generator) => {
+                current_ui.ui_type = UIType::None;
+            }
+            (SelectionType::Worker, UIType::None) => {
                 display_worker_ui.send(DisplayWorkerUI {});
                 current_ui.ui_type = UIType::Worker;
             }
-            (SelectionType::Unit, UIType::Worker) => (),
-            (SelectionType::Unit, UIType::Producer) => {
+            (SelectionType::Worker, UIType::Worker) => (),
+            (SelectionType::Worker, UIType::Producer) => {
                 remove_producer_ui.send(RemoveProducerUI {});
                 display_worker_ui.send(DisplayWorkerUI {});
                 current_ui.ui_type = UIType::Worker;
             }
+            (SelectionType::Worker, UIType::Generator) => {
+                display_worker_ui.send(DisplayWorkerUI {});
+                current_ui.ui_type = UIType::Worker;
+            }
+            (SelectionType::Priest, UIType::None) => (),
+            (SelectionType::Priest, UIType::Worker) => (),
+            (SelectionType::Priest, UIType::Producer) => (),
+            (SelectionType::Priest, UIType::Generator) => (),
+            (SelectionType::Warrior, UIType::None) => (),
+            (SelectionType::Warrior, UIType::Worker) => (),
+            (SelectionType::Warrior, UIType::Producer) => (),
+            (SelectionType::Warrior, UIType::Generator) => (),
             (SelectionType::Construction, UIType::None) => (),
             (SelectionType::Construction, UIType::Worker) => (),
             (SelectionType::Construction, UIType::Producer) => (),
-            (SelectionType::Building, UIType::None) => {
+            (SelectionType::Construction, UIType::Generator) => (),
+            (SelectionType::Generator, UIType::None) => {
+                current_ui.ui_type = UIType::Generator;
+            }
+            (SelectionType::Generator, UIType::Worker) => {
+                remove_worker_ui.send(RemoveWorkerUI {});
+                current_ui.ui_type = UIType::Generator;
+            }
+            (SelectionType::Generator, UIType::Producer) => {
+                remove_producer_ui.send(RemoveProducerUI {});
+                current_ui.ui_type = UIType::Generator;
+            }
+            (SelectionType::Generator, UIType::Generator) => (),
+            (SelectionType::Producer, UIType::None) => {
                 display_producer_ui.send(DisplayProducerUI {});
                 current_ui.ui_type = UIType::Producer;
             }
-            (SelectionType::Building, UIType::Worker) => {
+            (SelectionType::Producer, UIType::Worker) => {
                 remove_worker_ui.send(RemoveWorkerUI {});
                 display_producer_ui.send(DisplayProducerUI {});
                 current_ui.ui_type = UIType::Producer;
             }
-            (SelectionType::Building, UIType::Producer) => (),
+            (SelectionType::Producer, UIType::Producer) => (),
+            (SelectionType::Producer, UIType::Generator) => {
+                display_producer_ui.send(DisplayProducerUI {});
+                current_ui.ui_type = UIType::Producer;
+            }
         }
     }
 }

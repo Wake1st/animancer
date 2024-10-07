@@ -144,7 +144,7 @@ fn handle_click(
                 box_selection_writer,
             );
         }
-        SelectionType::Unit => {
+        SelectionType::Worker | SelectionType::Priest | SelectionType::Warrior => {
             click_selection(
                 pos,
                 &mouse_button_input,
@@ -176,7 +176,15 @@ fn handle_click(
                 attempt_placement.send(AttemptSitePlacement { position: pos });
             }
         }
-        SelectionType::Building => {
+        SelectionType::Generator => {
+            click_selection(
+                pos,
+                &mouse_button_input,
+                &mut box_selector,
+                box_selection_writer,
+            );
+        }
+        SelectionType::Producer => {
             if mouse_button_input.just_pressed(MouseButton::Right) {
                 for &entity in selected_structures.entities.iter() {
                     if let Ok((mut producer, children)) = producers.get_mut(entity) {
@@ -189,9 +197,7 @@ fn handle_click(
                         }
                     }
                 }
-            } else if mouse_button_input.pressed(MouseButton::Left)
-                || mouse_button_input.just_released(MouseButton::Left)
-            {
+            } else {
                 click_selection(
                     pos,
                     &mouse_button_input,
@@ -226,11 +232,11 @@ fn set_selection_state(
 
             if deselect_construction || place_structure {
                 selection_state_changed.send(SelectionStateChanged {
-                    new_type: SelectionType::Unit,
+                    new_type: SelectionType::Worker,
                 });
             }
         }
-        SelectionType::Building => {
+        SelectionType::Producer => {
             if mouse_button_input.pressed(MouseButton::Left)
                 || mouse_button_input.just_released(MouseButton::Left)
             {

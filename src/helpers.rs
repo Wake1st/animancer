@@ -137,14 +137,18 @@ fn debug_text(
             UIType::None => "None",
             UIType::Worker => "Worker",
             UIType::Producer => "Producer",
+            UIType::Generator => "Generator",
         })
         .to_string();
 
         text.sections[14].value = (match selection_state.0 {
             SelectionType::None => "None",
-            SelectionType::Unit => "Unit",
+            SelectionType::Worker => "Worker",
+            SelectionType::Priest => "Priest",
+            SelectionType::Warrior => "Warrior",
             SelectionType::Construction => "Construction",
-            SelectionType::Building => "Building",
+            SelectionType::Generator => "Generator",
+            SelectionType::Producer => "Producer",
         })
         .to_string();
 

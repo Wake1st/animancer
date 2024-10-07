@@ -47,18 +47,24 @@ pub struct SelectedStructures {
 #[derive(PartialEq, Debug)]
 pub enum SelectionType {
     None,
-    Unit,
+    Worker,
+    Priest,
+    Warrior,
     Construction,
-    Building,
+    Generator,
+    Producer,
 }
 
 impl Clone for SelectionType {
     fn clone(&self) -> Self {
         match self {
             Self::None => Self::None,
-            Self::Unit => Self::Unit,
+            Self::Worker => Self::Worker,
+            Self::Priest => Self::Priest,
+            Self::Warrior => Self::Warrior,
             Self::Construction => Self::Construction,
-            Self::Building => Self::Building,
+            Self::Generator => Self::Generator,
+            Self::Producer => Self::Producer,
         }
     }
 }
@@ -101,8 +107,9 @@ fn select_entities(
 
         //  Always prioritize units and never select units AND structures
         if selected_units.entities.len() > 0 {
+            //  TODO: how do we set the type now?
             selection_state_changed.send(SelectionStateChanged {
-                new_type: SelectionType::Unit,
+                new_type: SelectionType::Worker,
             });
             return;
         }
@@ -123,9 +130,10 @@ fn select_entities(
         }
 
         if selected_structures.entities.len() > 0 {
+            //  TODO: how do we know the building type?
             producer_selection.is_selected = true;
             selection_state_changed.send(SelectionStateChanged {
-                new_type: SelectionType::Building,
+                new_type: SelectionType::Producer,
             });
         } else {
             producer_selection.is_selected = false;
