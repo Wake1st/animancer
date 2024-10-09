@@ -8,6 +8,7 @@ use crate::{
     generator::Generator,
     movement::Moveable,
     nav_agent::{Navigator, Obstacle},
+    priest::Priest,
     producer::{
         PostSpawnMarker, Producer, Production, ProductionType, PRIEST_COST, SPAWN_OFFSET,
         WARRIOR_COST, WORKER_COST,
@@ -19,6 +20,7 @@ use crate::{
     },
     ui::{PRIEST_ASSET_PATH, WARRIOR_ASSET_PATH, WORKER_ASSET_PATH},
     unit::Unit,
+    warrior::Warrior,
     worker::Worker,
 };
 
@@ -98,7 +100,7 @@ fn spawn_priests(mut commands: Commands, asset_server: Res<AssetServer>) {
                 ..default()
             },
             Unit {},
-            Worker { effort: 1.5 },
+            Priest { persuation: 3.0 },
             Moveable { location: position },
             Selectable {
                 size: vec2(32., 32.),
@@ -122,7 +124,7 @@ fn spawn_warriors(mut commands: Commands, asset_server: Res<AssetServer>) {
                 ..default()
             },
             Unit {},
-            Worker { effort: 1.5 },
+            Warrior { strength: 2.5 },
             Moveable { location: position },
             Selectable {
                 size: vec2(32., 32.),

@@ -4,23 +4,39 @@ use crate::{
     construction::{AssignConstructionWorkers, ConstructionSite},
     generator::{AssignGeneratorWorkers, Generator},
     inputs::ProducerSelection,
+    priest::Priest,
+    producer::Producer,
     structure::Structure,
     unit::{Unit, UnitAction},
+    warrior::Warrior,
+    worker::Worker,
 };
 pub struct SelectablePlugin;
 
 impl Plugin for SelectablePlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, (select_entities, unit_action_selection))
-            .add_event::<BoxSelection>()
-            .add_event::<SelectionStateChanged>()
-            .insert_resource(SelectedUnits {
-                entities: Vec::new(),
-            })
-            .insert_resource(SelectedStructures {
-                entities: Vec::new(),
-            })
-            .insert_resource(SelectionState(SelectionType::None));
+        app.add_systems(
+            Update,
+            (
+                (
+                    select_entities,
+                    (set_selected_unit_type, set_selected_structure_type),
+                )
+                    .chain(),
+                unit_action_selection,
+            ),
+        )
+        .add_event::<BoxSelection>()
+        .add_event::<SelectionStateChanged>()
+        .add_event::<UnitsSelected>()
+        .add_event::<StructuresSelected>()
+        .insert_resource(SelectedUnits {
+            entities: Vec::new(),
+        })
+        .insert_resource(SelectedStructures {
+            entities: Vec::new(),
+        })
+        .insert_resource(SelectionState(SelectionType::None));
     }
 }
 
@@ -77,14 +93,22 @@ pub struct SelectionStateChanged {
     pub new_type: SelectionType,
 }
 
+#[derive(Event)]
+struct UnitsSelected {}
+
+#[derive(Event)]
+struct StructuresSelected {}
+
 fn select_entities(
     mut reader: EventReader<BoxSelection>,
     mut query_units: Query<(Entity, &GlobalTransform, &Selectable), With<Unit>>,
     mut query_structures: Query<(Entity, &GlobalTransform, &Selectable), With<Structure>>,
     mut selected_units: ResMut<SelectedUnits>,
     mut selected_structures: ResMut<SelectedStructures>,
-    mut producer_selection: ResMut<ProducerSelection>,
+    mut units_selected: EventWriter<UnitsSelected>,
+    mut structures_selected: EventWriter<StructuresSelected>,
     mut selection_state_changed: EventWriter<SelectionStateChanged>,
+    mut producer_selection: ResMut<ProducerSelection>,
 ) {
     for box_selection in reader.read() {
         selected_units.entities.clear();
@@ -107,10 +131,7 @@ fn select_entities(
 
         //  Always prioritize units and never select units AND structures
         if selected_units.entities.len() > 0 {
-            //  TODO: how do we set the type now?
-            selection_state_changed.send(SelectionStateChanged {
-                new_type: SelectionType::Worker,
-            });
+            units_selected.send(UnitsSelected {});
             return;
         }
 
@@ -130,16 +151,114 @@ fn select_entities(
         }
 
         if selected_structures.entities.len() > 0 {
-            //  TODO: how do we know the building type?
-            producer_selection.is_selected = true;
-            selection_state_changed.send(SelectionStateChanged {
-                new_type: SelectionType::Producer,
-            });
+            structures_selected.send(StructuresSelected {});
         } else {
-            producer_selection.is_selected = false;
             selection_state_changed.send(SelectionStateChanged {
                 new_type: SelectionType::None,
             });
+
+            producer_selection.is_selected = false;
+        }
+    }
+}
+
+fn set_selected_unit_type(
+    mut units_selected: EventReader<UnitsSelected>,
+    selected_units: Res<SelectedUnits>,
+    worker_query: Query<Entity, With<Worker>>,
+    priest_query: Query<Entity, With<Priest>>,
+    warrior_query: Query<Entity, With<Warrior>>,
+    mut selection_state_changed: EventWriter<SelectionStateChanged>,
+) {
+    for _ in units_selected.read() {
+        let mut selected_type = SelectionType::None;
+        let mut mismatched_types: bool = false;
+
+        for &entity in selected_units.entities.iter() {
+            if let Ok(_) = worker_query.get(entity) {
+                if selected_type == SelectionType::None {
+                    selected_type = SelectionType::Worker;
+                    continue;
+                } else if selected_type != SelectionType::Worker {
+                    mismatched_types = true;
+                    break;
+                }
+            }
+            if let Ok(_) = priest_query.get(entity) {
+                if selected_type == SelectionType::None {
+                    selected_type = SelectionType::Priest;
+                    continue;
+                } else if selected_type != SelectionType::Priest {
+                    mismatched_types = true;
+                    break;
+                }
+            }
+            if let Ok(_) = warrior_query.get(entity) {
+                if selected_type == SelectionType::None {
+                    selected_type = SelectionType::Warrior;
+                    continue;
+                } else if selected_type != SelectionType::Warrior {
+                    mismatched_types = true;
+                    break;
+                }
+            }
+        }
+
+        if mismatched_types {
+            selection_state_changed.send(SelectionStateChanged {
+                new_type: SelectionType::None,
+            });
+        } else {
+            selection_state_changed.send(SelectionStateChanged {
+                new_type: selected_type,
+            });
+        }
+    }
+}
+
+fn set_selected_structure_type(
+    mut structures_selected: EventReader<StructuresSelected>,
+    selected_structures: Res<SelectedStructures>,
+    generator_query: Query<Entity, With<Generator>>,
+    producer_query: Query<Entity, With<Producer>>,
+    mut selection_state_changed: EventWriter<SelectionStateChanged>,
+    mut producer_selection: ResMut<ProducerSelection>,
+) {
+    for _ in structures_selected.read() {
+        let mut selected_type = SelectionType::None;
+        let mut mismatched_types: bool = false;
+
+        for &entity in selected_structures.entities.iter() {
+            if let Ok(_) = generator_query.get(entity) {
+                if selected_type == SelectionType::None {
+                    selected_type = SelectionType::Generator;
+                    continue;
+                } else if selected_type != SelectionType::Generator {
+                    mismatched_types = true;
+                    break;
+                }
+            }
+            if let Ok(_) = producer_query.get(entity) {
+                if selected_type == SelectionType::None {
+                    selected_type = SelectionType::Producer;
+                    continue;
+                } else if selected_type != SelectionType::Producer {
+                    mismatched_types = true;
+                    break;
+                }
+            }
+        }
+
+        if mismatched_types {
+            selection_state_changed.send(SelectionStateChanged {
+                new_type: SelectionType::None,
+            });
+        } else {
+            selection_state_changed.send(SelectionStateChanged {
+                new_type: selected_type.clone(),
+            });
+
+            producer_selection.is_selected = selected_type == SelectionType::Producer;
         }
     }
 }
