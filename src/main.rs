@@ -1,4 +1,5 @@
 mod camera;
+mod combat;
 mod construction;
 mod currency;
 mod fog_of_war;
@@ -22,6 +23,7 @@ mod worker;
 use bevy::{log::LogPlugin, prelude::*, render::primitives::Aabb, window::WindowMode};
 
 use camera::CameraPlugin;
+use combat::CombatPlugin;
 use construction::ConstructionPlugin;
 use currency::CurrencyPlugin;
 use fog_of_war::FogOfWarPlugin;
@@ -71,11 +73,14 @@ fn main() {
             NavmeshUpdaterPlugin::<Aabb, Obstacle>::default(),
             NavAgentPlugin,
         ))
-        .add_plugins((StatePlugin, SchedulePlugin))
         .add_plugins((
+            StatePlugin,
+            SchedulePlugin,
             UIPlugin,
             InputPlugin,
             CameraPlugin,
+        ))
+        .add_plugins((
             UnitPlugin,
             SelectablePlugin,
             MovementPlugin,
@@ -87,6 +92,7 @@ fn main() {
             WorkerPlugin,
             PriestPlugin,
             WarriorPlugin,
+            CombatPlugin,
             // FogOfWarPlugin,
         ))
         .add_plugins((TestScenePlugin, HelperPlugin))

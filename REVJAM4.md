@@ -32,6 +32,7 @@
     - [x] priest
     - [x] warrior 
   - [ ] combat mechanics
+  - [ ] conversion mechanics
   - [ ] main menu
   - [ ] pause menu
   - [ ] win state
