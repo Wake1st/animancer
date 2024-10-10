@@ -1,7 +1,9 @@
 use bevy::{math::vec2, prelude::*, render::primitives::Aabb};
 
 use crate::{
+    combat::Health,
     generator::Generator,
+    helpers::HelperPlugin,
     nav_agent::Obstacle,
     producer::{
         PostSpawnMarker, Producer, Production, ProductionType, PRIEST_COST, SPAWN_OFFSET,
@@ -15,6 +17,8 @@ pub const SIMPLE_SHRINE_ASSET_PATH: &str = "harvester.png";
 pub const PRODUCER_ASSET_PATH: &str = "worker producer.png";
 pub const POST_SPAWN_MARKER_PATH: &str = "marker.png";
 pub const SELECTION_SIZE: Vec2 = vec2(64., 64.);
+pub const SIMPLE_SHRINE_HEALTH: f32 = 660.0;
+pub const PRODUCER_HEALTH: f32 = 1400.0;
 
 pub struct StructurePlugin;
 
@@ -81,6 +85,7 @@ fn spawn_structure(
                         Vec3::new(SELECTION_SIZE.x, SELECTION_SIZE.y, 0.0),
                     ),
                     Structure {},
+                    Health(SIMPLE_SHRINE_HEALTH),
                     Generator { ..default() },
                     Selectable {
                         size: SELECTION_SIZE,
@@ -102,6 +107,7 @@ fn spawn_structure(
                             Vec3::new(SELECTION_SIZE.x, SELECTION_SIZE.y, 0.0),
                         ),
                         Structure {},
+                        Health(PRODUCER_HEALTH),
                         Producer {
                             post_spawn_location: place.position + SPAWN_OFFSET,
                             ..default()

@@ -41,7 +41,7 @@
   - [x] implement teams (just 2 for the jam)
     - [x] user should only be able to command their own units/structures
     - [x] user should only be able to attack/convert enemy units/structures
-  - [ ] structures need health
+  - [x] structures need health
   - [ ] user needs visual and audio feedback
     - [ ] warrior attacking
     - [ ] priest converting

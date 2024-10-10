@@ -17,8 +17,8 @@ use crate::{
     },
     selectable::Selectable,
     structure::{
-        Structure, POST_SPAWN_MARKER_PATH, PRODUCER_ASSET_PATH, SELECTION_SIZE,
-        SIMPLE_SHRINE_ASSET_PATH,
+        Structure, POST_SPAWN_MARKER_PATH, PRODUCER_ASSET_PATH, PRODUCER_HEALTH, SELECTION_SIZE,
+        SIMPLE_SHRINE_ASSET_PATH, SIMPLE_SHRINE_HEALTH,
     },
     teams::{Team, TeamType},
     ui::{PRIEST_ASSET_PATH, WARRIOR_ASSET_PATH, WORKER_ASSET_PATH},
@@ -207,6 +207,7 @@ fn spawn_structures<const IS_HUMAN: bool>(asset_server: Res<AssetServer>, mut co
             Vec3::new(SELECTION_SIZE.x, SELECTION_SIZE.y, 0.0),
         ),
         Structure {},
+        Health(SIMPLE_SHRINE_HEALTH),
         Generator { ..default() },
         Selectable {
             size: SELECTION_SIZE,
@@ -235,6 +236,7 @@ fn spawn_structures<const IS_HUMAN: bool>(asset_server: Res<AssetServer>, mut co
                 Vec3::new(SELECTION_SIZE.x, SELECTION_SIZE.y, 0.0),
             ),
             Structure {},
+            Health(PRODUCER_HEALTH),
             Producer {
                 post_spawn_location: spawn_position_base + SPAWN_OFFSET,
                 ..default()
