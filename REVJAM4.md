@@ -27,7 +27,7 @@
       - [x] starting locations
       - [x] resources
       - [x] obstacles (just stick to cliffs)
-    - [ ] in game mechanics
+    - [ ] in game
       - [ ] starting locations
       - [ ] resources
       - [ ] obstacles (just stick to cliffs)
@@ -42,6 +42,17 @@
     - [x] user should only be able to command their own units/structures
     - [x] user should only be able to attack/convert enemy units/structures
   - [ ] structures need health
+  - [ ] user needs visual and audio feedback
+    - [ ] warrior attacking
+    - [ ] priest converting
+    - [ ] worker working
+    - [ ] unit attacked
+    - [ ] building attacked
+    - [ ] unit killed
+    - [ ] unit converted
+    - [ ] building destroyed
+    - [ ] player won
+    - [ ] player lost
   - [ ] main menu
   - [ ] pause menu
   - [ ] win state
