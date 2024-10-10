@@ -60,3 +60,4 @@
       - [ ] cannot make new units
       - [ ] no more units
   - [ ] fog of war
+  - [ ] run it on wasm
