@@ -5,7 +5,7 @@ use bevy::{input::mouse::MouseWheel, math::vec3, prelude::*};
 use crate::{
     camera::CameraDirection,
     construction::AttemptSitePlacement,
-    currency::Faith,
+    currency::Energy,
     movement::{Formation, SetUnitPosition},
     producer::{PostSpawnMarker, Producer},
     schedule::InGameSet,
@@ -218,7 +218,7 @@ fn set_selection_state(
     keys: Res<ButtonInput<KeyCode>>,
     selection_state: Res<SelectionState>,
     mut selection_state_changed: EventWriter<SelectionStateChanged>,
-    faith: Res<Faith>,
+    energy: Res<Energy>,
     build_selection: ResMut<BuildSelection>,
 ) {
     //  ensure cursor is not hovered over ui
@@ -230,7 +230,7 @@ fn set_selection_state(
         SelectionType::Construction => {
             let deselect_construction = mouse_button_input.just_released(MouseButton::Right);
             let place_structure = mouse_button_input.just_released(MouseButton::Left)
-                && faith.value > build_selection.cost
+                && energy.value > build_selection.cost
                 && !keys.pressed(KeyCode::ShiftLeft);
 
             if deselect_construction || place_structure {

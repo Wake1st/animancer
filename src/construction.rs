@@ -5,7 +5,7 @@ use bevy::{
 };
 
 use crate::{
-    currency::Faith,
+    currency::Energy,
     inputs::{BuildSelection, MousePosition},
     movement::{Formation, SetUnitPosition},
     nav_agent::Obstacle,
@@ -161,15 +161,15 @@ fn display_site_validity(
 fn attempt_construction_placement(
     mut placement_attempt: EventReader<AttemptSitePlacement>,
     silhouettes: Query<&Intersects, With<ConstructionSilhouette>>,
-    mut faith: ResMut<Faith>,
+    mut energy: ResMut<Energy>,
     build_selection: Res<BuildSelection>,
     mut place_construction_site: EventWriter<PlaceConstructionSite>,
     mut movement_writer: EventWriter<SetUnitPosition>,
 ) {
     for attempt in placement_attempt.read() {
         for intersects in silhouettes.iter() {
-            if !intersects.0 && faith.value > build_selection.cost {
-                faith.value -= build_selection.cost;
+            if !intersects.0 && energy.value > build_selection.cost {
+                energy.value -= build_selection.cost;
 
                 place_construction_site.send(PlaceConstructionSite {
                     structure_type: build_selection.structure_type.clone(),

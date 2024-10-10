@@ -13,7 +13,7 @@ use vleue_navigator::{prelude::NavMeshStatus, NavMesh};
 use crate::{
     camera::CameraDirection,
     construction::{ConstructionSilhouette, Intersects},
-    currency::Faith,
+    currency::Energy,
     inputs::{BoxSelector, BuildSelection, ProducerSelection, UnitAim},
     movement::Formation,
     nav_agent::Path,
@@ -96,7 +96,7 @@ fn debug_text(
     box_selector: Res<BoxSelector>,
     build_selection: Res<BuildSelection>,
     producer_selection: Res<ProducerSelection>,
-    faith: Res<Faith>,
+    energy: Res<Energy>,
     current_ui: Res<CurrentUI>,
     selection_state: Res<SelectionState>,
     construction_silhouettes: Query<&Intersects, With<ConstructionSilhouette>>,
@@ -129,7 +129,7 @@ fn debug_text(
         })
         .into();
 
-        text.sections[8].value = faith.value.to_string();
+        text.sections[8].value = energy.value.to_string();
 
         text.sections[10].value = current_ui.focused.to_string();
 

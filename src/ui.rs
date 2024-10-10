@@ -7,7 +7,7 @@ use bevy::{
 };
 
 use crate::{
-    currency::Faith,
+    currency::Energy,
     inputs::BuildSelection,
     producer::{DisplayProducerUI, Producer, Production, ProductionType, RemoveProducerUI},
     schedule::InGameSet,
@@ -475,7 +475,7 @@ fn producer_button_interactions(
     selected_structures: Res<SelectedStructures>,
     mut producer_query: Query<(&mut Producer, &Children)>,
     mut production_query: Query<&mut Production>,
-    mut faith: ResMut<Faith>,
+    mut energy: ResMut<Energy>,
 ) {
     for (interaction, mut border_color, button) in &mut interaction_query {
         match *interaction {
@@ -487,9 +487,9 @@ fn producer_button_interactions(
                         for &child in children.iter() {
                             if let Ok(mut production) = production_query.get_mut(child) {
                                 if production.production_type == button.production_type
-                                    && faith.value > production.cost
+                                    && energy.value > production.cost
                                 {
-                                    faith.value -= production.cost;
+                                    energy.value -= production.cost;
                                     production.queue += 1;
 
                                     producer.queue.push(production.production_type.clone());

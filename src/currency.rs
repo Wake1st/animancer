@@ -4,11 +4,11 @@ pub struct CurrencyPlugin;
 
 impl Plugin for CurrencyPlugin {
     fn build(&self, app: &mut App) {
-        app.insert_resource(Faith { value: 500.0 });
+        app.insert_resource(Energy { value: 500.0 });
     }
 }
 
 #[derive(Resource)]
-pub struct Faith {
+pub struct Energy {
     pub value: f32,
 }

@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{currency::Faith, schedule::InGameSet, structure::Structure, worker::Worker};
+use crate::{currency::Energy, schedule::InGameSet, structure::Structure, worker::Worker};
 
 const GENERATOR_BASE_RATE: f32 = 1.0;
 const WORKING_RANGE: f32 = 60.0;
@@ -38,7 +38,7 @@ pub struct Generator {
 impl Default for Generator {
     fn default() -> Self {
         Self {
-            gen_type: GeneratorType::Faith,
+            gen_type: GeneratorType::Energy,
             is_running: true,
             base_rate: GENERATOR_BASE_RATE,
             added_rate: 0.0,
@@ -49,7 +49,7 @@ impl Default for Generator {
 }
 
 pub enum GeneratorType {
-    Faith,
+    Energy,
 }
 
 #[derive(Event)]
@@ -141,14 +141,18 @@ fn get_worker_effort(mut generator_query: Query<&mut Generator>, worker_query: Q
     }
 }
 
-fn generate(time: Res<Time>, mut faith: ResMut<Faith>, query: Query<&Generator, With<Structure>>) {
+fn generate(
+    time: Res<Time>,
+    mut energy: ResMut<Energy>,
+    query: Query<&Generator, With<Structure>>,
+) {
     let delta_time = time.delta_seconds();
 
     for generator in query.iter() {
         if generator.is_running {
             match generator.gen_type {
-                GeneratorType::Faith => {
-                    faith.value += (generator.base_rate + generator.added_rate) * delta_time
+                GeneratorType::Energy => {
+                    energy.value += (generator.base_rate + generator.added_rate) * delta_time
                 }
             }
         }

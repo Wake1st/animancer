@@ -3,7 +3,6 @@ mod combat;
 mod construction;
 mod conversion;
 mod currency;
-mod fog_of_war;
 mod generator;
 mod helpers;
 mod inputs;
