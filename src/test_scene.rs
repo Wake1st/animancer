@@ -19,6 +19,7 @@ use crate::{
         Structure, POST_SPAWN_MARKER_PATH, PRODUCER_ASSET_PATH, SELECTION_SIZE,
         SIMPLE_SHRINE_ASSET_PATH,
     },
+    teams::{Team, TeamType},
     ui::{PRIEST_ASSET_PATH, WARRIOR_ASSET_PATH, WORKER_ASSET_PATH},
     unit::Unit,
     warrior::Warrior,
@@ -32,23 +33,30 @@ impl Plugin for TestScenePlugin {
         app.add_systems(
             Startup,
             (
-                spawn_hero,
-                spawn_workers,
-                spawn_priests,
-                spawn_warriors,
-                spawn_structures,
+                spawn_hero::<true>,
+                spawn_workers::<true>,
+                spawn_priests::<true>,
+                spawn_warriors::<true>,
+                spawn_structures::<true>,
+                spawn_hero::<false>,
+                spawn_workers::<false>,
+                spawn_priests::<false>,
+                spawn_warriors::<false>,
+                spawn_structures::<false>,
             ),
         );
     }
 }
 
-fn spawn_hero(mut commands: Commands, asset_server: Res<AssetServer>) {
+fn spawn_hero<const IS_HUMAN: bool>(mut commands: Commands, asset_server: Res<AssetServer>) {
     let texture: Handle<Image> = asset_server.load("character.png");
+    let team_side = if IS_HUMAN { -1.0 } else { 1.0 };
+    let spawn_position_base = vec3(0., 200. * team_side, 0.);
 
     commands.spawn((
         SpriteBundle {
             texture,
-            transform: Transform::from_translation(Vec3::ZERO),
+            transform: Transform::from_translation(spawn_position_base),
             ..default()
         },
         Unit {},
@@ -61,16 +69,22 @@ fn spawn_hero(mut commands: Commands, asset_server: Res<AssetServer>) {
             size: vec2(32., 32.),
         },
         Navigator { speed: 120.0 },
+        Team(if IS_HUMAN {
+            TeamType::Human
+        } else {
+            TeamType::CPU
+        }),
         Name::new("Hero"),
     ));
 }
 
-fn spawn_workers(mut commands: Commands, asset_server: Res<AssetServer>) {
+fn spawn_workers<const IS_HUMAN: bool>(mut commands: Commands, asset_server: Res<AssetServer>) {
     let texture: Handle<Image> = asset_server.load(WORKER_ASSET_PATH);
-    let spawn_position_base = vec3(200., -200., 0.);
+    let team_side = if IS_HUMAN { -1.0 } else { 1.0 };
+    let spawn_position_base = vec3(-100., 200. * team_side, 0.);
 
     for n in 0..10 {
-        let position = spawn_position_base + vec3(30. * (n % 5) as f32, 30. * (n / 5) as f32, 0.);
+        let position = spawn_position_base + vec3(30. * (n % 2) as f32, 30. * (n / 2) as f32, 0.);
         commands.spawn((
             SpriteBundle {
                 texture: texture.clone(),
@@ -85,17 +99,23 @@ fn spawn_workers(mut commands: Commands, asset_server: Res<AssetServer>) {
                 size: vec2(32., 32.),
             },
             Navigator { speed: 100.0 },
+            Team(if IS_HUMAN {
+                TeamType::Human
+            } else {
+                TeamType::CPU
+            }),
             Name::new("Worker"),
         ));
     }
 }
 
-fn spawn_priests(mut commands: Commands, asset_server: Res<AssetServer>) {
+fn spawn_priests<const IS_HUMAN: bool>(mut commands: Commands, asset_server: Res<AssetServer>) {
     let texture: Handle<Image> = asset_server.load(PRIEST_ASSET_PATH);
-    let spawn_position_base = vec3(-200., -200., 0.);
+    let team_side = if IS_HUMAN { -1.0 } else { 1.0 };
+    let spawn_position_base = vec3(-200., 200. * team_side, 0.);
 
     for n in 0..10 {
-        let position = spawn_position_base + vec3(30. * (n % 5) as f32, 30. * (n / 5) as f32, 0.);
+        let position = spawn_position_base + vec3(30. * (n % 2) as f32, 30. * (n / 2) as f32, 0.);
         commands.spawn((
             SpriteBundle {
                 texture: texture.clone(),
@@ -110,17 +130,23 @@ fn spawn_priests(mut commands: Commands, asset_server: Res<AssetServer>) {
                 size: vec2(32., 32.),
             },
             Navigator { speed: 85.0 },
+            Team(if IS_HUMAN {
+                TeamType::Human
+            } else {
+                TeamType::CPU
+            }),
             Name::new("Priest"),
         ));
     }
 }
 
-fn spawn_warriors(mut commands: Commands, asset_server: Res<AssetServer>) {
+fn spawn_warriors<const IS_HUMAN: bool>(mut commands: Commands, asset_server: Res<AssetServer>) {
     let texture: Handle<Image> = asset_server.load(WARRIOR_ASSET_PATH);
-    let spawn_position_base = vec3(-200., 200., 0.);
+    let team_side = if IS_HUMAN { -1.0 } else { 1.0 };
+    let spawn_position_base = vec3(-300., 200. * team_side, 0.);
 
     for n in 0..10 {
-        let position = spawn_position_base + vec3(30. * (n % 5) as f32, 30. * (n / 5) as f32, 0.);
+        let position = spawn_position_base + vec3(30. * (n % 2) as f32, 30. * (n / 2) as f32, 0.);
         commands.spawn((
             SpriteBundle {
                 texture: texture.clone(),
@@ -135,17 +161,23 @@ fn spawn_warriors(mut commands: Commands, asset_server: Res<AssetServer>) {
                 size: vec2(32., 32.),
             },
             Navigator { speed: 85.0 },
+            Team(if IS_HUMAN {
+                TeamType::Human
+            } else {
+                TeamType::CPU
+            }),
             Name::new("Priest"),
         ));
     }
 }
 
-fn spawn_structures(asset_server: Res<AssetServer>, mut commands: Commands) {
+fn spawn_structures<const IS_HUMAN: bool>(asset_server: Res<AssetServer>, mut commands: Commands) {
     //  SIMPLE SHRINE
     let marker_texture: Handle<Image> = asset_server.load(POST_SPAWN_MARKER_PATH);
     let simple_shrine_texture: Handle<Image> = asset_server.load(SIMPLE_SHRINE_ASSET_PATH);
+    let team_side = if IS_HUMAN { -1.0 } else { 1.0 };
+    let mut spawn_position_base = vec3(100., 200. * team_side, 0.);
 
-    let mut spawn_position_base = vec3(200., 200., 0.);
     commands.spawn((
         SpriteBundle {
             texture: simple_shrine_texture,
@@ -162,12 +194,17 @@ fn spawn_structures(asset_server: Res<AssetServer>, mut commands: Commands) {
         Selectable {
             size: SELECTION_SIZE,
         },
+        Team(if IS_HUMAN {
+            TeamType::Human
+        } else {
+            TeamType::CPU
+        }),
         Name::new("SimpleShrine"),
     ));
 
     //  PRODUCER
     let producer_texture: Handle<Image> = asset_server.load(PRODUCER_ASSET_PATH);
-    spawn_position_base += vec3(100., 0., 0.);
+    spawn_position_base += vec3(100., 0.0, 0.);
     commands
         .spawn((
             SpriteBundle {
@@ -188,6 +225,11 @@ fn spawn_structures(asset_server: Res<AssetServer>, mut commands: Commands) {
             Selectable {
                 size: SELECTION_SIZE,
             },
+            Team(if IS_HUMAN {
+                TeamType::Human
+            } else {
+                TeamType::CPU
+            }),
             Name::new("Producer"),
         ))
         .with_children(|builder| {

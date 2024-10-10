@@ -14,6 +14,7 @@ mod schedule;
 mod selectable;
 mod state;
 mod structure;
+mod teams;
 mod test_scene;
 mod ui;
 mod unit;
@@ -26,13 +27,11 @@ use camera::CameraPlugin;
 use combat::CombatPlugin;
 use construction::ConstructionPlugin;
 use currency::CurrencyPlugin;
-use fog_of_war::FogOfWarPlugin;
 use generator::GeneratorPlugin;
 use helpers::HelperPlugin;
 use inputs::InputPlugin;
 use movement::MovementPlugin;
 use nav_agent::{NavAgentPlugin, Obstacle};
-use priest::PriestPlugin;
 use producer::ProducerPlugin;
 use schedule::SchedulePlugin;
 use selectable::SelectablePlugin;
@@ -42,7 +41,6 @@ use test_scene::TestScenePlugin;
 use ui::UIPlugin;
 use unit::UnitPlugin;
 use vleue_navigator::{prelude::NavmeshUpdaterPlugin, VleueNavigatorPlugin};
-use warrior::WarriorPlugin;
 use worker::WorkerPlugin;
 
 fn main() {
@@ -90,10 +88,7 @@ fn main() {
             ProducerPlugin,
             CurrencyPlugin,
             WorkerPlugin,
-            PriestPlugin,
-            WarriorPlugin,
             CombatPlugin,
-            // FogOfWarPlugin,
         ))
         .add_plugins((TestScenePlugin, HelperPlugin))
         .run();

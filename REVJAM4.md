@@ -27,12 +27,20 @@
       - [x] starting locations
       - [x] resources
       - [x] obstacles (just stick to cliffs)
+    - [ ] in game mechanics
+      - [ ] starting locations
+      - [ ] resources
+      - [ ] obstacles (just stick to cliffs)
   - [x] producers should produce each unit type
     - [x] worker
     - [x] priest
     - [x] warrior 
   - [x] combat mechanics
   - [ ] conversion mechanics
+    - [x] needs CPU and Human teams
+  - [x] implement teams (just 2 for the jam)
+    - [ ] user should only be able to command their own units/structures
+    - [ ] user should only be able to attack/convert enemy units/structures
   - [ ] main menu
   - [ ] pause menu
   - [ ] win state
