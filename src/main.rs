@@ -1,6 +1,7 @@
 mod camera;
 mod combat;
 mod construction;
+mod conversion;
 mod currency;
 mod fog_of_war;
 mod generator;
@@ -26,6 +27,7 @@ use bevy::{log::LogPlugin, prelude::*, render::primitives::Aabb, window::WindowM
 use camera::CameraPlugin;
 use combat::CombatPlugin;
 use construction::ConstructionPlugin;
+use conversion::ConversionPlugin;
 use currency::CurrencyPlugin;
 use generator::GeneratorPlugin;
 use helpers::HelperPlugin;
@@ -79,16 +81,17 @@ fn main() {
             CameraPlugin,
         ))
         .add_plugins((
+            CurrencyPlugin,
             UnitPlugin,
             SelectablePlugin,
             MovementPlugin,
-            StructurePlugin,
             ConstructionPlugin,
+            StructurePlugin,
             GeneratorPlugin,
             ProducerPlugin,
-            CurrencyPlugin,
             WorkerPlugin,
             CombatPlugin,
+            ConversionPlugin,
         ))
         .add_plugins((TestScenePlugin, HelperPlugin))
         .run();

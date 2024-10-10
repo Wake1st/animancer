@@ -3,6 +3,7 @@ use bevy::{math::vec2, prelude::*};
 use crate::{
     combat::{AssignAttackPursuit, Health},
     construction::{AssignConstructionWorkers, ConstructionSite},
+    conversion::{AssignConvertPursuit, Faith},
     generator::{AssignGeneratorWorkers, Generator},
     inputs::ProducerSelection,
     priest::Priest,
@@ -285,6 +286,8 @@ fn unit_action_selection(
     mut assign_generator_workers: EventWriter<AssignGeneratorWorkers>,
     attackables: Query<(Entity, &Team, &Transform, &Selectable), With<Health>>,
     mut assign_attack_pursuit: EventWriter<AssignAttackPursuit>,
+    convertables: Query<(Entity, &Team, &Transform, &Selectable), With<Faith>>,
+    mut assign_convert_pursuit: EventWriter<AssignConvertPursuit>,
     selected_units: Res<SelectedUnits>,
 ) {
     for action in unit_action.read() {
@@ -330,6 +333,22 @@ fn unit_action_selection(
             let unit_rect = Rect::from_center_size(unit_pos, selectable.size);
             if unit_rect.contains(action.position) {
                 assign_attack_pursuit.send(AssignAttackPursuit {
+                    predators: selected_units.entities.clone(),
+                    prey: entity,
+                });
+            }
+        }
+
+        for (entity, team, transform, selectable) in convertables.iter() {
+            //  ensure only enemies are selected
+            if team.0 == TeamType::Human {
+                continue;
+            }
+
+            let unit_pos = vec2(transform.translation.x, transform.translation.y);
+            let unit_rect = Rect::from_center_size(unit_pos, selectable.size);
+            if unit_rect.contains(action.position) {
+                assign_convert_pursuit.send(AssignConvertPursuit {
                     predators: selected_units.entities.clone(),
                     prey: entity,
                 });
