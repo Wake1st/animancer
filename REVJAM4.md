@@ -31,7 +31,7 @@
     - [x] worker
     - [x] priest
     - [x] warrior 
-  - [ ] combat mechanics
+  - [x] combat mechanics
   - [ ] conversion mechanics
   - [ ] main menu
   - [ ] pause menu
