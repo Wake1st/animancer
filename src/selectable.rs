@@ -64,6 +64,7 @@ pub struct SelectedStructures {
 #[derive(PartialEq, Debug)]
 pub enum SelectionType {
     None,
+    Unit,
     Worker,
     Priest,
     Warrior,
@@ -76,6 +77,7 @@ impl Clone for SelectionType {
     fn clone(&self) -> Self {
         match self {
             Self::None => Self::None,
+            Self::Unit => Self::Unit,
             Self::Worker => Self::Worker,
             Self::Priest => Self::Priest,
             Self::Warrior => Self::Warrior,
@@ -207,7 +209,7 @@ fn set_selected_unit_type(
 
         if mismatched_types {
             selection_state_changed.send(SelectionStateChanged {
-                new_type: SelectionType::None,
+                new_type: SelectionType::Unit,
             });
         } else {
             selection_state_changed.send(SelectionStateChanged {

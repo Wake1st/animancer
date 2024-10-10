@@ -144,7 +144,10 @@ fn handle_click(
                 box_selection_writer,
             );
         }
-        SelectionType::Worker | SelectionType::Priest | SelectionType::Warrior => {
+        SelectionType::Unit
+        | SelectionType::Worker
+        | SelectionType::Priest
+        | SelectionType::Warrior => {
             click_selection(
                 pos,
                 &mouse_button_input,

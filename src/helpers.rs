@@ -143,6 +143,7 @@ fn debug_text(
 
         text.sections[14].value = (match selection_state.0 {
             SelectionType::None => "None",
+            SelectionType::Unit => "Unit",
             SelectionType::Worker => "Worker",
             SelectionType::Priest => "Priest",
             SelectionType::Warrior => "Warrior",

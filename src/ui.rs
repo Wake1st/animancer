@@ -332,6 +332,10 @@ fn update_ui(
             (SelectionType::None, UIType::Generator) => {
                 current_ui.ui_type = UIType::None;
             }
+            (SelectionType::Unit, UIType::None) => (),
+            (SelectionType::Unit, UIType::Worker) => (),
+            (SelectionType::Unit, UIType::Producer) => (),
+            (SelectionType::Unit, UIType::Generator) => (),
             (SelectionType::Worker, UIType::None) => {
                 display_worker_ui.send(DisplayWorkerUI {});
                 current_ui.ui_type = UIType::Worker;
