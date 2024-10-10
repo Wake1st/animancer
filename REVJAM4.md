@@ -39,8 +39,9 @@
   - [ ] conversion mechanics
     - [x] needs CPU and Human teams
   - [x] implement teams (just 2 for the jam)
-    - [ ] user should only be able to command their own units/structures
-    - [ ] user should only be able to attack/convert enemy units/structures
+    - [x] user should only be able to command their own units/structures
+    - [x] user should only be able to attack/convert enemy units/structures
+  - [ ] structures need health
   - [ ] main menu
   - [ ] pause menu
   - [ ] win state

@@ -8,6 +8,7 @@ use crate::{
     priest::Priest,
     producer::Producer,
     structure::Structure,
+    teams::{Team, TeamType},
     unit::{Unit, UnitAction},
     warrior::Warrior,
     worker::Worker,
@@ -104,8 +105,8 @@ struct StructuresSelected {}
 
 fn select_entities(
     mut reader: EventReader<BoxSelection>,
-    mut query_units: Query<(Entity, &GlobalTransform, &Selectable), With<Unit>>,
-    mut query_structures: Query<(Entity, &GlobalTransform, &Selectable), With<Structure>>,
+    mut query_units: Query<(Entity, &Team, &GlobalTransform, &Selectable), With<Unit>>,
+    mut query_structures: Query<(Entity, &Team, &GlobalTransform, &Selectable), With<Structure>>,
     mut selected_units: ResMut<SelectedUnits>,
     mut selected_structures: ResMut<SelectedStructures>,
     mut units_selected: EventWriter<UnitsSelected>,
@@ -117,7 +118,12 @@ fn select_entities(
         selected_units.entities.clear();
         selected_structures.entities.clear();
 
-        for (entity, global_transform, selectable) in query_units.iter_mut() {
+        for (entity, team, global_transform, selectable) in query_units.iter_mut() {
+            //  ensure the player's units are selected
+            if team.0 != TeamType::Human {
+                continue;
+            }
+
             //  check if center of unit is within selection box
             //  OR if selection box overlaps unit
             let unit_pos = vec2(
@@ -138,7 +144,12 @@ fn select_entities(
             return;
         }
 
-        for (entity, global_transform, selectable) in query_structures.iter_mut() {
+        for (entity, team, global_transform, selectable) in query_structures.iter_mut() {
+            //  ensure the player's units are selected
+            if team.0 != TeamType::Human {
+                continue;
+            }
+
             //  check if center of unit is within selection box
             //  OR if selection box overlaps unit
             let structure_pos = vec2(
@@ -268,16 +279,21 @@ fn set_selected_structure_type(
 
 fn unit_action_selection(
     mut unit_action: EventReader<UnitAction>,
-    sites: Query<(Entity, &Transform, &Selectable), With<ConstructionSite>>,
+    sites: Query<(Entity, &Team, &Transform, &Selectable), With<ConstructionSite>>,
     mut assign_construction_worker: EventWriter<AssignConstructionWorkers>,
-    generators: Query<(Entity, &Transform, &Selectable), With<Generator>>,
+    generators: Query<(Entity, &Team, &Transform, &Selectable), With<Generator>>,
     mut assign_generator_workers: EventWriter<AssignGeneratorWorkers>,
-    attackables: Query<(Entity, &Transform, &Selectable), With<Health>>,
+    attackables: Query<(Entity, &Team, &Transform, &Selectable), With<Health>>,
     mut assign_attack_pursuit: EventWriter<AssignAttackPursuit>,
     selected_units: Res<SelectedUnits>,
 ) {
     for action in unit_action.read() {
-        for (entity, transform, selectable) in sites.iter() {
+        for (entity, team, transform, selectable) in sites.iter() {
+            //  ensure only the players buildings are selected
+            if team.0 != TeamType::Human {
+                continue;
+            }
+
             let structure_pos = vec2(transform.translation.x, transform.translation.y);
             let structure_rect = Rect::from_center_size(structure_pos, selectable.size);
             if structure_rect.contains(action.position) {
@@ -288,7 +304,12 @@ fn unit_action_selection(
             }
         }
 
-        for (entity, transform, selectable) in generators.iter() {
+        for (entity, team, transform, selectable) in generators.iter() {
+            //  ensure only the players buildings are selected
+            if team.0 != TeamType::Human {
+                continue;
+            }
+
             let structure_pos = vec2(transform.translation.x, transform.translation.y);
             let structure_rect = Rect::from_center_size(structure_pos, selectable.size);
             if structure_rect.contains(action.position) {
@@ -299,7 +320,12 @@ fn unit_action_selection(
             }
         }
 
-        for (entity, transform, selectable) in attackables.iter() {
+        for (entity, team, transform, selectable) in attackables.iter() {
+            //  ensure only enemies are selected
+            if team.0 == TeamType::Human {
+                continue;
+            }
+
             let unit_pos = vec2(transform.translation.x, transform.translation.y);
             let unit_rect = Rect::from_center_size(unit_pos, selectable.size);
             if unit_rect.contains(action.position) {
