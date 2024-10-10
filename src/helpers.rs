@@ -1,14 +1,14 @@
 use bevy::{
     color::palettes::{
-        self,
+        // self,
         tailwind::{GRAY_100, GREEN_300},
     },
     math::vec2,
     prelude::*,
-    sprite::MaterialMesh2dBundle,
-    window::WindowResized,
+    // sprite::MaterialMesh2dBundle,
+    // window::WindowResized,
 };
-use vleue_navigator::{prelude::NavMeshStatus, NavMesh};
+// use vleue_navigator::{prelude::NavMeshStatus, NavMesh};
 
 use crate::{
     camera::CameraDirection,
@@ -16,7 +16,7 @@ use crate::{
     currency::Energy,
     inputs::{BoxSelector, BuildSelection, ProducerSelection, UnitAim},
     movement::Formation,
-    nav_agent::Path,
+    // nav_agent::Path,
     selectable::{SelectionState, SelectionType},
     structure::StructureType,
     ui::{CurrentUI, UIType},
@@ -166,59 +166,59 @@ fn debug_text(
     }
 }
 
-fn display_mesh(
-    mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    navmeshes: Res<Assets<NavMesh>>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
-    mut current_mesh_entity: Local<Option<Entity>>,
-    window_resized: EventReader<WindowResized>,
-    navmesh: Query<(&Handle<NavMesh>, Ref<NavMeshStatus>)>,
-) {
-    let (navmesh_handle, status) = navmesh.single();
-    if (!status.is_changed() || *status != NavMeshStatus::Built) && window_resized.is_empty() {
-        return;
-    }
+// fn display_mesh(
+//     mut commands: Commands,
+//     mut meshes: ResMut<Assets<Mesh>>,
+//     navmeshes: Res<Assets<NavMesh>>,
+//     mut materials: ResMut<Assets<ColorMaterial>>,
+//     mut current_mesh_entity: Local<Option<Entity>>,
+//     window_resized: EventReader<WindowResized>,
+//     navmesh: Query<(&Handle<NavMesh>, Ref<NavMeshStatus>)>,
+// ) {
+//     let (navmesh_handle, status) = navmesh.single();
+//     if (!status.is_changed() || *status != NavMeshStatus::Built) && window_resized.is_empty() {
+//         return;
+//     }
 
-    let Some(navmesh) = navmeshes.get(navmesh_handle) else {
-        return;
-    };
-    if let Some(entity) = *current_mesh_entity {
-        commands.entity(entity).despawn_recursive();
-    }
+//     let Some(navmesh) = navmeshes.get(navmesh_handle) else {
+//         return;
+//     };
+//     if let Some(entity) = *current_mesh_entity {
+//         commands.entity(entity).despawn_recursive();
+//     }
 
-    *current_mesh_entity = Some(
-        commands
-            .spawn(MaterialMesh2dBundle {
-                mesh: meshes.add(navmesh.to_mesh()).into(),
-                material: materials.add(ColorMaterial::from(Color::Srgba(
-                    palettes::tailwind::BLUE_800,
-                ))),
-                ..default()
-            })
-            .with_children(|main_mesh| {
-                main_mesh.spawn(MaterialMesh2dBundle {
-                    mesh: meshes.add(navmesh.to_wireframe_mesh()).into(),
-                    transform: Transform::from_translation(Vec3::new(0.0, 0.0, 11.1)),
-                    material: materials.add(ColorMaterial::from(Color::Srgba(
-                        palettes::tailwind::TEAL_300,
-                    ))),
-                    ..default()
-                });
-            })
-            .id(),
-    );
-}
+//     *current_mesh_entity = Some(
+//         commands
+//             .spawn(MaterialMesh2dBundle {
+//                 mesh: meshes.add(navmesh.to_mesh()).into(),
+//                 material: materials.add(ColorMaterial::from(Color::Srgba(
+//                     palettes::tailwind::BLUE_800,
+//                 ))),
+//                 ..default()
+//             })
+//             .with_children(|main_mesh| {
+//                 main_mesh.spawn(MaterialMesh2dBundle {
+//                     mesh: meshes.add(navmesh.to_wireframe_mesh()).into(),
+//                     transform: Transform::from_translation(Vec3::new(0.0, 0.0, 11.1)),
+//                     material: materials.add(ColorMaterial::from(Color::Srgba(
+//                         palettes::tailwind::TEAL_300,
+//                     ))),
+//                     ..default()
+//                 });
+//             })
+//             .id(),
+//     );
+// }
 
-fn display_navigator_path(navigator: Query<(&Transform, &Path)>, mut gizmos: Gizmos) {
-    let Ok((transform, path)) = navigator.get_single() else {
-        return;
-    };
-    let mut to_display = path.next.clone();
-    to_display.push(path.current);
-    to_display.push(transform.translation.xy());
-    to_display.reverse();
-    if !to_display.is_empty() {
-        gizmos.linestrip_2d(to_display, palettes::css::YELLOW);
-    }
-}
+// fn display_navigator_path(navigator: Query<(&Transform, &Path)>, mut gizmos: Gizmos) {
+//     let Ok((transform, path)) = navigator.get_single() else {
+//         return;
+//     };
+//     let mut to_display = path.next.clone();
+//     to_display.push(path.current);
+//     to_display.push(transform.translation.xy());
+//     to_display.reverse();
+//     if !to_display.is_empty() {
+//         gizmos.linestrip_2d(to_display, palettes::css::YELLOW);
+//     }
+// }
