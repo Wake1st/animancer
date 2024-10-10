@@ -43,11 +43,13 @@
     - [x] user should only be able to attack/convert enemy units/structures
   - [x] structures need health
   - [ ] user needs visual and audio feedback
-    - [ ] warrior attacking
-    - [ ] priest converting
+    - [x] unit selected
+    - [x] structure selected
+    - [x] warrior attacking
+    - [x] priest converting
     - [ ] worker working
-    - [ ] unit attacked
-    - [ ] building attacked
+    - [x] unit attacked
+    - [x] building attacked
     - [ ] unit killed
     - [ ] unit converted
     - [ ] building destroyed

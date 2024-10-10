@@ -18,6 +18,7 @@ mod teams;
 mod test_scene;
 mod ui;
 mod unit;
+mod visual_feedback;
 mod warrior;
 mod worker;
 
@@ -41,6 +42,7 @@ use structure::StructurePlugin;
 use test_scene::TestScenePlugin;
 use ui::UIPlugin;
 use unit::UnitPlugin;
+use visual_feedback::VisualFeedbackPlugin;
 use vleue_navigator::{prelude::NavmeshUpdaterPlugin, VleueNavigatorPlugin};
 use worker::WorkerPlugin;
 
@@ -78,6 +80,7 @@ fn main() {
             UIPlugin,
             InputPlugin,
             CameraPlugin,
+            VisualFeedbackPlugin,
         ))
         .add_plugins((
             CurrencyPlugin,

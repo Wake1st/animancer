@@ -59,8 +59,6 @@ fn assign_attackers(mut assignments: EventReader<AssignAttackPursuit>, mut comma
                     cooldown: 0.0,
                     prey: assignment.prey,
                 });
-
-            info!("combat assigned to: {:?}", predator);
         }
     }
 }
@@ -112,7 +110,6 @@ fn attack_unit(mut attack_events: EventReader<Attack>, mut victim_health: Query<
     for attack in attack_events.read() {
         if let Ok(mut health) = victim_health.get_mut(attack.victim) {
             health.0 -= attack.value;
-            info!("dmg: {:?}\thealth: {:?}", attack.value, health.0);
         }
     }
 }
@@ -121,7 +118,6 @@ fn destroy_unhealthy_units(query: Query<(Entity, &Health), With<Health>>, mut co
     for (entity, health) in query.iter() {
         if health.0 < 0.0 {
             commands.entity(entity).despawn_recursive();
-            info!("despawned entity: {:?}", entity);
         }
     }
 }
