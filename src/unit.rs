@@ -2,6 +2,7 @@ use bevy::{math::vec2, prelude::*};
 
 use crate::{
     combat::Health,
+    conversion::Faith,
     movement::Moveable,
     nav_agent::{AssignNavigatorPath, Navigator},
     priest::Priest,
@@ -68,13 +69,34 @@ fn spawn_worker(
             ))
             .insert(match event.production_type {
                 ProductionType::Worker => {
-                    (Worker { effort: 1.5 }, Health(24.0));
+                    (
+                        Worker { effort: 1.5 },
+                        Health(24.0),
+                        Faith {
+                            base: 44.0,
+                            current: 44.0,
+                        },
+                    );
                 }
                 ProductionType::Priest => {
-                    (Priest { persuation: 3.0 }, Health(16.0));
+                    (
+                        Priest { persuation: 3.0 },
+                        Health(16.0),
+                        Faith {
+                            base: 76.0,
+                            current: 76.0,
+                        },
+                    );
                 }
                 ProductionType::Warrior => {
-                    (Warrior { strength: 2.5 }, Health(42.0));
+                    (
+                        Warrior { strength: 2.5 },
+                        Health(42.0),
+                        Faith {
+                            base: 32.0,
+                            current: 32.0,
+                        },
+                    );
                 }
                 ProductionType::None => {
                     todo!();

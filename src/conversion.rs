@@ -3,6 +3,7 @@ use bevy::prelude::*;
 use crate::{
     movement::{Formation, SetUnitPosition},
     priest::Priest,
+    teams::{Team, TeamType},
     unit::Unit,
 };
 
@@ -17,6 +18,7 @@ impl Plugin for ConversionPlugin {
             Update,
             (
                 assign_converters,
+                unassign_converters,
                 pursue_prey,
                 persuade_unit,
                 convert_unfaithful_units,
@@ -40,7 +42,10 @@ pub struct ConvertPursuit {
 }
 
 #[derive(Component)]
-pub struct Faith(pub f32);
+pub struct Faith {
+    pub base: f32,
+    pub current: f32,
+}
 
 #[derive(Event)]
 pub struct Convert {
@@ -63,15 +68,29 @@ fn assign_converters(mut assignments: EventReader<AssignConvertPursuit>, mut com
     }
 }
 
+fn unassign_converters(
+    predators: Query<(Entity, &ConvertPursuit, &Team), With<ConvertPursuit>>,
+    victims: Query<&Team, With<Faith>>,
+    mut commands: Commands,
+) {
+    for (entity, convert_pursuit, predator_team) in predators.iter() {
+        if let Ok(prey_team) = victims.get(convert_pursuit.prey) {
+            //	if they just converted, they need no more persuation
+            if predator_team.0 == prey_team.0 {
+                commands.entity(entity).remove::<ConvertPursuit>();
+            }
+        }
+    }
+}
+
 fn pursue_prey(
-    mut predators: Query<(Entity, &mut ConvertPursuit, &Transform, &Priest), With<ConvertPursuit>>,
+    mut predators: Query<(&mut ConvertPursuit, &Transform, &Priest), With<ConvertPursuit>>,
     victims: Query<&Transform, With<Faith>>,
     time: Res<Time>,
     mut movement_writer: EventWriter<SetUnitPosition>,
     mut convert_events: EventWriter<Convert>,
-    mut commands: Commands,
 ) {
-    for (predetor_entity, mut convert_pursuit, predator_transform, priest) in predators.iter_mut() {
+    for (mut convert_pursuit, predator_transform, priest) in predators.iter_mut() {
         convert_pursuit.cooldown -= time.delta_seconds();
 
         if convert_pursuit.cooldown < 0.0 {
@@ -98,9 +117,6 @@ fn pursue_prey(
                 }
 
                 convert_pursuit.cooldown = CONVERSION_RATE;
-            } else {
-                //  If we cannot find prey, then it is most likely dead
-                commands.entity(predetor_entity).remove::<ConvertPursuit>();
             }
         }
     }
@@ -112,15 +128,20 @@ fn persuade_unit(
 ) {
     for convert in convert_events.read() {
         if let Ok(mut faith) = victim_faith.get_mut(convert.victim) {
-            faith.0 -= convert.value;
+            faith.current -= convert.value;
         }
     }
 }
 
-fn convert_unfaithful_units(query: Query<(Entity, &Faith), With<Faith>>, mut commands: Commands) {
-    for (entity, faith) in query.iter() {
-        if faith.0 < 0.0 {
-            commands.entity(entity).despawn_recursive();
+fn convert_unfaithful_units(mut query: Query<(&mut Faith, &mut Team), With<Faith>>) {
+    for (mut faith, mut team) in query.iter_mut() {
+        if faith.current < 0.0 {
+            team.0 = match team.0.clone() {
+                TeamType::Human => TeamType::CPU,
+                TeamType::CPU => TeamType::Human,
+            };
+
+            faith.current = faith.base;
         }
     }
 }

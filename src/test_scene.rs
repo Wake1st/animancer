@@ -6,6 +6,7 @@ use bevy::{
 
 use crate::{
     combat::Health,
+    conversion::Faith,
     generator::Generator,
     movement::Moveable,
     nav_agent::{Navigator, Obstacle},
@@ -62,6 +63,10 @@ fn spawn_hero<const IS_HUMAN: bool>(mut commands: Commands, asset_server: Res<As
         Unit {},
         Worker { effort: 4.5 },
         Health(120.0),
+        Faith {
+            base: 160.0,
+            current: 160.0,
+        },
         Moveable {
             location: Vec3::ZERO,
         },
@@ -94,6 +99,10 @@ fn spawn_workers<const IS_HUMAN: bool>(mut commands: Commands, asset_server: Res
             Unit {},
             Worker { effort: 1.5 },
             Health(24.0),
+            Faith {
+                base: 44.,
+                current: 44.,
+            },
             Moveable { location: position },
             Selectable {
                 size: vec2(32., 32.),
@@ -125,6 +134,10 @@ fn spawn_priests<const IS_HUMAN: bool>(mut commands: Commands, asset_server: Res
             Unit {},
             Priest { persuation: 3.0 },
             Health(16.0),
+            Faith {
+                base: 76.,
+                current: 76.,
+            },
             Moveable { location: position },
             Selectable {
                 size: vec2(32., 32.),
@@ -156,6 +169,10 @@ fn spawn_warriors<const IS_HUMAN: bool>(mut commands: Commands, asset_server: Re
             Unit {},
             Warrior { strength: 2.5 },
             Health(42.0),
+            Faith {
+                base: 32.0,
+                current: 32.0,
+            },
             Moveable { location: position },
             Selectable {
                 size: vec2(32., 32.),

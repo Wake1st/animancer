@@ -36,7 +36,7 @@
     - [x] priest
     - [x] warrior 
   - [x] combat mechanics
-  - [ ] conversion mechanics
+  - [x] conversion mechanics
     - [x] needs CPU and Human teams
   - [x] implement teams (just 2 for the jam)
     - [x] user should only be able to command their own units/structures
