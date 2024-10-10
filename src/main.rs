@@ -6,6 +6,7 @@ mod currency;
 mod generator;
 mod helpers;
 mod inputs;
+mod map;
 mod movement;
 mod nav_agent;
 mod priest;
@@ -32,6 +33,7 @@ use currency::CurrencyPlugin;
 use generator::GeneratorPlugin;
 use helpers::HelperPlugin;
 use inputs::InputPlugin;
+use map::MapPlugin;
 use movement::MovementPlugin;
 use nav_agent::{NavAgentPlugin, Obstacle};
 use producer::ProducerPlugin;
@@ -81,6 +83,7 @@ fn main() {
             InputPlugin,
             CameraPlugin,
             VisualFeedbackPlugin,
+            MapPlugin,
         ))
         .add_plugins((
             CurrencyPlugin,

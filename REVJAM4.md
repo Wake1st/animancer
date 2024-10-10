@@ -27,10 +27,14 @@
       - [x] starting locations
       - [x] resources
       - [x] obstacles (just stick to cliffs)
-    - [ ] in game
+    - [x] data
+      - [x] starting locations
+      - [x] resources
+      - [x] cliffs (using capsules)
+    - [ ] mechanics
       - [ ] starting locations
       - [ ] resources
-      - [ ] obstacles (just stick to cliffs)
+      - [ ] cliffs (using capsules)
   - [x] producers should produce each unit type
     - [x] worker
     - [x] priest
