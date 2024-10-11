@@ -1,12 +1,19 @@
-use bevy::{math::vec2, prelude::*};
+use bevy::{
+    math::vec2,
+    prelude::*,
+    sprite::{MaterialMesh2dBundle, Mesh2dHandle},
+};
 
 use crate::teams::TeamType;
+
+const RESOURCE_SIZE_REDUCER: f32 = 10.0;
+const OBSTACLE_WIDTH: f32 = 15.0;
 
 pub struct MapPlugin;
 
 impl Plugin for MapPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, build_map)
+        app.add_systems(Startup, (build_map, render_map))
             .insert_resource(Map { ..default() });
     }
 }
@@ -285,10 +292,68 @@ fn build_map(mut map: ResMut<Map>) {
     };
 }
 
-fn render_map(map: Res<Map>) {
+fn render_map(
+    map: Res<Map>,
+    mut commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
+) {
     //	render ground
+    commands.spawn(MaterialMesh2dBundle {
+        mesh: Mesh2dHandle(meshes.add(Rectangle::from_size(map.size))),
+        material: materials.add(Color::hsl(280.0, 0.55, 0.8)),
+        transform: Transform::from_translation((-map.size / 2.0).extend(10.0)),
+        ..default()
+    });
 
     //	render resources
+    for resource in map.resources.iter() {
+        commands.spawn(MaterialMesh2dBundle {
+            mesh: Mesh2dHandle(meshes.add(Circle::new(resource.amount / RESOURCE_SIZE_REDUCER))),
+            material: materials.add(Color::hsl(30.0, 0.95, 0.7)),
+            transform: Transform::from_translation(resource.position.extend(0.0)),
+            ..default()
+        });
+    }
 
     //	render obstacles
+    for obstacle in map.obstacles.iter() {
+        //	get shared values
+        let base_vector = obstacle.end - obstacle.start;
+        let origin = base_vector.normalize() * obstacle.radius + base_vector / 2.0;
+
+        //	this will need to be somewhat complex
+        if obstacle.segments == 1 {
+            commands.spawn(MaterialMesh2dBundle {
+                mesh: Mesh2dHandle(
+                    meshes.add(Capsule2d::new(obstacle.radius, base_vector.length())),
+                ),
+                material: materials.add(Color::hsl(100.0, 0.15, 0.1)),
+                transform: Transform::from_translation((base_vector / 2.0 + origin).extend(0.0)),
+                ..default()
+            });
+        } else {
+            //	calculate the angles per middle segment
+            let end_angle = obstacle.end.to_angle();
+            let full_angle = (obstacle.start - origin).angle_between(obstacle.end - origin);
+            let segment_angle = full_angle / (obstacle.segments as f32);
+            let segment_arc = Arc2d::from_radians(obstacle.radius, segment_angle);
+            let segment_length = segment_arc.chord_length();
+            let segment_mid_angle = segment_arc.midpoint().to_angle();
+
+            for i in 1..obstacle.segments {
+                let true_angle = (i as f32 * segment_angle) + segment_mid_angle + end_angle;
+                let true_midpoint = Vec2::new(
+                    obstacle.radius * f32::cos(true_angle),
+                    obstacle.radius * f32::sin(true_angle),
+                );
+                commands.spawn(MaterialMesh2dBundle {
+                    mesh: Mesh2dHandle(meshes.add(Capsule2d::new(OBSTACLE_WIDTH, segment_length))),
+                    material: materials.add(Color::hsl(100.0, 0.15, 0.1)),
+                    transform: Transform::from_translation((true_midpoint + origin).extend(0.0)),
+                    ..default()
+                });
+            }
+        }
+    }
 }
