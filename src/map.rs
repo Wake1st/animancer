@@ -6,7 +6,7 @@ pub struct MapPlugin;
 
 impl Plugin for MapPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, load_map)
+        app.add_systems(Startup, build_map)
             .insert_resource(Map { ..default() });
     }
 }
@@ -47,7 +47,7 @@ impl Default for Map {
     }
 }
 
-fn load_map(mut map: ResMut<Map>) {
+fn build_map(mut map: ResMut<Map>) {
     *map = Map {
         size: vec2(5000., 5000.),
         starting_points: vec![
@@ -283,4 +283,12 @@ fn load_map(mut map: ResMut<Map>) {
         ],
         ..default()
     };
+}
+
+fn render_map(map: Res<Map>) {
+    //	render ground
+
+    //	render resources
+
+    //	render obstacles
 }

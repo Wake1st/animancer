@@ -3,7 +3,6 @@ use bevy::{math::vec2, prelude::*, render::primitives::Aabb};
 use crate::{
     combat::Health,
     generator::Generator,
-    helpers::HelperPlugin,
     nav_agent::Obstacle,
     producer::{
         PostSpawnMarker, Producer, Production, ProductionType, PRIEST_COST, SPAWN_OFFSET,

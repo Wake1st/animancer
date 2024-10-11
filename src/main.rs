@@ -45,7 +45,10 @@ use test_scene::TestScenePlugin;
 use ui::UIPlugin;
 use unit::UnitPlugin;
 use visual_feedback::VisualFeedbackPlugin;
-use vleue_navigator::{prelude::NavmeshUpdaterPlugin, VleueNavigatorPlugin};
+use vleue_navigator::{
+    prelude::{NavmeshUpdaterPlugin, PrimitiveObstacle},
+    VleueNavigatorPlugin,
+};
 use worker::WorkerPlugin;
 
 fn main() {
@@ -73,7 +76,7 @@ fn main() {
             // Auto update the navmesh.
             // Obstacles will be entities with the `Obstacle` marker component,
             // and use the `Aabb` component as the obstacle data source.
-            NavmeshUpdaterPlugin::<Aabb, Obstacle>::default(),
+            NavmeshUpdaterPlugin::<PrimitiveObstacle>::default(),
             NavAgentPlugin,
         ))
         .add_plugins((
