@@ -9,6 +9,7 @@ use crate::{
     producer::{Produce, ProductionType},
     schedule::InGameSet,
     selectable::Selectable,
+    teams::{Team, TeamType},
     ui::{PRIEST_ASSET_PATH, WARRIOR_ASSET_PATH, WORKER_ASSET_PATH},
     warrior::Warrior,
     worker::Worker,
@@ -33,6 +34,39 @@ pub struct Unit {}
 #[derive(Event)]
 pub struct UnitAction {
     pub position: Vec2,
+}
+
+pub fn spawn_hero(
+    commands: &mut Commands,
+    asset_server: &AssetServer,
+    position: Vec2,
+    team: TeamType,
+) {
+    let texture: Handle<Image> = asset_server.load("character.png");
+
+    commands.spawn((
+        SpriteBundle {
+            texture,
+            transform: Transform::from_translation(position.extend(0.0)),
+            ..default()
+        },
+        Unit {},
+        Worker { effort: 4.5 },
+        Health(120.0),
+        Faith {
+            base: 160.0,
+            current: 160.0,
+        },
+        Moveable {
+            location: Vec3::ZERO,
+        },
+        Selectable {
+            size: vec2(32., 32.),
+        },
+        Navigator { speed: 120.0 },
+        Team(team),
+        Name::new("Hero"),
+    ));
 }
 
 fn spawn_worker(

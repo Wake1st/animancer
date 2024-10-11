@@ -86,9 +86,9 @@ fn main() {
             InputPlugin,
             CameraPlugin,
             VisualFeedbackPlugin,
-            MapPlugin,
         ))
         .add_plugins((
+            MapPlugin,
             CurrencyPlugin,
             UnitPlugin,
             SelectablePlugin,
@@ -101,6 +101,11 @@ fn main() {
             CombatPlugin,
             ConversionPlugin,
         ))
-        .add_plugins((TestScenePlugin, HelperPlugin))
+        .add_plugins(
+            (
+                // TestScenePlugin,
+                HelperPlugin
+            ),
+        )
         .run();
 }

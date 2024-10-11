@@ -4,7 +4,10 @@ use bevy::{
     sprite::{MaterialMesh2dBundle, Mesh2dHandle},
 };
 
-use crate::teams::TeamType;
+use crate::{
+    teams::{Team, TeamType},
+    unit::spawn_hero,
+};
 
 const RESOURCE_SIZE_REDUCER: f32 = 10.0;
 const OBSTACLE_WIDTH: f32 = 15.0;
@@ -297,6 +300,7 @@ fn render_map(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
+    asset_server: Res<AssetServer>,
 ) {
     //	render ground
     commands.spawn(MaterialMesh2dBundle {
@@ -355,5 +359,15 @@ fn render_map(
                 });
             }
         }
+    }
+
+    //  set starting pos
+    for point in map.starting_points.iter() {
+        spawn_hero(
+            &mut commands,
+            &asset_server,
+            point.position,
+            point.team.clone(),
+        );
     }
 }
