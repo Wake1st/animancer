@@ -307,21 +307,29 @@ fn render_map(
     asset_server: Res<AssetServer>,
 ) {
     //	render ground
-    commands.spawn(MaterialMesh2dBundle {
-        mesh: Mesh2dHandle(meshes.add(Rectangle::from_size(map.size))),
-        material: materials.add(GROUND_COLOR),
-        transform: Transform::from_translation((map.size / 2.0).extend(-10.0)),
-        ..default()
-    });
+    commands.spawn((
+        MaterialMesh2dBundle {
+            mesh: Mesh2dHandle(meshes.add(Rectangle::from_size(map.size))),
+            material: materials.add(GROUND_COLOR),
+            transform: Transform::from_translation((map.size / 2.0).extend(0.0)),
+            ..default()
+        },
+        Name::new("Ground"),
+    ));
 
     //	render resources
     for resource in map.resources.iter() {
-        commands.spawn(MaterialMesh2dBundle {
-            mesh: Mesh2dHandle(meshes.add(Circle::new(resource.amount / RESOURCE_SIZE_REDUCER))),
-            material: materials.add(RESOURCES_COLOR),
-            transform: Transform::from_translation(resource.position.extend(-11.0)),
-            ..default()
-        });
+        commands.spawn((
+            MaterialMesh2dBundle {
+                mesh: Mesh2dHandle(
+                    meshes.add(Circle::new(resource.amount / RESOURCE_SIZE_REDUCER)),
+                ),
+                material: materials.add(RESOURCES_COLOR),
+                transform: Transform::from_translation(resource.position.extend(0.0)),
+                ..default()
+            },
+            Name::new("Resource"),
+        ));
     }
 
     //	render obstacles
@@ -329,7 +337,7 @@ fn render_map(
         //	get shared values
         let base_vector = obstacle.end - obstacle.start;
         let half_base = base_vector / 2.0;
-        let mut transform = Transform::from_translation((half_base + obstacle.start).extend(-12.0));
+        let mut transform = Transform::from_translation((half_base + obstacle.start).extend(0.0));
         transform.rotate_z(base_vector.to_angle() - PI / 2.0);
 
         //	this will need to be somewhat complex
@@ -363,7 +371,7 @@ fn render_map(
                     obstacle.radius * f32::sin(true_angle),
                 );
                 let mut transform =
-                    Transform::from_translation((true_midpoint + origin).extend(-12.0));
+                    Transform::from_translation((true_midpoint + origin).extend(0.0));
                 transform.rotate_z(true_angle);
 
                 let capsule = Capsule2d::new(OBSTACLE_WIDTH, segment_length);
