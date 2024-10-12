@@ -21,7 +21,7 @@
 - [ ] programming 
   - [ ] music mechanics (plugins?)
   - [ ] needs AI (something simple, ok if it's random and a bit unpredictable)
-  - [ ] map
+  - [x] map
     -[x] user needs to move around map
     - [x] general layout
       - [x] starting locations
@@ -31,10 +31,10 @@
       - [x] starting locations
       - [x] resources
       - [x] cliffs (using capsules)
-    - [ ] mechanics
-      - [ ] starting locations
-      - [ ] resources
-      - [ ] cliffs (using capsules)
+    - [x] mechanics
+      - [x] starting locations
+      - [x] resources
+      - [x] cliffs (using capsules)
   - [x] producers should produce each unit type
     - [x] worker
     - [x] priest
@@ -65,5 +65,6 @@
     - [ ] obliteration (enemy cannot do the following)
       - [ ] cannot make new units
       - [ ] no more units
-  - [ ] fog of war
   - [ ] run it on wasm
+  - [ ] fog of war (stretch)
+  - [ ] mini-map (stretch)
