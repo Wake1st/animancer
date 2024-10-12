@@ -3,8 +3,8 @@ use vleue_navigator::prelude::*;
 
 use crate::schedule::InGameSet;
 
-const MESH_WIDTH: u32 = 1680;
-const MESH_HEIGHT: u32 = 840;
+const MESH_WIDTH: u32 = 5000;
+const MESH_HEIGHT: u32 = 5000;
 
 pub struct NavAgentPlugin;
 
@@ -14,9 +14,9 @@ impl Plugin for NavAgentPlugin {
             .add_systems(
                 Update,
                 (
-                    give_target_to_navigator::<10, MESH_WIDTH, MESH_HEIGHT>,
+                    give_target_to_navigator::<MESH_WIDTH, MESH_HEIGHT>,
                     move_navigator,
-                    refresh_path::<10, MESH_WIDTH, MESH_HEIGHT>,
+                    refresh_path::<MESH_WIDTH, MESH_HEIGHT>,
                 )
                     .in_set(InGameSet::EntityUpdates),
             )
@@ -60,16 +60,17 @@ fn spawn_navmesh(mut commands: Commands) {
         // Mark it for update as soon as obstacles are changed.
         // Other modes can be debounced or manually triggered.
         update_mode: NavMeshUpdateMode::Direct,
-        transform: Transform::from_translation(Vec3::new(
-            -(MESH_WIDTH as f32) / 2.0,
-            -(MESH_HEIGHT as f32) / 2.0,
-            0.0,
-        )),
+        transform: Transform::from_translation(Vec3::ZERO),
+        //     Vec3::new(
+        //     -(MESH_WIDTH as f32) / 2.0,
+        //     -(MESH_HEIGHT as f32) / 2.0,
+        //     0.0,
+        // )),
         ..NavMeshBundle::with_default_id()
     });
 }
 
-fn give_target_to_navigator<const SIZE: u32, const X: u32, const Y: u32>(
+fn give_target_to_navigator<const X: u32, const Y: u32>(
     mut nav_path_assignment: EventReader<AssignNavigatorPath>,
     navigator: Query<&Transform, With<Navigator>>,
     navmeshes: Res<Assets<NavMesh>>,
@@ -81,8 +82,8 @@ fn give_target_to_navigator<const SIZE: u32, const X: u32, const Y: u32>(
             let Some(navmesh) = navmeshes.get(navmesh.single()) else {
                 continue;
             };
-            let position = assignment.location
-                + Vec3::new((MESH_WIDTH as f32) / 2.0, (MESH_HEIGHT as f32) / 2.0, 0.0);
+            let position = assignment.location;
+            // + Vec3::new((MESH_WIDTH as f32) / 2.0, (MESH_HEIGHT as f32) / 2.0, 0.0);
 
             //	Check if movement position is in mesh
             if !navmesh.is_in_mesh(position.xy()) {
@@ -121,7 +122,7 @@ fn give_target_to_navigator<const SIZE: u32, const X: u32, const Y: u32>(
     }
 }
 
-fn refresh_path<const SIZE: u32, const X: u32, const Y: u32>(
+fn refresh_path<const X: u32, const Y: u32>(
     mut commands: Commands,
     mut navigator: Query<(Entity, &Transform, &mut Path), With<Navigator>>,
     mut navmeshes: ResMut<Assets<NavMesh>>,

@@ -87,6 +87,8 @@ fn setup_debug_helper_text(mut commands: Commands) {
             TextSection::new("_", TextStyle { ..default() }), //  16
             TextSection::new("\nCamera Zoom = ", TextStyle { ..default() }),
             TextSection::new("_", TextStyle { ..default() }), //  18
+            TextSection::new("\nCamera Movement = ", TextStyle { ..default() }),
+            TextSection::new("_", TextStyle { ..default() }), //  20
         ]),
         DebugText,
     ));
@@ -100,7 +102,7 @@ fn debug_text(
     current_ui: Res<CurrentUI>,
     selection_state: Res<SelectionState>,
     construction_silhouettes: Query<&Intersects, With<ConstructionSilhouette>>,
-    query_camera: Query<&CameraDirection, With<Camera2d>>,
+    query_camera: Query<(&CameraDirection, &Transform), With<Camera2d>>,
     mut query: Query<&mut Text, With<DebugText>>,
 ) {
     for mut text in &mut query {
@@ -161,8 +163,9 @@ fn debug_text(
             .into();
         }
 
-        let direction = query_camera.single();
+        let (direction, transform) = query_camera.single();
         text.sections[18].value = direction.height.to_string();
+        text.sections[20].value = transform.translation.xy().to_string();
     }
 }
 
