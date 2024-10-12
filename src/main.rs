@@ -23,7 +23,7 @@ mod visual_feedback;
 mod warrior;
 mod worker;
 
-use bevy::{log::LogPlugin, prelude::*, render::primitives::Aabb, window::WindowMode};
+use bevy::{log::LogPlugin, prelude::*, window::WindowMode};
 
 use camera::CameraPlugin;
 use combat::CombatPlugin;
@@ -35,13 +35,13 @@ use helpers::HelperPlugin;
 use inputs::InputPlugin;
 use map::MapPlugin;
 use movement::MovementPlugin;
-use nav_agent::{NavAgentPlugin, Obstacle};
+use nav_agent::NavAgentPlugin;
 use producer::ProducerPlugin;
 use schedule::SchedulePlugin;
 use selectable::SelectablePlugin;
 use state::StatePlugin;
 use structure::StructurePlugin;
-use test_scene::TestScenePlugin;
+// use test_scene::TestScenePlugin;
 use ui::UIPlugin;
 use unit::UnitPlugin;
 use visual_feedback::VisualFeedbackPlugin;
@@ -101,11 +101,9 @@ fn main() {
             CombatPlugin,
             ConversionPlugin,
         ))
-        .add_plugins(
-            (
-                // TestScenePlugin,
-                HelperPlugin
-            ),
-        )
+        .add_plugins((
+            // TestScenePlugin,
+            HelperPlugin,
+        ))
         .run();
 }

@@ -1,9 +1,9 @@
-use bevy::{math::vec2, prelude::*, render::primitives::Aabb};
+use bevy::{math::vec2, prelude::*};
+use vleue_navigator::prelude::PrimitiveObstacle;
 
 use crate::{
     combat::Health,
     generator::Generator,
-    nav_agent::Obstacle,
     producer::{
         PostSpawnMarker, Producer, Production, ProductionType, PRIEST_COST, SPAWN_OFFSET,
         WARRIOR_COST, WORKER_COST,
@@ -78,11 +78,10 @@ fn spawn_structure(
                         transform: Transform::from_translation(place.position),
                         ..default()
                     },
-                    Obstacle,
-                    Aabb::from_min_max(
-                        Vec3::new(-SELECTION_SIZE.x, -SELECTION_SIZE.y, 0.0),
-                        Vec3::new(SELECTION_SIZE.x, SELECTION_SIZE.y, 0.0),
-                    ),
+                    PrimitiveObstacle::Rectangle(Rectangle::from_corners(
+                        Vec2::new(-SELECTION_SIZE.x, -SELECTION_SIZE.y),
+                        Vec2::new(SELECTION_SIZE.x, SELECTION_SIZE.y),
+                    )),
                     Structure {},
                     Health(SIMPLE_SHRINE_HEALTH),
                     Generator { ..default() },
@@ -100,11 +99,10 @@ fn spawn_structure(
                             transform: Transform::from_translation(place.position),
                             ..default()
                         },
-                        Obstacle,
-                        Aabb::from_min_max(
-                            Vec3::new(-SELECTION_SIZE.x, -SELECTION_SIZE.y, 0.0),
-                            Vec3::new(SELECTION_SIZE.x, SELECTION_SIZE.y, 0.0),
-                        ),
+                        PrimitiveObstacle::Rectangle(Rectangle::from_corners(
+                            Vec2::new(-SELECTION_SIZE.x, -SELECTION_SIZE.y),
+                            Vec2::new(SELECTION_SIZE.x, SELECTION_SIZE.y),
+                        )),
                         Structure {},
                         Health(PRODUCER_HEALTH),
                         Producer {

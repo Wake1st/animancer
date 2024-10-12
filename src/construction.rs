@@ -3,6 +3,7 @@ use bevy::{
     prelude::*,
     render::primitives::Aabb,
 };
+use vleue_navigator::prelude::PrimitiveObstacle;
 
 use crate::{
     currency::Energy,
@@ -212,11 +213,10 @@ fn place_structure(
                 transform: Transform::from_translation(pos_3d),
                 ..default()
             },
-            Obstacle,
-            Aabb::from_min_max(
-                Vec3::new(-SELECTION_SIZE.x, -SELECTION_SIZE.y, 0.0),
-                Vec3::new(SELECTION_SIZE.x, SELECTION_SIZE.y, 0.0),
-            ),
+            PrimitiveObstacle::Rectangle(Rectangle::from_corners(
+                Vec2::new(-SELECTION_SIZE.x, -SELECTION_SIZE.y),
+                Vec2::new(SELECTION_SIZE.x, SELECTION_SIZE.y),
+            )),
             ConstructionSite {
                 structure_type: placement.structure_type.clone(),
                 effort: placement.effort,

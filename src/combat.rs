@@ -5,7 +5,6 @@ const ATTACK_RATE: f32 = 0.4;
 
 use crate::{
     movement::{Formation, SetUnitPosition},
-    unit::Unit,
     warrior::Warrior,
 };
 
