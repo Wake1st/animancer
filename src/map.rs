@@ -7,7 +7,7 @@ use bevy::{
 };
 use vleue_navigator::prelude::PrimitiveObstacle;
 
-use crate::{teams::TeamType, unit::spawn_hero};
+use crate::{nav_agent::spawn_navmesh, teams::TeamType, unit::spawn_hero};
 
 const RESOURCE_SIZE_REDUCER: f32 = 10.0;
 const OBSTACLE_WIDTH: f32 = 15.0;
@@ -20,7 +20,7 @@ pub struct MapPlugin;
 
 impl Plugin for MapPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, (build_map, render_map))
+        app.add_systems(Startup, (build_map, render_map.after(spawn_navmesh)))
             .insert_resource(Map { ..default() });
     }
 }

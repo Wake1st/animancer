@@ -45,7 +45,7 @@ pub struct AssignNavigatorPath {
     pub location: Vec3,
 }
 
-fn spawn_navmesh(mut commands: Commands) {
+pub fn spawn_navmesh(mut commands: Commands) {
     commands.spawn(NavMeshBundle {
         settings: NavMeshSettings {
             // Define the outer borders of the navmesh.
