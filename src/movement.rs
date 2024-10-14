@@ -32,7 +32,7 @@ pub struct Moveable {
     pub location: Vec3,
 }
 
-#[derive(Event)]
+#[derive(Event, Default)]
 pub struct SetUnitPosition {
     pub position: Vec2,
     pub direction: Vec2,

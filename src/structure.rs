@@ -31,7 +31,7 @@ impl Plugin for StructurePlugin {
 #[derive(Component)]
 pub struct Structure;
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Debug)]
 pub enum StructureType {
     SimpleShrine,
     Producer,

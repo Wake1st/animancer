@@ -482,6 +482,7 @@ fn producer_button_interactions(
             Interaction::Pressed => {
                 border_color.0 = Color::Srgba(GREEN_200);
 
+                //  TODO: this should probably be some other function
                 for entity in selected_structures.entities.clone() {
                     if let Ok((mut producer, children)) = producer_query.get_mut(entity) {
                         for &child in children.iter() {
