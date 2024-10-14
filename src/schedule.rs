@@ -10,6 +10,7 @@ impl Plugin for SchedulePlugin {
             Update,
             (
                 InGameSet::UIInput,
+                InGameSet::AIInput,
                 InGameSet::UserInput,
                 InGameSet::SelectionState,
                 InGameSet::SpawnEntities,
@@ -24,6 +25,7 @@ impl Plugin for SchedulePlugin {
 #[derive(Debug, Hash, PartialEq, Eq, Clone, SystemSet)]
 pub enum InGameSet {
     UIInput,
+    AIInput,
     UserInput,
     SelectionState,
     SpawnEntities,

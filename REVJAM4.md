@@ -61,6 +61,7 @@
     - [ ] player lost
   - [ ] main menu
   - [ ] pause menu
+  = [ ] CPU AI (oh boy, lul)
   - [ ] win state
     - [ ] obliteration (enemy cannot do the following)
       - [ ] cannot make new units

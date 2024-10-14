@@ -1,3 +1,4 @@
+mod ai;
 mod camera;
 mod combat;
 mod construction;
@@ -23,6 +24,7 @@ mod visual_feedback;
 mod warrior;
 mod worker;
 
+use ai::AIPlugin;
 use bevy::{log::LogPlugin, prelude::*, window::WindowMode};
 
 use camera::CameraPlugin;
@@ -89,6 +91,7 @@ fn main() {
         ))
         .add_plugins((
             MapPlugin,
+            AIPlugin,
             CurrencyPlugin,
             UnitPlugin,
             SelectablePlugin,
