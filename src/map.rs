@@ -13,7 +13,7 @@ const RESOURCE_SIZE_REDUCER: f32 = 10.0;
 const OBSTACLE_WIDTH: f32 = 15.0;
 
 const GROUND_COLOR: Color = Color::linear_rgba(0.0, 0.4, 0.2, 0.1);
-const RESOURCES_COLOR: Color = Color::linear_rgba(0.8, 0.0, 0.1, 0.9);
+const RESOURCES_COLOR: Color = Color::linear_rgba(0.8, 0.0, 0.1, 0.3);
 const OBSTACLE_COLOR: Color = Color::linear_rgba(0.4, 0.4, 0.0, 1.0);
 
 pub struct MapPlugin;

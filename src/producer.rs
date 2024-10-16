@@ -1,6 +1,7 @@
 use bevy::{math::vec3, prelude::*};
 
 use crate::{
+    ai::Idle,
     schedule::InGameSet,
     selectable::SelectedStructures,
     structure::Structure,
@@ -117,13 +118,16 @@ pub struct Produce {
 
 fn produce(
     time: Res<Time>,
-    mut producer_query: Query<(&mut Producer, &GlobalTransform, &Children), With<Structure>>,
+    mut producer_query: Query<
+        (&mut Producer, &GlobalTransform, &Children, &mut Idle),
+        With<Structure>,
+    >,
     mut production_query: Query<&mut Production>,
     mut producer_writer: EventWriter<Produce>,
 ) {
     let delta_time = time.delta_seconds();
 
-    for (mut producer, transform, children) in producer_query.iter_mut() {
+    for (mut producer, transform, children, mut idle) in producer_query.iter_mut() {
         let current_production = producer.current_production.clone();
 
         if producer.queue.len() > 0 {
@@ -131,6 +135,10 @@ fn produce(
                 if let Ok(mut production) = production_query.get_mut(child) {
                     if production.production_type == current_production {
                         producer.value += producer.rate * delta_time;
+                        info!(
+                            "producer [ value: {:?}\t rate: {:?} ]",
+                            producer.value, producer.rate
+                        );
                         if producer.value >= production.cost {
                             //	leave the remainder, so as to avoid value loss over time
                             producer.value = producer.value % production.cost;
@@ -154,7 +162,11 @@ fn produce(
                     }
                 }
             }
+        } else {
+            idle.0 = true;
         }
+
+        // info!("producer idling: {:?}", idle.0);
     }
 }
 

@@ -3,20 +3,24 @@ use bevy::{math::vec2, prelude::*};
 use crate::{
     construction::PlaceConstructionSite,
     currency::Energy,
-    movement::SetUnitPosition,
+    movement::{Formation, Moving, SetUnitPosition},
     producer::{Producer, Production, ProductionType},
     schedule::InGameSet,
-    selectable::{BoxSelection, SelectedStructures},
+    selectable::{BoxSelection, SelectedStructures, SelectedUnits},
     structure::StructureType,
+    teams::TeamType,
     ui::{PRODUCER_COST, SIMPLE_SHRINE_COST},
+    unit::Unit,
 };
+
+const AI_STEP_COOLDOWN: f32 = 1.0;
 
 const CORNER_OFFSET: Vec2 = Vec2::new(5000., 5000.);
 
 const GENERATOR_1_POSITION: Vec2 = Vec2::new(400., 400.);
-const GENERATOR_2_POSITION: Vec2 = Vec2::new(400., 370.);
-const GENERATOR_3_POSITION: Vec2 = Vec2::new(370., 400.);
-const GENERATOR_4_POSITION: Vec2 = Vec2::new(400., 400.);
+const GENERATOR_2_POSITION: Vec2 = Vec2::new(400., 300.);
+const GENERATOR_3_POSITION: Vec2 = Vec2::new(300., 400.);
+const GENERATOR_4_POSITION: Vec2 = Vec2::new(300., 300.);
 
 const PRODUCER_1_POSITION: Vec2 = Vec2::new(800., 600.);
 
@@ -29,9 +33,23 @@ impl Plugin for AIPlugin {
             .add_event::<RunNextInstruction>()
             .insert_resource(AIInstructionSets {
                 current_phase: 0,
+                cooldown: AI_STEP_COOLDOWN,
                 sets: Vec::new(),
             });
     }
+}
+
+#[derive(Component)]
+pub struct Idle(pub bool);
+
+pub struct Dependancy {
+    pub entity: Entity,
+    pub expectation: DependancyExpectation,
+}
+
+pub enum DependancyExpectation {
+    Idle(bool),
+    Moving(bool),
 }
 
 #[derive(Debug)]
@@ -55,19 +73,19 @@ pub struct AIInstructionSet {
     pub phase: usize,
     pub current_step: usize,
     pub complete: bool,
-    pub active: bool,
     pub steps: Vec<AIInstructionType>,
+    pub dependants: Vec<Dependancy>,
 }
 
 impl Default for AIInstructionSet {
     fn default() -> Self {
         Self {
-            name: Default::default(),
-            phase: Default::default(),
+            name: default(),
+            phase: default(),
             current_step: 0,
             complete: false,
-            active: false,
-            steps: Default::default(),
+            steps: default(),
+            dependants: default(),
         }
     }
 }
@@ -76,6 +94,7 @@ impl Default for AIInstructionSet {
 pub struct AIInstructionSets {
     pub current_phase: usize,
     pub sets: Vec<AIInstructionSet>,
+    pub cooldown: f32,
 }
 
 #[derive(Event)]
@@ -84,6 +103,7 @@ pub struct RunNextInstruction {}
 fn load_instructions(mut instruction_sets: ResMut<AIInstructionSets>) {
     *instruction_sets = AIInstructionSets {
         current_phase: 0,
+        cooldown: AI_STEP_COOLDOWN,
         sets: vec![
             AIInstructionSet {
                 name: "build 1st generator".into(),
@@ -106,8 +126,8 @@ fn load_instructions(mut instruction_sets: ResMut<AIInstructionSets>) {
                 phase: 1,
                 steps: vec![
                     AIInstructionType::Selection(Rect::from_corners(
-                        CORNER_OFFSET - GENERATOR_1_POSITION - vec2(10., 10.),
-                        CORNER_OFFSET - GENERATOR_1_POSITION + vec2(10., 10.),
+                        CORNER_OFFSET - GENERATOR_1_POSITION - vec2(80., 80.),
+                        CORNER_OFFSET - GENERATOR_1_POSITION + vec2(80., 80.),
                     )),
                     AIInstructionType::Build {
                         position: CORNER_OFFSET - GENERATOR_2_POSITION,
@@ -122,8 +142,8 @@ fn load_instructions(mut instruction_sets: ResMut<AIInstructionSets>) {
                 phase: 2,
                 steps: vec![
                     AIInstructionType::Selection(Rect::from_corners(
-                        CORNER_OFFSET - GENERATOR_2_POSITION - vec2(10., 10.),
-                        CORNER_OFFSET - GENERATOR_2_POSITION + vec2(10., 10.),
+                        CORNER_OFFSET - GENERATOR_2_POSITION - vec2(80., 80.),
+                        CORNER_OFFSET - GENERATOR_2_POSITION + vec2(80., 80.),
                     )),
                     AIInstructionType::Build {
                         position: CORNER_OFFSET - PRODUCER_1_POSITION,
@@ -153,8 +173,8 @@ fn load_instructions(mut instruction_sets: ResMut<AIInstructionSets>) {
                 phase: 4,
                 steps: vec![
                     AIInstructionType::Selection(Rect::from_corners(
-                        CORNER_OFFSET - PRODUCER_1_POSITION - vec2(50., 50.),
-                        CORNER_OFFSET - PRODUCER_1_POSITION + vec2(50., 50.),
+                        CORNER_OFFSET - PRODUCER_1_POSITION - vec2(80., 80.),
+                        CORNER_OFFSET - PRODUCER_1_POSITION + vec2(80., 80.),
                     )),
                     AIInstructionType::Build {
                         position: CORNER_OFFSET - GENERATOR_3_POSITION,
@@ -169,8 +189,8 @@ fn load_instructions(mut instruction_sets: ResMut<AIInstructionSets>) {
                 phase: 5,
                 steps: vec![
                     AIInstructionType::Selection(Rect::from_corners(
-                        CORNER_OFFSET - GENERATOR_3_POSITION - vec2(50., 50.),
-                        CORNER_OFFSET - GENERATOR_3_POSITION + vec2(50., 50.),
+                        CORNER_OFFSET - GENERATOR_3_POSITION - vec2(60., 60.),
+                        CORNER_OFFSET - GENERATOR_3_POSITION + vec2(60., 60.),
                     )),
                     AIInstructionType::Build {
                         position: CORNER_OFFSET - GENERATOR_4_POSITION,
@@ -194,51 +214,96 @@ fn load_instructions(mut instruction_sets: ResMut<AIInstructionSets>) {
 }
 
 fn run_instruction(
+    time: Res<Time>,
     mut instruction_sets: ResMut<AIInstructionSets>,
     mut box_selection: EventWriter<BoxSelection>,
     mut set_unit_position: EventWriter<SetUnitPosition>,
     mut place_construction_site: EventWriter<PlaceConstructionSite>,
+    selected_units: Res<SelectedUnits>,
     selected_structures: Res<SelectedStructures>,
+    mut idlers_query: Query<&mut Idle, With<Idle>>,
+    mut movers_query: Query<&mut Moving, With<Unit>>,
     mut producer_query: Query<(&mut Producer, &Children)>,
     mut production_query: Query<&mut Production>,
     mut energy: ResMut<Energy>,
 ) {
+    //  allow some time between instructions
+    instruction_sets.cooldown -= time.delta_seconds();
+    if instruction_sets.cooldown > 0.0 {
+        return;
+    }
+    instruction_sets.cooldown = AI_STEP_COOLDOWN;
+
+    //  store high scope info
     let current = instruction_sets.current_phase.clone();
     let mut phase_ongoing = false;
 
     for set in instruction_sets.sets.iter_mut() {
         if !set.complete && set.phase == current {
-            info!("running set: {:?}", set.name);
             phase_ongoing = true;
+            info!("running set: {:?}", set.name);
 
-            if set.active {
-                //  perform step
+            //  perform step if no remaining dependants
+            if set.dependants.is_empty() {
+                //  execute step
                 let index = &set.current_step;
                 let step = &set.steps[*index];
+                info!("running ai step: {:?}", step);
 
                 match &step {
                     AIInstructionType::Selection(rect) => {
-                        box_selection.send(BoxSelection { rect: *rect });
+                        box_selection.send(BoxSelection {
+                            rect: *rect,
+                            team: TeamType::CPU,
+                        });
                     }
                     AIInstructionType::Movement(position) => {
+                        //  set move orders
                         set_unit_position.send(SetUnitPosition {
                             position: *position,
+                            direction: Vec2::ZERO,
+                            formation: Formation::Ringed,
                             ..default()
                         });
+
+                        //  add dependants
+                        establish_moving_dependants(
+                            selected_units.entities.clone(),
+                            set,
+                            &mut movers_query,
+                        );
                     }
                     AIInstructionType::Build {
                         position,
                         structure,
                         cost,
                     } => {
+                        //  place site
+                        info!("building at: {:?}", *position);
                         place_construction_site.send(PlaceConstructionSite {
                             structure_type: structure.clone(),
                             position: *position,
                             effort: *cost,
                         });
+
+                        //  ensure units move to build
+                        set_unit_position.send(SetUnitPosition {
+                            position: *position,
+                            direction: Vec2::ONE * 40.0,
+                            formation: Formation::Ringed,
+                        });
+
+                        //  add dependants
+                        establish_idle_dependants(
+                            selected_units.entities.clone(),
+                            set,
+                            &mut idlers_query,
+                        );
                     }
                     AIInstructionType::Worship => todo!(),
                     AIInstructionType::Produce { production, count } => {
+                        let mut producing: bool = false;
+
                         for _ in 0..*count {
                             for entity in selected_structures.entities.clone() {
                                 if let Ok((mut producer, children)) = producer_query.get_mut(entity)
@@ -258,27 +323,102 @@ fn run_instruction(
                                                     producer.current_production =
                                                         producer.queue[0].clone();
                                                 }
+
+                                                producing = true;
+                                                info!("actually producing");
                                             }
                                         }
                                     }
                                 }
                             }
                         }
+
+                        if producing {
+                            //  add dependants
+                            establish_idle_dependants(
+                                selected_structures.entities.clone(),
+                                set,
+                                &mut idlers_query,
+                            );
+                        }
                     }
                 }
+            }
 
-                //  next or final step complete
+            //  check dependants
+            let mut removing: Vec<usize> = Vec::new();
+            for (index, dependancy) in set.dependants.iter().enumerate() {
+                let remove = match dependancy.expectation {
+                    DependancyExpectation::Idle(b) => {
+                        if let Ok(idle) = idlers_query.get(dependancy.entity) {
+                            idle.0 == b
+                        } else {
+                            false
+                        }
+                    }
+                    DependancyExpectation::Moving(b) => {
+                        if let Ok(moving) = movers_query.get(dependancy.entity) {
+                            moving.0 == b
+                        } else {
+                            false
+                        }
+                    }
+                };
+
+                if remove {
+                    removing.push(index);
+                }
+            }
+
+            for &index in removing.iter() {
+                set.dependants.swap_remove(index);
+            }
+
+            if set.dependants.is_empty() {
+                //  next step or leave
                 set.current_step += 1;
                 if set.current_step == set.steps.len() {
                     set.complete = true;
                 }
-            } else {
-                set.active = true;
             }
         }
     }
 
     if !phase_ongoing {
         instruction_sets.current_phase += 1;
+    }
+}
+
+fn establish_idle_dependants(
+    entities: Vec<Entity>,
+    set: &mut AIInstructionSet,
+    idlers_query: &mut Query<&mut Idle, With<Idle>>,
+) {
+    for &entity in entities.iter() {
+        if let Ok(mut idle) = idlers_query.get_mut(entity) {
+            set.dependants.push(Dependancy {
+                entity,
+                expectation: DependancyExpectation::Idle(true),
+            });
+            idle.0 = false;
+
+            info!("adding {:?} as an idle dependancy", entity);
+        }
+    }
+}
+
+fn establish_moving_dependants(
+    entities: Vec<Entity>,
+    set: &mut AIInstructionSet,
+    movers_query: &mut Query<&mut Moving, With<Unit>>,
+) {
+    for &entity in entities.iter() {
+        if let Ok(mut idle) = movers_query.get_mut(entity) {
+            set.dependants.push(Dependancy {
+                entity,
+                expectation: DependancyExpectation::Moving(false),
+            });
+            idle.0 = false;
+        }
     }
 }

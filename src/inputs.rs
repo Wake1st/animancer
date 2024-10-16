@@ -13,6 +13,7 @@ use crate::{
         BoxSelection, SelectedStructures, SelectionState, SelectionStateChanged, SelectionType,
     },
     structure::StructureType,
+    teams::TeamType,
     ui::CurrentUI,
     unit::UnitAction,
 };
@@ -307,9 +308,11 @@ fn click_selection(
             box_selector.current = pos;
         }
     } else if mouse_button_input.just_released(MouseButton::Left) && box_selector.selecting {
-        box_selection_writer.send(BoxSelection {
+        let event = BoxSelection {
             rect: Rect::from_corners(box_selector.start, box_selector.current),
-        });
+            team: TeamType::Human,
+        };
+        box_selection_writer.send(event);
 
         box_selector.selecting = false;
         box_selector.start = Vec2::ZERO;

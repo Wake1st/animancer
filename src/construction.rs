@@ -6,6 +6,7 @@ use bevy::{
 use vleue_navigator::prelude::PrimitiveObstacle;
 
 use crate::{
+    ai::Idle,
     currency::Energy,
     inputs::{BuildSelection, MousePosition},
     movement::{Formation, SetUnitPosition},
@@ -17,10 +18,11 @@ use crate::{
         SIMPLE_SHRINE_ASSET_PATH,
     },
     unit::Unit,
+    worker::Worker,
 };
 
 const CONSTRUCTION_BOOST: f32 = 20.5;
-pub const CONSTRUCTION_RANGE: f32 = 80.;
+pub const CONSTRUCTION_RANGE: f32 = 90.;
 const BUILD_APPROVED_COLOR: Color = Color::linear_rgba(0.1, 0.7, 0.0, 0.4);
 const BUILD_DENIED_COLOR: Color = Color::linear_rgba(0.7, 0.1, 0.0, 0.4);
 
@@ -32,11 +34,11 @@ impl Plugin for ConstructionPlugin {
             Update,
             (
                 move_construction_silhouette,
-                (attempt_construction_placement, place_structure),
+                (attempt_construction_placement, place_construction_site),
                 assign_new_workers,
                 (set_assigned_units, set_working_units).chain(),
                 increment_effort,
-                place_building,
+                place_structure,
                 (display_construction_silhouette, display_site_validity),
             )
                 .chain()
@@ -181,7 +183,7 @@ fn attempt_construction_placement(
                 //  ensure units move to build
                 movement_writer.send(SetUnitPosition {
                     position: attempt.position,
-                    direction: Vec2::ONE * (CONSTRUCTION_RANGE - 30.0),
+                    direction: Vec2::ONE * (CONSTRUCTION_RANGE - 50.0),
                     formation: Formation::Ringed,
                 });
             }
@@ -189,7 +191,7 @@ fn attempt_construction_placement(
     }
 }
 
-fn place_structure(
+fn place_construction_site(
     mut placement_reader: EventReader<PlaceConstructionSite>,
     selected_units: Res<SelectedUnits>,
     asset_server: Res<AssetServer>,
@@ -214,8 +216,8 @@ fn place_structure(
                 ..default()
             },
             PrimitiveObstacle::Rectangle(Rectangle::from_corners(
-                Vec2::new(-SELECTION_SIZE.x, -SELECTION_SIZE.y),
-                Vec2::new(SELECTION_SIZE.x, SELECTION_SIZE.y),
+                Vec2::new(-SELECTION_SIZE.x, -SELECTION_SIZE.y) / 2.0,
+                Vec2::new(SELECTION_SIZE.x, SELECTION_SIZE.y) / 2.0,
             )),
             ConstructionSite {
                 structure_type: placement.structure_type.clone(),
@@ -306,20 +308,30 @@ fn increment_effort(mut sites: Query<&mut ConstructionSite>, time: Res<Time>) {
     }
 }
 
-fn place_building(
+fn place_structure(
     sites: Query<(Entity, &GlobalTransform, &ConstructionSite)>,
+    mut workers: Query<&mut Idle, With<Worker>>,
     mut build_event: EventWriter<PlaceStructure>,
     mut commands: Commands,
 ) {
-    for (entity, transform, site) in sites.iter() {
+    for (site_entity, transform, site) in sites.iter() {
         if site.effort < 0.0 {
+            //  place the structure
             build_event.send(PlaceStructure {
                 structure_type: site.structure_type.clone(),
                 position: transform.translation(),
             });
 
+            //  set the workers to idle
+            for &worker_entity in site.working_units.iter() {
+                if let Ok(mut idle) = workers.get_mut(worker_entity) {
+                    info!("worker {:?} is now idle", worker_entity);
+                    idle.0 = true;
+                }
+            }
+
             //	destroy the site after building
-            commands.entity(entity).despawn_recursive();
+            commands.entity(site_entity).despawn_recursive();
         }
     }
 }

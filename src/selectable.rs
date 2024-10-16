@@ -51,6 +51,7 @@ pub struct Selectable {
 #[derive(Event)]
 pub struct BoxSelection {
     pub rect: Rect,
+    pub team: TeamType,
 }
 
 #[derive(Resource)]
@@ -121,7 +122,7 @@ fn select_entities(
 
         for (entity, team, global_transform, selectable) in query_units.iter_mut() {
             //  ensure the player's units are selected
-            if team.0 != TeamType::Human {
+            if team.0 != box_selection.team {
                 continue;
             }
 
@@ -147,7 +148,7 @@ fn select_entities(
 
         for (entity, team, global_transform, selectable) in query_structures.iter_mut() {
             //  ensure the player's units are selected
-            if team.0 != TeamType::Human {
+            if team.0 != box_selection.team {
                 continue;
             }
 

@@ -2,6 +2,7 @@ use bevy::{math::vec2, prelude::*};
 use vleue_navigator::prelude::PrimitiveObstacle;
 
 use crate::{
+    ai::Idle,
     combat::Health,
     generator::Generator,
     producer::{
@@ -79,8 +80,8 @@ fn spawn_structure(
                         ..default()
                     },
                     PrimitiveObstacle::Rectangle(Rectangle::from_corners(
-                        Vec2::new(-SELECTION_SIZE.x, -SELECTION_SIZE.y),
-                        Vec2::new(SELECTION_SIZE.x, SELECTION_SIZE.y),
+                        Vec2::new(-SELECTION_SIZE.x, -SELECTION_SIZE.y) / 2.0,
+                        Vec2::new(SELECTION_SIZE.x, SELECTION_SIZE.y) / 2.0,
                     )),
                     Structure {},
                     Health(SIMPLE_SHRINE_HEALTH),
@@ -88,6 +89,7 @@ fn spawn_structure(
                     Selectable {
                         size: SELECTION_SIZE,
                     },
+                    Idle(true),
                     Name::new("SimpleShrine"),
                 ));
             }
@@ -100,8 +102,8 @@ fn spawn_structure(
                             ..default()
                         },
                         PrimitiveObstacle::Rectangle(Rectangle::from_corners(
-                            Vec2::new(-SELECTION_SIZE.x, -SELECTION_SIZE.y),
-                            Vec2::new(SELECTION_SIZE.x, SELECTION_SIZE.y),
+                            Vec2::new(-SELECTION_SIZE.x, -SELECTION_SIZE.y) / 2.0,
+                            Vec2::new(SELECTION_SIZE.x, SELECTION_SIZE.y) / 2.0,
                         )),
                         Structure {},
                         Health(PRODUCER_HEALTH),
@@ -112,6 +114,7 @@ fn spawn_structure(
                         Selectable {
                             size: SELECTION_SIZE,
                         },
+                        Idle(true),
                         Name::new("Producer"),
                     ))
                     .with_children(|builder| {

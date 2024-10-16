@@ -1,7 +1,7 @@
 use bevy::{math::vec2, prelude::*};
 use vleue_navigator::prelude::*;
 
-use crate::schedule::InGameSet;
+use crate::{movement::Moving, schedule::InGameSet};
 
 const MESH_WIDTH: u32 = 5000;
 const MESH_HEIGHT: u32 = 5000;
@@ -82,10 +82,9 @@ fn give_target_to_navigator<const X: u32, const Y: u32>(
             let Some(navmesh) = navmeshes.get(navmesh.single()) else {
                 continue;
             };
-            let position = assignment.location;
-            // + Vec3::new((MESH_WIDTH as f32) / 2.0, (MESH_HEIGHT as f32) / 2.0, 0.0);
 
             //	Check if movement position is in mesh
+            let position = assignment.location;
             if !navmesh.is_in_mesh(position.xy()) {
                 continue;
             }
@@ -118,6 +117,8 @@ fn give_target_to_navigator<const X: u32, const Y: u32>(
                     target: id,
                 });
             }
+
+            info!("set path to: {:?}", position);
         }
     }
 }
@@ -140,12 +141,15 @@ fn refresh_path<const X: u32, const Y: u32>(
 
     for (entity, transform, mut path) in &mut navigator {
         let target = transforms.get(path.target).unwrap().translation.xy();
+        // info!("new target set: {:?}", target);
         if !navmesh.transformed_is_in_mesh(transform.translation) {
+            // info!("unit is not in mesh");
             *delta += 0.1;
             navmesh.set_search_delta(*delta);
             continue;
         }
         if !navmesh.transformed_is_in_mesh(target.extend(0.0)) {
+            // info!("new target not in mesh");
             commands.entity(path.target).despawn_recursive();
             commands.entity(entity).remove::<Path>();
             continue;
@@ -153,11 +157,13 @@ fn refresh_path<const X: u32, const Y: u32>(
 
         let Some(new_path) = navmesh.transformed_path(transform.translation, target.extend(0.0))
         else {
+            // info!("failed to get new path");
             commands.entity(path.target).despawn_recursive();
             commands.entity(entity).remove::<Path>();
             continue;
         };
         if let Some((first, remaining)) = new_path.path.split_first() {
+            // info!("setting remaining path");
             let mut remaining = remaining.iter().map(|p| p.xy()).collect::<Vec<_>>();
             remaining.reverse();
             path.current = first.xy();
@@ -169,10 +175,10 @@ fn refresh_path<const X: u32, const Y: u32>(
 
 fn move_navigator(
     mut commands: Commands,
-    mut navigator: Query<(&mut Transform, &mut Path, Entity, &Navigator)>,
+    mut navigator: Query<(&mut Transform, &mut Path, Entity, &Navigator, &mut Moving)>,
     time: Res<Time>,
 ) {
-    for (mut transform, mut path, entity, navigator) in navigator.iter_mut() {
+    for (mut transform, mut path, entity, navigator, mut moving) in navigator.iter_mut() {
         let move_direction = path.current - transform.translation.xy();
         transform.translation +=
             (move_direction.normalize() * time.delta_seconds() * navigator.speed).extend(0.0);
@@ -182,6 +188,9 @@ fn move_navigator(
             } else {
                 commands.entity(path.target).despawn_recursive();
                 commands.entity(entity).remove::<Path>();
+
+                moving.0 = false;
+
                 break;
             }
         }

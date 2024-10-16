@@ -27,6 +27,9 @@ impl Plugin for MovementPlugin {
     }
 }
 
+#[derive(Component)]
+pub struct Moving(pub bool);
+
 #[derive(Component, Default)]
 pub struct Moveable {
     pub location: Vec3,

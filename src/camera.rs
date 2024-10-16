@@ -16,6 +16,7 @@ fn spawn_camera(mut commands: Commands) {
     commands.spawn((
         Camera2dBundle {
             camera_2d: Camera2d {},
+            transform: Transform::from_translation(Vec3::new(4400., 4400., 0.0)),
             ..default()
         },
         CameraDirection {

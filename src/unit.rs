@@ -1,9 +1,10 @@
 use bevy::{math::vec2, prelude::*};
 
 use crate::{
+    ai::Idle,
     combat::Health,
     conversion::Faith,
-    movement::Moveable,
+    movement::{Moveable, Moving},
     nav_agent::{AssignNavigatorPath, Navigator},
     priest::Priest,
     producer::{Produce, ProductionType},
@@ -23,7 +24,7 @@ pub struct UnitPlugin;
 
 impl Plugin for UnitPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, spawn_worker.in_set(InGameSet::SpawnEntities))
+        app.add_systems(Update, spawn_unit.in_set(InGameSet::SpawnEntities))
             .add_event::<UnitAction>();
     }
 }
@@ -57,6 +58,7 @@ pub fn spawn_hero(
             base: 160.0,
             current: 160.0,
         },
+        Moving(false),
         Moveable {
             location: Vec3::ZERO,
         },
@@ -65,11 +67,12 @@ pub fn spawn_hero(
         },
         Navigator { speed: 120.0 },
         Team(team),
+        Idle(true),
         Name::new("Hero"),
     ));
 }
 
-fn spawn_worker(
+fn spawn_unit(
     mut production_event: EventReader<Produce>,
     mut nav_path_assigner: EventWriter<AssignNavigatorPath>,
     mut commands: Commands,
@@ -92,6 +95,7 @@ fn spawn_worker(
                     ..default()
                 },
                 Unit {},
+                Moving(false),
                 Moveable {
                     location: event.location,
                 },
@@ -99,6 +103,7 @@ fn spawn_worker(
                     size: vec2(32., 32.),
                 },
                 Navigator { speed },
+                Idle(true),
                 Name::new(name),
             ))
             .insert(match event.production_type {
