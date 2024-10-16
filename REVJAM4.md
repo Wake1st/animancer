@@ -5,22 +5,21 @@
     - [ ] menu theme
     - [ ] ambient
     - [ ] battle (should match the ambient when fading in/out)
-- [ ] art
-  - [ ] character art
-    - [ ] hero
-    - [ ] worker
-    - [ ] fighter
-    - [ ] priest
-  - [ ] buildings
-    - [ ] generator
-    - [ ] producer
-  - [ ] ground
-    - [ ] plain
-    - [ ] resource vein
-    - [ ] rocks
+- [x] art
+  - [x] character art
+    - [x] hero
+    - [x] worker
+    - [x] fighter
+    - [x] priest
+  - [x] buildings
+    - [x] generator
+    - [x] producer
+  - [x] ground
+    - [x] plain
+    - [x] resource vein
+    - [x] rocks
 - [ ] programming 
   - [ ] music mechanics (plugins?)
-  - [ ] needs AI (something simple, ok if it's random and a bit unpredictable)
   - [x] map
     -[x] user needs to move around map
     - [x] general layout
@@ -61,7 +60,7 @@
     - [ ] player lost
   - [ ] main menu
   - [ ] pause menu
-  = [ ] CPU AI (oh boy, lul)
+  - [ ] needs AI (something simple, ok if it's random and a bit unpredictable)
   - [ ] win state
     - [ ] obliteration (enemy cannot do the following)
       - [ ] cannot make new units
