@@ -104,6 +104,7 @@ fn spawn_unit(
                 },
                 Navigator { speed },
                 Idle(true),
+                Team(event.team.clone()),
                 Name::new(name),
             ))
             .insert(match event.production_type {

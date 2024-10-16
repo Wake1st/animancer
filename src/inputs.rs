@@ -177,7 +177,10 @@ fn handle_click(
         }
         SelectionType::Construction => {
             if mouse_button_input.just_released(MouseButton::Left) {
-                attempt_placement.send(AttemptSitePlacement { position: pos });
+                attempt_placement.send(AttemptSitePlacement {
+                    position: pos,
+                    team: TeamType::Human,
+                });
             }
         }
         SelectionType::Generator => {

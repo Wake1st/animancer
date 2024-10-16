@@ -11,6 +11,7 @@ use crate::{
     },
     schedule::InGameSet,
     selectable::Selectable,
+    teams::{Team, TeamType},
 };
 
 pub const SIMPLE_SHRINE_ASSET_PATH: &str = "harvester.png";
@@ -57,6 +58,7 @@ impl Clone for StructureType {
 pub struct PlaceStructure {
     pub structure_type: StructureType,
     pub position: Vec3,
+    pub team: TeamType,
 }
 
 fn spawn_structure(
@@ -90,6 +92,7 @@ fn spawn_structure(
                         size: SELECTION_SIZE,
                     },
                     Idle(true),
+                    Team(place.team.clone()),
                     Name::new("SimpleShrine"),
                 ));
             }
@@ -115,6 +118,7 @@ fn spawn_structure(
                             size: SELECTION_SIZE,
                         },
                         Idle(true),
+                        Team(place.team.clone()),
                         Name::new("Producer"),
                     ))
                     .with_children(|builder| {

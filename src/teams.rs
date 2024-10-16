@@ -1,9 +1,9 @@
 use bevy::prelude::*;
 
-#[derive(Component)]
+#[derive(Component, Debug)]
 pub struct Team(pub TeamType);
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Debug)]
 pub enum TeamType {
     Human,
     CPU,

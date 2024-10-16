@@ -17,6 +17,7 @@ use crate::{
         PlaceStructure, StructureType, PRODUCER_ASSET_PATH, SELECTION_SIZE,
         SIMPLE_SHRINE_ASSET_PATH,
     },
+    teams::TeamType,
     unit::Unit,
     worker::Worker,
 };
@@ -59,6 +60,7 @@ pub struct Intersects(pub bool);
 #[derive(Component)]
 pub struct ConstructionSite {
     structure_type: StructureType,
+    team: TeamType,
     effort: f32,
     assigned_units: Vec<Entity>,
     working_units: Vec<Entity>,
@@ -67,11 +69,13 @@ pub struct ConstructionSite {
 #[derive(Event)]
 pub struct AttemptSitePlacement {
     pub position: Vec2,
+    pub team: TeamType,
 }
 
 #[derive(Event)]
 pub struct PlaceConstructionSite {
     pub structure_type: StructureType,
+    pub team: TeamType,
     pub position: Vec2,
     pub effort: f32,
 }
@@ -175,6 +179,7 @@ fn attempt_construction_placement(
                 energy.value -= build_selection.cost;
 
                 place_construction_site.send(PlaceConstructionSite {
+                    team: attempt.team.clone(),
                     structure_type: build_selection.structure_type.clone(),
                     position: attempt.position,
                     effort: build_selection.cost,
@@ -221,6 +226,7 @@ fn place_construction_site(
             )),
             ConstructionSite {
                 structure_type: placement.structure_type.clone(),
+                team: placement.team.clone(),
                 effort: placement.effort,
                 assigned_units: selected_units.entities.clone(),
                 working_units: Vec::new(),
@@ -320,13 +326,16 @@ fn place_structure(
             build_event.send(PlaceStructure {
                 structure_type: site.structure_type.clone(),
                 position: transform.translation(),
+                team: site.team.clone(),
             });
 
             //  set the workers to idle
             for &worker_entity in site.working_units.iter() {
                 if let Ok(mut idle) = workers.get_mut(worker_entity) {
-                    info!("worker {:?} is now idle", worker_entity);
                     idle.0 = true;
+                    info!("worker {:?} is now idle", worker_entity);
+                } else {
+                    info!("worker {:?} has no idle", worker_entity);
                 }
             }
 

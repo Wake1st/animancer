@@ -43,7 +43,7 @@ impl Plugin for SelectablePlugin {
     }
 }
 
-#[derive(Component, Default)]
+#[derive(Component, Default, Debug)]
 pub struct Selectable {
     pub size: Vec2,
 }
@@ -117,10 +117,18 @@ fn select_entities(
     mut producer_selection: ResMut<ProducerSelection>,
 ) {
     for box_selection in reader.read() {
+        // info!(
+        //     "selection made for {:?} at {:?}",
+        //     box_selection.team, box_selection.rect
+        // );
         selected_units.entities.clear();
         selected_structures.entities.clear();
 
         for (entity, team, global_transform, selectable) in query_units.iter_mut() {
+            // info!(
+            //     "\nunit query ->\n\tentity: {:?}\n\tteam: {:?}\n\tglobal_transform: {:?}\n\tselectable: {:?}",
+            //     entity, team, global_transform, selectable
+            // );
             //  ensure the player's units are selected
             if team.0 != box_selection.team {
                 continue;
@@ -145,8 +153,13 @@ fn select_entities(
             units_selected.send(UnitsSelected {});
             return;
         }
+        // info!("selected units: {:?}", selected_units.entities.len());
 
         for (entity, team, global_transform, selectable) in query_structures.iter_mut() {
+            // info!(
+            //     "\nstructure query ->\n\tentity: {:?}\n\tteam: {:?}\n\tglobal_transform: {:?}\n\tselectable: {:?}",
+            //     entity, team, global_transform, selectable
+            // );
             //  ensure the player's units are selected
             if team.0 != box_selection.team {
                 continue;
@@ -166,6 +179,10 @@ fn select_entities(
             }
         }
 
+        // info!(
+        //     "selected structures: {:?}",
+        //     selected_structures.entities.len()
+        // );
         if selected_structures.entities.len() > 0 {
             structures_selected.send(StructuresSelected {});
         } else {

@@ -2,9 +2,11 @@ use bevy::{math::vec3, prelude::*};
 
 use crate::{
     ai::Idle,
+    currency::Energy,
     schedule::InGameSet,
     selectable::SelectedStructures,
     structure::Structure,
+    teams::{Team, TeamType},
     ui::{CurrentUI, UIType},
 };
 
@@ -21,15 +23,20 @@ impl Plugin for ProducerPlugin {
         app.add_systems(Update, display_producer_ui)
             .add_systems(
                 Update,
-                (produce, display_post_spawn_marker).in_set(InGameSet::EntityUpdates),
+                (
+                    (attempt_production_increase, produce).chain(),
+                    display_post_spawn_marker,
+                )
+                    .in_set(InGameSet::EntityUpdates),
             )
+            .add_event::<AttemptProductionIncrease>()
             .add_event::<Produce>()
             .add_event::<DisplayProducerUI>()
             .add_event::<RemoveProducerUI>();
     }
 }
 
-#[derive(Component)]
+#[derive(Component, Debug)]
 pub struct Producer {
     pub current_production: ProductionType,
     pub queue: Vec<ProductionType>,
@@ -62,7 +69,7 @@ impl Clone for Producer {
     }
 }
 
-#[derive(Component)]
+#[derive(Component, Debug)]
 pub struct Production {
     pub production_type: ProductionType,
     pub cost: f32,
@@ -110,16 +117,58 @@ pub struct DisplayProducerUI {}
 pub struct RemoveProducerUI {}
 
 #[derive(Event)]
+pub struct AttemptProductionIncrease {
+    pub production_type: ProductionType,
+}
+
+#[derive(Event)]
 pub struct Produce {
     pub production_type: ProductionType,
     pub position: Vec3,
     pub location: Vec3,
+    pub team: TeamType,
+}
+
+fn attempt_production_increase(
+    mut attempt_event: EventReader<AttemptProductionIncrease>,
+    selected_structures: Res<SelectedStructures>,
+    mut producer_query: Query<(&mut Producer, &Children)>,
+    mut production_query: Query<&mut Production>,
+    mut energy: ResMut<Energy>,
+) {
+    for attempt in attempt_event.read() {
+        for entity in selected_structures.entities.clone() {
+            if let Ok((mut producer, children)) = producer_query.get_mut(entity) {
+                for &child in children.iter() {
+                    if let Ok(mut production) = production_query.get_mut(child) {
+                        // info!(
+                        //     "\tproduction type: {:?} ?? {:?} :attempt type\n\tenergy: {:?} >? {:?} :cost",
+                        //     production.production_type, attempt.production_type,energy.value, production.cost
+                        // );
+                        if production.production_type == attempt.production_type
+                            && energy.value > production.cost
+                        {
+                            energy.value -= production.cost;
+                            production.queue += 1;
+
+                            producer.queue.push(production.production_type.clone());
+
+                            //  only set if it's the first
+                            if producer.queue.len() == 1 {
+                                producer.current_production = producer.queue[0].clone();
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 fn produce(
     time: Res<Time>,
     mut producer_query: Query<
-        (&mut Producer, &GlobalTransform, &Children, &mut Idle),
+        (&mut Producer, &GlobalTransform, &Children, &mut Idle, &Team),
         With<Structure>,
     >,
     mut production_query: Query<&mut Production>,
@@ -127,7 +176,7 @@ fn produce(
 ) {
     let delta_time = time.delta_seconds();
 
-    for (mut producer, transform, children, mut idle) in producer_query.iter_mut() {
+    for (mut producer, transform, children, mut idle, team) in producer_query.iter_mut() {
         let current_production = producer.current_production.clone();
 
         if producer.queue.len() > 0 {
@@ -135,10 +184,10 @@ fn produce(
                 if let Ok(mut production) = production_query.get_mut(child) {
                     if production.production_type == current_production {
                         producer.value += producer.rate * delta_time;
-                        info!(
-                            "producer [ value: {:?}\t rate: {:?} ]",
-                            producer.value, producer.rate
-                        );
+                        // info!(
+                        //     "producer [ value: {:?}\t rate: {:?} ]",
+                        //     producer.value, producer.rate
+                        // );
                         if producer.value >= production.cost {
                             //	leave the remainder, so as to avoid value loss over time
                             producer.value = producer.value % production.cost;
@@ -149,6 +198,7 @@ fn produce(
                                 production_type: producer.current_production.clone(),
                                 position: transform.translation() + SPAWN_OFFSET,
                                 location: producer.post_spawn_location,
+                                team: team.0.clone(),
                             });
 
                             //  shift production

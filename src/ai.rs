@@ -2,9 +2,8 @@ use bevy::{math::vec2, prelude::*};
 
 use crate::{
     construction::PlaceConstructionSite,
-    currency::Energy,
     movement::{Formation, Moving, SetUnitPosition},
-    producer::{Producer, Production, ProductionType},
+    producer::{AttemptProductionIncrease, ProductionType},
     schedule::InGameSet,
     selectable::{BoxSelection, SelectedStructures, SelectedUnits},
     structure::StructureType,
@@ -39,7 +38,7 @@ impl Plugin for AIPlugin {
     }
 }
 
-#[derive(Component)]
+#[derive(Component, Debug)]
 pub struct Idle(pub bool);
 
 pub struct Dependancy {
@@ -158,8 +157,8 @@ fn load_instructions(mut instruction_sets: ResMut<AIInstructionSets>) {
                 phase: 3,
                 steps: vec![
                     AIInstructionType::Selection(Rect::from_corners(
-                        CORNER_OFFSET - PRODUCER_1_POSITION,
-                        CORNER_OFFSET - PRODUCER_1_POSITION,
+                        CORNER_OFFSET - PRODUCER_1_POSITION, // - vec2(10., 10.),
+                        CORNER_OFFSET - PRODUCER_1_POSITION, // + vec2(10., 10.),
                     )),
                     AIInstructionType::Produce {
                         production: ProductionType::Worker,
@@ -223,9 +222,7 @@ fn run_instruction(
     selected_structures: Res<SelectedStructures>,
     mut idlers_query: Query<&mut Idle, With<Idle>>,
     mut movers_query: Query<&mut Moving, With<Unit>>,
-    mut producer_query: Query<(&mut Producer, &Children)>,
-    mut production_query: Query<&mut Production>,
-    mut energy: ResMut<Energy>,
+    mut attempt_production_event: EventWriter<AttemptProductionIncrease>,
 ) {
     //  allow some time between instructions
     instruction_sets.cooldown -= time.delta_seconds();
@@ -283,6 +280,7 @@ fn run_instruction(
                         place_construction_site.send(PlaceConstructionSite {
                             structure_type: structure.clone(),
                             position: *position,
+                            team: TeamType::CPU,
                             effort: *cost,
                         });
 
@@ -304,33 +302,16 @@ fn run_instruction(
                     AIInstructionType::Produce { production, count } => {
                         let mut producing: bool = false;
 
+                        info!(
+                            "selected structures: {:?}",
+                            selected_structures.entities.len()
+                        );
                         for _ in 0..*count {
-                            for entity in selected_structures.entities.clone() {
-                                if let Ok((mut producer, children)) = producer_query.get_mut(entity)
-                                {
-                                    for &child in children.iter() {
-                                        if let Ok(mut prod) = production_query.get_mut(child) {
-                                            if prod.production_type == *production
-                                                && energy.value > prod.cost
-                                            {
-                                                energy.value -= prod.cost;
-                                                prod.queue += 1;
+                            producing = true;
 
-                                                producer.queue.push(prod.production_type.clone());
-
-                                                //  only set if it's the first
-                                                if producer.queue.len() == 1 {
-                                                    producer.current_production =
-                                                        producer.queue[0].clone();
-                                                }
-
-                                                producing = true;
-                                                info!("actually producing");
-                                            }
-                                        }
-                                    }
-                                }
-                            }
+                            attempt_production_event.send(AttemptProductionIncrease {
+                                production_type: production.clone(),
+                            });
                         }
 
                         if producing {
@@ -396,13 +377,13 @@ fn establish_idle_dependants(
 ) {
     for &entity in entities.iter() {
         if let Ok(mut idle) = idlers_query.get_mut(entity) {
+            info!("adding {:?} as an idle dependancy({:?})", entity, idle);
+
             set.dependants.push(Dependancy {
                 entity,
                 expectation: DependancyExpectation::Idle(true),
             });
             idle.0 = false;
-
-            info!("adding {:?} as an idle dependancy", entity);
         }
     }
 }

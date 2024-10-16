@@ -7,9 +7,11 @@ use bevy::{
 };
 
 use crate::{
-    currency::Energy,
     inputs::BuildSelection,
-    producer::{DisplayProducerUI, Producer, Production, ProductionType, RemoveProducerUI},
+    producer::{
+        AttemptProductionIncrease, DisplayProducerUI, Producer, Production, ProductionType,
+        RemoveProducerUI,
+    },
     schedule::InGameSet,
     selectable::{SelectedStructures, SelectionState, SelectionStateChanged, SelectionType},
     structure::{StructureType, PRODUCER_ASSET_PATH, SIMPLE_SHRINE_ASSET_PATH},
@@ -472,38 +474,16 @@ fn producer_button_interactions(
         (&Interaction, &mut BorderColor, &ProducerButton),
         (Changed<Interaction>, With<ProducerButton>),
     >,
-    selected_structures: Res<SelectedStructures>,
-    mut producer_query: Query<(&mut Producer, &Children)>,
-    mut production_query: Query<&mut Production>,
-    mut energy: ResMut<Energy>,
+    mut attempt_production_event: EventWriter<AttemptProductionIncrease>,
 ) {
     for (interaction, mut border_color, button) in &mut interaction_query {
         match *interaction {
             Interaction::Pressed => {
                 border_color.0 = Color::Srgba(GREEN_200);
 
-                //  TODO: this should probably be some other function
-                for entity in selected_structures.entities.clone() {
-                    if let Ok((mut producer, children)) = producer_query.get_mut(entity) {
-                        for &child in children.iter() {
-                            if let Ok(mut production) = production_query.get_mut(child) {
-                                if production.production_type == button.production_type
-                                    && energy.value > production.cost
-                                {
-                                    energy.value -= production.cost;
-                                    production.queue += 1;
-
-                                    producer.queue.push(production.production_type.clone());
-
-                                    //  only set if it's the first
-                                    if producer.queue.len() == 1 {
-                                        producer.current_production = producer.queue[0].clone();
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
+                attempt_production_event.send(AttemptProductionIncrease {
+                    production_type: button.production_type.clone(),
+                });
             }
             Interaction::Hovered => {
                 border_color.0 = Color::Srgba(GRAY_200);
