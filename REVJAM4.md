@@ -59,7 +59,7 @@
     - [ ] building destroyed
     - [ ] player won
     - [ ] player lost
-  - [ ] issue with producer queue returning to 0
+  - [ ] worker selection wont update selection type
   - [ ] utilize team with resources (pain, but it must be done)
   - [ ] music mechanics (plugins?)
   - [ ] main menu
