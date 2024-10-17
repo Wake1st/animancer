@@ -15,6 +15,7 @@ use crate::{
     schedule::InGameSet,
     selectable::{SelectedStructures, SelectionState, SelectionStateChanged, SelectionType},
     structure::{StructureType, PRODUCER_ASSET_PATH, SIMPLE_SHRINE_ASSET_PATH},
+    unit::{PRIEST_ASSET_PATH, WARRIOR_ASSET_PATH, WORKER_ASSET_PATH},
     worker::{DisplayWorkerUI, RemoveWorkerUI},
 };
 
@@ -22,10 +23,6 @@ const UI_BASE_HEIGHT: f32 = 88.;
 
 const MARGIN: Val = Val::Px(12.);
 const NORMAL_BUTTON: Color = Color::srgb(0.15, 0.35, 0.35);
-
-pub const WORKER_ASSET_PATH: &str = "worker.png";
-pub const PRIEST_ASSET_PATH: &str = "priest.png";
-pub const WARRIOR_ASSET_PATH: &str = "warrior.png";
 
 pub const SIMPLE_SHRINE_COST: f32 = 40.;
 pub const PRODUCER_COST: f32 = 200.;

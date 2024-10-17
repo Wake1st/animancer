@@ -11,10 +11,14 @@ use crate::{
     schedule::InGameSet,
     selectable::Selectable,
     teams::{Team, TeamType},
-    ui::{PRIEST_ASSET_PATH, WARRIOR_ASSET_PATH, WORKER_ASSET_PATH},
     warrior::Warrior,
     worker::Worker,
 };
+
+const HERO_ASSET_PATH: &str = "hero.png";
+pub const WORKER_ASSET_PATH: &str = "worker.png";
+pub const PRIEST_ASSET_PATH: &str = "priest.png";
+pub const WARRIOR_ASSET_PATH: &str = "warrior.png";
 
 const WORKER_SPEED: f32 = 100.0;
 const PRIEST_SPEED: f32 = 85.0;
@@ -43,7 +47,7 @@ pub fn spawn_hero(
     position: Vec2,
     team: TeamType,
 ) {
-    let texture: Handle<Image> = asset_server.load("character.png");
+    let texture: Handle<Image> = asset_server.load(HERO_ASSET_PATH);
 
     commands.spawn((
         SpriteBundle {

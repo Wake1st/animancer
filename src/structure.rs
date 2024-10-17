@@ -14,9 +14,10 @@ use crate::{
     teams::{Team, TeamType},
 };
 
-pub const SIMPLE_SHRINE_ASSET_PATH: &str = "harvester.png";
-pub const PRODUCER_ASSET_PATH: &str = "worker producer.png";
+pub const SIMPLE_SHRINE_ASSET_PATH: &str = "generator.png";
+pub const PRODUCER_ASSET_PATH: &str = "producer.png";
 pub const POST_SPAWN_MARKER_PATH: &str = "marker.png";
+
 pub const SELECTION_SIZE: Vec2 = vec2(64., 64.);
 pub const SIMPLE_SHRINE_HEALTH: f32 = 660.0;
 pub const PRODUCER_HEALTH: f32 = 1400.0;

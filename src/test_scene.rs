@@ -21,8 +21,8 @@ use crate::{
         SIMPLE_SHRINE_ASSET_PATH, SIMPLE_SHRINE_HEALTH,
     },
     teams::{Team, TeamType},
-    ui::{PRIEST_ASSET_PATH, WARRIOR_ASSET_PATH, WORKER_ASSET_PATH},
     unit::Unit,
+    unit::{PRIEST_ASSET_PATH, WARRIOR_ASSET_PATH, WORKER_ASSET_PATH},
     warrior::Warrior,
     worker::Worker,
 };

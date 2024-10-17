@@ -1,5 +1,9 @@
 # Animancer
 
+## Credits
+Programming/Design - Joel Wakefield
+Art - Aelita "Vessk" Mullet
+
 ## Task List
 - [x] user can select a single unit
 - [x] user can select multiple units
