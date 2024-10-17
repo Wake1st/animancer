@@ -45,6 +45,7 @@
     - [x] user should only be able to attack/convert enemy units/structures
   - [x] structures need health
   - [x] needs AI (something simple, ok if it's random and a bit unpredictable)
+  - [x] ui should only display for the player
   - [ ] user needs visual and audio feedback
     - [x] unit selected
     - [x] structure selected
@@ -58,7 +59,7 @@
     - [ ] building destroyed
     - [ ] player won
     - [ ] player lost
-  - [ ] ui should only display for the player
+  - [ ] issue with producer queue returning to 0
   - [ ] utilize team with resources (pain, but it must be done)
   - [ ] music mechanics (plugins?)
   - [ ] main menu

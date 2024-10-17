@@ -300,7 +300,6 @@ fn set_selected_structure_type(
                 team: structures_selected.team.clone(),
             });
         } else {
-            info!("setting selection state to {:?}", structures_selected.team);
             selection_state_changed.send(SelectionStateChanged {
                 new_type: selected_type.clone(),
                 team: structures_selected.team.clone(),

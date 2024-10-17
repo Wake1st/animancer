@@ -7,7 +7,6 @@ use crate::{
     selectable::SelectedStructures,
     structure::Structure,
     teams::{Team, TeamType},
-    ui::{CurrentUI, UIType},
 };
 
 pub const SPAWN_OFFSET: Vec3 = vec3(0.0, -50.0, 0.1);
@@ -20,19 +19,18 @@ pub struct ProducerPlugin;
 
 impl Plugin for ProducerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, display_producer_ui)
-            .add_systems(
-                Update,
-                (
-                    (attempt_production_increase, produce).chain(),
-                    display_post_spawn_marker,
-                )
-                    .in_set(InGameSet::EntityUpdates),
+        app.add_systems(
+            Update,
+            (
+                (attempt_production_increase, produce).chain(),
+                display_post_spawn_marker,
             )
-            .add_event::<AttemptProductionIncrease>()
-            .add_event::<Produce>()
-            .add_event::<DisplayProducerUI>()
-            .add_event::<RemoveProducerUI>();
+                .in_set(InGameSet::EntityUpdates),
+        )
+        .add_event::<AttemptProductionIncrease>()
+        .add_event::<Produce>()
+        .add_event::<DisplayProducerUI>()
+        .add_event::<RemoveProducerUI>();
     }
 }
 
@@ -213,24 +211,6 @@ fn produce(
                     }
                 }
             }
-        }
-    }
-}
-
-fn display_producer_ui(
-    selected_structures: Res<SelectedStructures>,
-    mut current_ui: ResMut<CurrentUI>,
-    mut event_writer: EventWriter<DisplayProducerUI>,
-) {
-    if selected_structures.entities.len() > 0 {
-        match current_ui.ui_type {
-            UIType::None => {
-                event_writer.send(DisplayProducerUI {});
-                current_ui.ui_type = UIType::Producer;
-            }
-            UIType::Worker => (),
-            UIType::Producer => (),
-            UIType::Generator => (),
         }
     }
 }

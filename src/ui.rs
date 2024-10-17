@@ -424,7 +424,6 @@ fn display_producer_ui(
     mut producer_ui_query: Query<&mut Style, With<ProducerUI>>,
 ) {
     for _ in display_producer_ui.read() {
-        info!("displaying producer ui");
         for mut style in &mut producer_ui_query {
             style.display = Display::Flex;
         }
