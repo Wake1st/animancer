@@ -58,6 +58,8 @@
     - [ ] building destroyed
     - [ ] player won
     - [ ] player lost
+  - [ ] ui should only display for the player
+  - [ ] utilize team with resources (pain, but it must be done)
   - [ ] music mechanics (plugins?)
   - [ ] main menu
   - [ ] pause menu
