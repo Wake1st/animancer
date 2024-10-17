@@ -40,7 +40,7 @@ fn highlight_selected_units(
     units: Query<&Transform, With<Unit>>,
     mut gizmos: Gizmos,
 ) {
-    for &entity in selected_units.entities.iter() {
+    for &entity in selected_units.entities.human.iter() {
         if let Ok(transform) = units.get(entity) {
             gizmos.circle_2d(
                 transform.translation.xy(),
@@ -88,7 +88,7 @@ fn highlight_selected_structures(
     structures: Query<&Transform, With<Structure>>,
     mut gizmos: Gizmos,
 ) {
-    for &entity in selected_structures.entities.iter() {
+    for &entity in selected_structures.entities.human.iter() {
         if let Ok(transform) = structures.get(entity) {
             gizmos.circle_2d(
                 transform.translation.xy(),

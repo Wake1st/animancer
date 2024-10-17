@@ -193,7 +193,7 @@ fn handle_click(
         }
         SelectionType::Producer => {
             if mouse_button_input.just_pressed(MouseButton::Right) {
-                for &entity in selected_structures.entities.iter() {
+                for &entity in selected_structures.entities.iter(&TeamType::Human) {
                     if let Ok((mut producer, children)) = producers.get_mut(entity) {
                         producer.post_spawn_location = vec3(pos.x, pos.y, 0.1);
 

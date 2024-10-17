@@ -228,7 +228,10 @@ fn place_construction_site(
                 structure_type: placement.structure_type.clone(),
                 team: placement.team.clone(),
                 effort: placement.effort,
-                assigned_units: selected_units.entities.clone(),
+                assigned_units: match placement.team {
+                    TeamType::Human => selected_units.entities.human.clone(),
+                    TeamType::CPU => selected_units.entities.cpu.clone(),
+                },
                 working_units: Vec::new(),
             },
             Selectable {

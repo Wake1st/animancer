@@ -505,7 +505,7 @@ fn production_queue_display(
     producer_query: Query<&Children, With<Producer>>,
     production_query: Query<&Production>,
 ) {
-    for entity in selected_structures.entities.clone() {
+    for entity in selected_structures.entities.human.clone() {
         if let Ok(children) = producer_query.get(entity) {
             for &child in children.iter() {
                 if let Ok(production) = production_query.get(child) {

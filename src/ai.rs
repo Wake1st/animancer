@@ -310,7 +310,7 @@ fn run_instruction(
 
                         //  add dependants
                         establish_moving_dependants(
-                            selected_units.entities.clone(),
+                            selected_units.entities.cpu.clone(),
                             set,
                             &mut movers_query,
                         );
@@ -338,7 +338,7 @@ fn run_instruction(
 
                         //  add dependants
                         establish_idle_dependants(
-                            selected_units.entities.clone(),
+                            selected_units.entities.cpu.clone(),
                             set,
                             &mut idlers_query,
                         );
@@ -361,7 +361,7 @@ fn run_instruction(
                         if producing {
                             //  add dependants
                             establish_idle_dependants(
-                                selected_structures.entities.clone(),
+                                selected_structures.entities.cpu.clone(),
                                 set,
                                 &mut idlers_query,
                             );

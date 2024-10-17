@@ -9,7 +9,7 @@ use crate::{
     priest::Priest,
     producer::Producer,
     structure::Structure,
-    teams::{Team, TeamType},
+    teams::{Team, TeamBasedValues, TeamType},
     unit::{Unit, UnitAction},
     warrior::Warrior,
     worker::Worker,
@@ -34,10 +34,10 @@ impl Plugin for SelectablePlugin {
         .add_event::<UnitsSelected>()
         .add_event::<StructuresSelected>()
         .insert_resource(SelectedUnits {
-            entities: Vec::new(),
+            entities: Default::default(),
         })
         .insert_resource(SelectedStructures {
-            entities: Vec::new(),
+            entities: Default::default(),
         })
         .insert_resource(SelectionState(SelectionType::None));
     }
@@ -56,12 +56,12 @@ pub struct BoxSelection {
 
 #[derive(Resource)]
 pub struct SelectedUnits {
-    pub entities: Vec<Entity>,
+    pub entities: TeamBasedValues<Entity>,
 }
 
 #[derive(Resource)]
 pub struct SelectedStructures {
-    pub entities: Vec<Entity>,
+    pub entities: TeamBasedValues<Entity>,
 }
 
 #[derive(PartialEq, Debug)]
@@ -126,8 +126,9 @@ fn select_entities(
         //     "selection made for {:?} at {:?}",
         //     box_selection.team, box_selection.rect
         // );
-        selected_units.entities.clear();
-        selected_structures.entities.clear();
+
+        selected_units.entities.clear(&box_selection.team);
+        selected_structures.entities.clear(&box_selection.team);
 
         for (entity, team, global_transform, selectable) in query_units.iter_mut() {
             // info!(
@@ -149,12 +150,12 @@ fn select_entities(
             if box_selection.rect.contains(unit_rect.center())
                 || unit_rect.contains(box_selection.rect.center())
             {
-                selected_units.entities.push(entity);
+                selected_units.entities.push(&box_selection.team, entity);
             }
         }
 
         //  Always prioritize units and never select units AND structures
-        if selected_units.entities.len() > 0 {
+        if selected_units.entities.len(&box_selection.team) > 0 {
             units_selected.send(UnitsSelected {
                 team: box_selection.team.clone(),
             });
@@ -182,7 +183,9 @@ fn select_entities(
             if box_selection.rect.contains(structure_rect.center())
                 || structure_rect.contains(box_selection.rect.center())
             {
-                selected_structures.entities.push(entity);
+                selected_structures
+                    .entities
+                    .push(&box_selection.team, entity);
             }
         }
 
@@ -190,7 +193,7 @@ fn select_entities(
         //     "selected structures: {:?}",
         //     selected_structures.entities.len()
         // );
-        if selected_structures.entities.len() > 0 {
+        if selected_structures.entities.len(&box_selection.team) > 0 {
             structures_selected.send(StructuresSelected {
                 team: box_selection.team.clone(),
             });
@@ -217,7 +220,7 @@ fn set_selected_unit_type(
         let mut selected_type = SelectionType::None;
         let mut mismatched_types: bool = false;
 
-        for &entity in selected_units.entities.iter() {
+        for &entity in selected_units.entities.iter(&units_selected.team) {
             if let Ok(_) = worker_query.get(entity) {
                 if selected_type == SelectionType::None {
                     selected_type = SelectionType::Worker;
@@ -273,7 +276,7 @@ fn set_selected_structure_type(
         let mut selected_type = SelectionType::None;
         let mut mismatched_types: bool = false;
 
-        for &entity in selected_structures.entities.iter() {
+        for &entity in selected_structures.entities.iter(&structures_selected.team) {
             if let Ok(_) = generator_query.get(entity) {
                 if selected_type == SelectionType::None {
                     selected_type = SelectionType::Generator;
@@ -336,7 +339,7 @@ fn unit_action_selection(
             if structure_rect.contains(action.position) {
                 assign_construction_worker.send(AssignConstructionWorkers {
                     site: entity,
-                    units: selected_units.entities.clone(),
+                    units: selected_units.entities.human.clone(),
                 });
             }
         }
@@ -352,7 +355,7 @@ fn unit_action_selection(
             if structure_rect.contains(action.position) {
                 assign_generator_workers.send(AssignGeneratorWorkers {
                     generator: entity,
-                    workers: selected_units.entities.clone(),
+                    workers: selected_units.entities.human.clone(),
                 });
             }
         }
@@ -367,7 +370,7 @@ fn unit_action_selection(
             let unit_rect = Rect::from_center_size(unit_pos, selectable.size);
             if unit_rect.contains(action.position) {
                 assign_attack_pursuit.send(AssignAttackPursuit {
-                    predators: selected_units.entities.clone(),
+                    predators: selected_units.entities.human.clone(),
                     prey: entity,
                 });
             }
@@ -383,7 +386,7 @@ fn unit_action_selection(
             let unit_rect = Rect::from_center_size(unit_pos, selectable.size);
             if unit_rect.contains(action.position) {
                 assign_convert_pursuit.send(AssignConvertPursuit {
-                    predators: selected_units.entities.clone(),
+                    predators: selected_units.entities.human.clone(),
                     prey: entity,
                 });
             }
