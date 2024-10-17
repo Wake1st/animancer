@@ -97,13 +97,18 @@ pub struct SelectionState(pub SelectionType);
 #[derive(Event)]
 pub struct SelectionStateChanged {
     pub new_type: SelectionType,
+    pub team: TeamType,
 }
 
 #[derive(Event)]
-struct UnitsSelected {}
+struct UnitsSelected {
+    pub team: TeamType,
+}
 
 #[derive(Event)]
-struct StructuresSelected {}
+struct StructuresSelected {
+    pub team: TeamType,
+}
 
 fn select_entities(
     mut reader: EventReader<BoxSelection>,
@@ -150,7 +155,9 @@ fn select_entities(
 
         //  Always prioritize units and never select units AND structures
         if selected_units.entities.len() > 0 {
-            units_selected.send(UnitsSelected {});
+            units_selected.send(UnitsSelected {
+                team: box_selection.team.clone(),
+            });
             return;
         }
         // info!("selected units: {:?}", selected_units.entities.len());
@@ -184,10 +191,13 @@ fn select_entities(
         //     selected_structures.entities.len()
         // );
         if selected_structures.entities.len() > 0 {
-            structures_selected.send(StructuresSelected {});
+            structures_selected.send(StructuresSelected {
+                team: box_selection.team.clone(),
+            });
         } else {
             selection_state_changed.send(SelectionStateChanged {
                 new_type: SelectionType::None,
+                team: box_selection.team.clone(),
             });
 
             producer_selection.is_selected = false;
@@ -196,14 +206,14 @@ fn select_entities(
 }
 
 fn set_selected_unit_type(
-    mut units_selected: EventReader<UnitsSelected>,
+    mut selection_event: EventReader<UnitsSelected>,
     selected_units: Res<SelectedUnits>,
     worker_query: Query<Entity, With<Worker>>,
     priest_query: Query<Entity, With<Priest>>,
     warrior_query: Query<Entity, With<Warrior>>,
     mut selection_state_changed: EventWriter<SelectionStateChanged>,
 ) {
-    for _ in units_selected.read() {
+    for units_selected in selection_event.read() {
         let mut selected_type = SelectionType::None;
         let mut mismatched_types: bool = false;
 
@@ -240,24 +250,26 @@ fn set_selected_unit_type(
         if mismatched_types {
             selection_state_changed.send(SelectionStateChanged {
                 new_type: SelectionType::Unit,
+                team: units_selected.team.clone(),
             });
         } else {
             selection_state_changed.send(SelectionStateChanged {
                 new_type: selected_type,
+                team: units_selected.team.clone(),
             });
         }
     }
 }
 
 fn set_selected_structure_type(
-    mut structures_selected: EventReader<StructuresSelected>,
+    mut selection_event: EventReader<StructuresSelected>,
     selected_structures: Res<SelectedStructures>,
     generator_query: Query<Entity, With<Generator>>,
     producer_query: Query<Entity, With<Producer>>,
     mut selection_state_changed: EventWriter<SelectionStateChanged>,
     mut producer_selection: ResMut<ProducerSelection>,
 ) {
-    for _ in structures_selected.read() {
+    for structures_selected in selection_event.read() {
         let mut selected_type = SelectionType::None;
         let mut mismatched_types: bool = false;
 
@@ -285,13 +297,18 @@ fn set_selected_structure_type(
         if mismatched_types {
             selection_state_changed.send(SelectionStateChanged {
                 new_type: SelectionType::None,
+                team: structures_selected.team.clone(),
             });
         } else {
+            info!("setting selection state to {:?}", structures_selected.team);
             selection_state_changed.send(SelectionStateChanged {
                 new_type: selected_type.clone(),
+                team: structures_selected.team.clone(),
             });
 
-            producer_selection.is_selected = selected_type == SelectionType::Producer;
+            if structures_selected.team == TeamType::Human {
+                producer_selection.is_selected = selected_type == SelectionType::Producer;
+            }
         }
     }
 }

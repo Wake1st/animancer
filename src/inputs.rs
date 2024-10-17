@@ -240,6 +240,7 @@ fn set_selection_state(
             if deselect_construction || place_structure {
                 selection_state_changed.send(SelectionStateChanged {
                     new_type: SelectionType::Worker,
+                    team: TeamType::Human,
                 });
             }
         }
@@ -249,6 +250,7 @@ fn set_selection_state(
             {
                 selection_state_changed.send(SelectionStateChanged {
                     new_type: SelectionType::None,
+                    team: TeamType::Human,
                 });
             }
         }

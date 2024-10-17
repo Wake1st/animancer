@@ -15,6 +15,7 @@ use crate::{
     schedule::InGameSet,
     selectable::{SelectedStructures, SelectionState, SelectionStateChanged, SelectionType},
     structure::{StructureType, PRODUCER_ASSET_PATH, SIMPLE_SHRINE_ASSET_PATH},
+    teams::TeamType,
     unit::{PRIEST_ASSET_PATH, WARRIOR_ASSET_PATH, WORKER_ASSET_PATH},
     worker::{DisplayWorkerUI, RemoveWorkerUI},
 };
@@ -314,6 +315,11 @@ fn update_ui(
     mut display_producer_ui: EventWriter<DisplayProducerUI>,
 ) {
     for selection_change in selection_state_changed.read() {
+        info!("selection team: {:?}", selection_change.team);
+        if selection_change.team != TeamType::Human {
+            continue;
+        }
+
         selection_state.0 = selection_change.new_type.clone();
 
         match (&selection_change.new_type, &current_ui.ui_type) {
@@ -418,6 +424,7 @@ fn display_producer_ui(
     mut producer_ui_query: Query<&mut Style, With<ProducerUI>>,
 ) {
     for _ in display_producer_ui.read() {
+        info!("displaying producer ui");
         for mut style in &mut producer_ui_query {
             style.display = Display::Flex;
         }
@@ -454,6 +461,7 @@ fn build_button_interactions(
 
                 update_selection_state.send(SelectionStateChanged {
                     new_type: SelectionType::Construction,
+                    team: TeamType::Human,
                 });
             }
             Interaction::Hovered => {
