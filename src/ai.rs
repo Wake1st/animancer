@@ -1,4 +1,5 @@
 use bevy::{math::vec2, prelude::*};
+use rand::prelude::*;
 
 use crate::{
     construction::PlaceConstructionSite,
@@ -12,7 +13,10 @@ use crate::{
     unit::Unit,
 };
 
-const AI_STEP_COOLDOWN: f32 = 1.0;
+const AI_STEP_COOLDOWN: f32 = 3.0;
+const AI_FORCE_FORWARD: f32 = 30.0;
+const AI_FINAL_PHASE: usize = 8;
+const AI_RESET_PHASE: usize = 7;
 
 const CORNER_OFFSET: Vec2 = Vec2::new(5000., 5000.);
 
@@ -20,8 +24,8 @@ const GENERATOR_1_POSITION: Vec2 = Vec2::new(400., 400.);
 const GENERATOR_2_POSITION: Vec2 = Vec2::new(400., 300.);
 const GENERATOR_3_POSITION: Vec2 = Vec2::new(300., 400.);
 const GENERATOR_4_POSITION: Vec2 = Vec2::new(300., 300.);
-
-const PRODUCER_1_POSITION: Vec2 = Vec2::new(800., 600.);
+const PRODUCER_1_POSITION: Vec2 = Vec2::new(800., 800.);
+const ENEMY_BASE_POSITION: Vec2 = Vec2::new(700., 700.);
 
 pub struct AIPlugin;
 
@@ -33,6 +37,7 @@ impl Plugin for AIPlugin {
             .insert_resource(AIInstructionSets {
                 current_phase: 0,
                 cooldown: AI_STEP_COOLDOWN,
+                force_forward: AI_FORCE_FORWARD,
                 sets: Vec::new(),
             });
     }
@@ -60,7 +65,6 @@ pub enum AIInstructionType {
         structure: StructureType,
         cost: f32,
     },
-    Worship,
     Produce {
         production: ProductionType,
         count: usize,
@@ -94,6 +98,7 @@ pub struct AIInstructionSets {
     pub current_phase: usize,
     pub sets: Vec<AIInstructionSet>,
     pub cooldown: f32,
+    pub force_forward: f32,
 }
 
 #[derive(Event)]
@@ -103,6 +108,7 @@ fn load_instructions(mut instruction_sets: ResMut<AIInstructionSets>) {
     *instruction_sets = AIInstructionSets {
         current_phase: 0,
         cooldown: AI_STEP_COOLDOWN,
+        force_forward: AI_FORCE_FORWARD,
         sets: vec![
             AIInstructionSet {
                 name: "build 1st generator".into(),
@@ -157,8 +163,8 @@ fn load_instructions(mut instruction_sets: ResMut<AIInstructionSets>) {
                 phase: 3,
                 steps: vec![
                     AIInstructionType::Selection(Rect::from_corners(
-                        CORNER_OFFSET - PRODUCER_1_POSITION, // - vec2(10., 10.),
-                        CORNER_OFFSET - PRODUCER_1_POSITION, // + vec2(10., 10.),
+                        CORNER_OFFSET - PRODUCER_1_POSITION,
+                        CORNER_OFFSET - PRODUCER_1_POSITION,
                     )),
                     AIInstructionType::Produce {
                         production: ProductionType::Worker,
@@ -188,8 +194,8 @@ fn load_instructions(mut instruction_sets: ResMut<AIInstructionSets>) {
                 phase: 5,
                 steps: vec![
                     AIInstructionType::Selection(Rect::from_corners(
-                        CORNER_OFFSET - GENERATOR_3_POSITION - vec2(60., 60.),
-                        CORNER_OFFSET - GENERATOR_3_POSITION + vec2(60., 60.),
+                        CORNER_OFFSET - GENERATOR_3_POSITION - vec2(80., 80.),
+                        CORNER_OFFSET - GENERATOR_3_POSITION + vec2(80., 80.),
                     )),
                     AIInstructionType::Build {
                         position: CORNER_OFFSET - GENERATOR_4_POSITION,
@@ -202,10 +208,43 @@ fn load_instructions(mut instruction_sets: ResMut<AIInstructionSets>) {
             AIInstructionSet {
                 name: "create 3 warriors".into(),
                 phase: 6,
-                steps: vec![AIInstructionType::Produce {
-                    production: ProductionType::Warrior,
-                    count: 3,
-                }],
+                steps: vec![
+                    AIInstructionType::Selection(Rect::from_corners(
+                        CORNER_OFFSET - PRODUCER_1_POSITION,
+                        CORNER_OFFSET - PRODUCER_1_POSITION,
+                    )),
+                    AIInstructionType::Produce {
+                        production: ProductionType::Warrior,
+                        count: 3,
+                    },
+                ],
+                ..default()
+            },
+            AIInstructionSet {
+                name: "send troops to enemy base".into(),
+                phase: 7,
+                steps: vec![
+                    AIInstructionType::Selection(Rect::from_corners(
+                        CORNER_OFFSET - PRODUCER_1_POSITION - vec2(100., 100.),
+                        CORNER_OFFSET - PRODUCER_1_POSITION + vec2(100., 100.),
+                    )),
+                    AIInstructionType::Movement(ENEMY_BASE_POSITION),
+                ],
+                ..default()
+            },
+            AIInstructionSet {
+                name: "create 5 warriors".into(),
+                phase: 7,
+                steps: vec![
+                    AIInstructionType::Selection(Rect::from_corners(
+                        CORNER_OFFSET - PRODUCER_1_POSITION,
+                        CORNER_OFFSET - PRODUCER_1_POSITION,
+                    )),
+                    AIInstructionType::Produce {
+                        production: ProductionType::Warrior,
+                        count: 5,
+                    },
+                ],
                 ..default()
             },
         ],
@@ -225,11 +264,17 @@ fn run_instruction(
     mut attempt_production_event: EventWriter<AttemptProductionIncrease>,
 ) {
     //  allow some time between instructions
-    instruction_sets.cooldown -= time.delta_seconds();
+    let delta = time.delta_seconds();
+    instruction_sets.cooldown -= delta;
+    instruction_sets.force_forward -= delta;
+
     if instruction_sets.cooldown > 0.0 {
         return;
     }
+
     instruction_sets.cooldown = AI_STEP_COOLDOWN;
+    let forward_countdown = instruction_sets.force_forward;
+    let mut forwarded = false;
 
     //  store high scope info
     let current = instruction_sets.current_phase.clone();
@@ -257,7 +302,7 @@ fn run_instruction(
                     AIInstructionType::Movement(position) => {
                         //  set move orders
                         set_unit_position.send(SetUnitPosition {
-                            position: *position,
+                            position: *position + rand_adjustment(),
                             direction: Vec2::ZERO,
                             formation: Formation::Ringed,
                             ..default()
@@ -298,7 +343,6 @@ fn run_instruction(
                             &mut idlers_query,
                         );
                     }
-                    AIInstructionType::Worship => todo!(),
                     AIInstructionType::Produce { production, count } => {
                         let mut producing: bool = false;
 
@@ -351,23 +395,50 @@ fn run_instruction(
                 }
             }
 
+            let mut index_adjustment: usize = 0;
             for &index in removing.iter() {
-                set.dependants.swap_remove(index);
+                set.dependants.swap_remove(index - index_adjustment);
+                index_adjustment += 1;
             }
 
-            if set.dependants.is_empty() {
+            if set.dependants.is_empty() || forward_countdown < 0.0 {
                 //  next step or leave
                 set.current_step += 1;
                 if set.current_step == set.steps.len() {
                     set.complete = true;
                 }
+
+                forwarded = true;
             }
         }
     }
 
     if !phase_ongoing {
         instruction_sets.current_phase += 1;
+
+        //  final instructions loop endlessly
+        if instruction_sets.current_phase == AI_FINAL_PHASE {
+            instruction_sets.current_phase = AI_RESET_PHASE;
+
+            for set in instruction_sets.sets.iter_mut() {
+                set.complete = false;
+                set.current_step = 0;
+            }
+        }
     }
+
+    if forwarded {
+        instruction_sets.force_forward = AI_FORCE_FORWARD;
+    }
+}
+
+fn rand_adjustment() -> Vec2 {
+    let mut rnd = rand::thread_rng();
+    let range = 1000.0;
+    vec2(
+        (rnd.gen::<f32>() - 0.5) * range,
+        (rnd.gen::<f32>() - 0.5) * range,
+    )
 }
 
 fn establish_idle_dependants(

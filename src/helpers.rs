@@ -16,7 +16,6 @@ use crate::{
     currency::Energy,
     inputs::{BoxSelector, BuildSelection, ProducerSelection, UnitAim},
     movement::Formation,
-    // nav_agent::Path,
     selectable::{SelectionState, SelectionType},
     structure::StructureType,
     ui::{CurrentUI, UIType},

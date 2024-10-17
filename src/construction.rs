@@ -19,7 +19,6 @@ use crate::{
     },
     teams::TeamType,
     unit::Unit,
-    worker::Worker,
 };
 
 const CONSTRUCTION_BOOST: f32 = 20.5;
@@ -210,6 +209,7 @@ fn place_construction_site(
 
         let pos_3d = placement.position.extend(0.0);
 
+        info!("assigning workers: {:?}", selected_units.entities.len());
         commands.spawn((
             SpriteBundle {
                 texture,
@@ -316,7 +316,7 @@ fn increment_effort(mut sites: Query<&mut ConstructionSite>, time: Res<Time>) {
 
 fn place_structure(
     sites: Query<(Entity, &GlobalTransform, &ConstructionSite)>,
-    mut workers: Query<&mut Idle, With<Worker>>,
+    mut workers: Query<&mut Idle, With<Unit>>,
     mut build_event: EventWriter<PlaceStructure>,
     mut commands: Commands,
 ) {
@@ -330,6 +330,7 @@ fn place_structure(
             });
 
             //  set the workers to idle
+            info!("worker count: {:?}", site.working_units.len());
             for &worker_entity in site.working_units.iter() {
                 if let Ok(mut idle) = workers.get_mut(worker_entity) {
                     idle.0 = true;

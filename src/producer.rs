@@ -205,6 +205,7 @@ fn produce(
                             producer.queue.remove(0);
                             if producer.queue.len() == 0 {
                                 producer.current_production = ProductionType::None;
+                                idle.0 = true;
                             } else {
                                 producer.current_production = producer.queue[0].clone();
                             }
@@ -212,11 +213,7 @@ fn produce(
                     }
                 }
             }
-        } else {
-            idle.0 = true;
         }
-
-        // info!("producer idling: {:?}", idle.0);
     }
 }
 

@@ -19,7 +19,6 @@
     - [x] resource vein
     - [x] rocks
 - [ ] programming 
-  - [ ] music mechanics (plugins?)
   - [x] map
     -[x] user needs to move around map
     - [x] general layout
@@ -45,6 +44,7 @@
     - [x] user should only be able to command their own units/structures
     - [x] user should only be able to attack/convert enemy units/structures
   - [x] structures need health
+  - [x] needs AI (something simple, ok if it's random and a bit unpredictable)
   - [ ] user needs visual and audio feedback
     - [x] unit selected
     - [x] structure selected
@@ -58,9 +58,9 @@
     - [ ] building destroyed
     - [ ] player won
     - [ ] player lost
+  - [ ] music mechanics (plugins?)
   - [ ] main menu
   - [ ] pause menu
-  - [ ] needs AI (something simple, ok if it's random and a bit unpredictable)
   - [ ] win state
     - [ ] obliteration (enemy cannot do the following)
       - [ ] cannot make new units
