@@ -283,14 +283,14 @@ fn run_instruction(
     for set in instruction_sets.sets.iter_mut() {
         if !set.complete && set.phase == current {
             phase_ongoing = true;
-            info!("running set: {:?}", set.name);
+            // info!("running set: {:?}", set.name);
 
             //  perform step if no remaining dependants
             if set.dependants.is_empty() {
                 //  execute step
                 let index = &set.current_step;
                 let step = &set.steps[*index];
-                info!("running ai step: {:?}", step);
+                // info!("running ai step: {:?}", step);
 
                 match &step {
                     AIInstructionType::Selection(rect) => {
@@ -321,7 +321,7 @@ fn run_instruction(
                         cost,
                     } => {
                         //  place site
-                        info!("building at: {:?}", *position);
+                        // info!("building at: {:?}", *position);
                         place_construction_site.send(PlaceConstructionSite {
                             structure_type: structure.clone(),
                             position: *position,
@@ -346,10 +346,10 @@ fn run_instruction(
                     AIInstructionType::Produce { production, count } => {
                         let mut producing: bool = false;
 
-                        info!(
-                            "selected structures: {:?}",
-                            selected_structures.entities.len()
-                        );
+                        // info!(
+                        //     "selected structures: {:?}",
+                        //     selected_structures.entities.len()
+                        // );
                         for _ in 0..*count {
                             producing = true;
 
@@ -448,7 +448,7 @@ fn establish_idle_dependants(
 ) {
     for &entity in entities.iter() {
         if let Ok(mut idle) = idlers_query.get_mut(entity) {
-            info!("adding {:?} as an idle dependancy({:?})", entity, idle);
+            // info!("adding {:?} as an idle dependancy({:?})", entity, idle);
 
             set.dependants.push(Dependancy {
                 entity,

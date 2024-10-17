@@ -118,7 +118,7 @@ fn give_target_to_navigator<const X: u32, const Y: u32>(
                 });
             }
 
-            info!("set path to: {:?}", position);
+            // info!("set path to: {:?}", position);
         }
     }
 }

@@ -209,7 +209,7 @@ fn place_construction_site(
 
         let pos_3d = placement.position.extend(0.0);
 
-        info!("assigning workers: {:?}", selected_units.entities.len());
+        // info!("assigning workers: {:?}", selected_units.entities.len());
         commands.spawn((
             SpriteBundle {
                 texture,
@@ -330,13 +330,13 @@ fn place_structure(
             });
 
             //  set the workers to idle
-            info!("worker count: {:?}", site.working_units.len());
+            // info!("worker count: {:?}", site.working_units.len());
             for &worker_entity in site.working_units.iter() {
                 if let Ok(mut idle) = workers.get_mut(worker_entity) {
                     idle.0 = true;
-                    info!("worker {:?} is now idle", worker_entity);
+                    // info!("worker {:?} is now idle", worker_entity);
                 } else {
-                    info!("worker {:?} has no idle", worker_entity);
+                    // info!("worker {:?} has no idle", worker_entity);
                 }
             }
 
