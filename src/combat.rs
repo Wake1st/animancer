@@ -112,6 +112,8 @@ fn pursue_prey(
     }
 }
 
+fn break_pursuit() {}
+
 fn attack_unit(mut attack_events: EventReader<Attack>, mut victim_health: Query<&mut Health>) {
     for attack in attack_events.read() {
         if let Ok(mut health) = victim_health.get_mut(attack.victim) {
