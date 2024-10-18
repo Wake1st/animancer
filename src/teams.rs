@@ -11,6 +11,12 @@ pub enum TeamType {
     CPU,
 }
 
+impl Default for TeamType {
+    fn default() -> Self {
+        TeamType::Human
+    }
+}
+
 impl Clone for TeamType {
     fn clone(&self) -> Self {
         match self {

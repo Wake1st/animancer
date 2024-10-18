@@ -5,6 +5,7 @@ const ATTACK_RATE: f32 = 0.4;
 
 use crate::{
     movement::{Formation, SetUnitPosition},
+    teams::Team,
     warrior::Warrior,
 };
 
@@ -63,14 +64,19 @@ fn assign_attackers(mut assignments: EventReader<AssignAttackPursuit>, mut comma
 }
 
 fn pursue_prey(
-    mut predators: Query<(Entity, &mut AttackPursuit, &Transform, &Warrior), With<AttackPursuit>>,
+    mut predators: Query<
+        (Entity, &mut AttackPursuit, &Transform, &Warrior, &Team),
+        With<AttackPursuit>,
+    >,
     victims: Query<&Transform, With<Health>>,
     time: Res<Time>,
     mut movement_writer: EventWriter<SetUnitPosition>,
     mut attack_events: EventWriter<Attack>,
     mut commands: Commands,
 ) {
-    for (predetor_entity, mut attack_pursuit, predator_transform, warrior) in predators.iter_mut() {
+    for (predetor_entity, mut attack_pursuit, predator_transform, warrior, team) in
+        predators.iter_mut()
+    {
         attack_pursuit.cooldown -= time.delta_seconds();
 
         if attack_pursuit.cooldown < 0.0 {
@@ -88,6 +94,7 @@ fn pursue_prey(
                         position: victim_transform.translation.xy(),
                         direction: attack_direction,
                         formation: Formation::Ringed,
+                        team: team.0.clone(),
                     });
                 } else {
                     attack_events.send(Attack {

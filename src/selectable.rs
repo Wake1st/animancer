@@ -154,6 +154,10 @@ fn select_entities(
             }
         }
 
+        // info!(
+        //     "selected units: {:?}",
+        //     selected_units.entities.len(&box_selection.team)
+        // );
         //  Always prioritize units and never select units AND structures
         if selected_units.entities.len(&box_selection.team) > 0 {
             units_selected.send(UnitsSelected {
@@ -161,7 +165,6 @@ fn select_entities(
             });
             return;
         }
-        // info!("selected units: {:?}", selected_units.entities.len());
 
         for (entity, team, global_transform, selectable) in query_structures.iter_mut() {
             // info!(
@@ -191,7 +194,7 @@ fn select_entities(
 
         // info!(
         //     "selected structures: {:?}",
-        //     selected_structures.entities.len()
+        //     selected_structures.entities.len(&box_selection.team)
         // );
         if selected_structures.entities.len(&box_selection.team) > 0 {
             structures_selected.send(StructuresSelected {
@@ -220,6 +223,7 @@ fn set_selected_unit_type(
         let mut selected_type = SelectionType::None;
         let mut mismatched_types: bool = false;
 
+        // info!("unit selection team: {:?}", units_selected.team);
         for &entity in selected_units.entities.iter(&units_selected.team) {
             if let Ok(_) = worker_query.get(entity) {
                 if selected_type == SelectionType::None {
@@ -249,6 +253,7 @@ fn set_selected_unit_type(
                 }
             }
         }
+        // info!("selection type: {:?}", selected_type);
 
         if mismatched_types {
             selection_state_changed.send(SelectionStateChanged {

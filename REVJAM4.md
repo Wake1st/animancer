@@ -59,15 +59,17 @@
     - [ ] building destroyed
     - [ ] player won
     - [ ] player lost
-  - [ ] worker selection wont update selection type
-  - [ ] utilize team with resources (pain, but it must be done)
+  - [x] worker selection wont update selection type
+  - [x] utilize team with resources (pain, but it must be done)
+  - [ ] fix the "units broke attack, stop chasing target"
+  - [ ] utilize team based currency
   - [ ] music mechanics (plugins?)
+  - [ ] run it on wasm
   - [ ] main menu
   - [ ] pause menu
   - [ ] win state
     - [ ] obliteration (enemy cannot do the following)
       - [ ] cannot make new units
       - [ ] no more units
-  - [ ] run it on wasm
   - [ ] fog of war (stretch)
   - [ ] mini-map (stretch)

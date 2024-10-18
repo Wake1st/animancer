@@ -34,12 +34,12 @@ impl Plugin for ConstructionPlugin {
             Update,
             (
                 move_construction_silhouette,
-                (attempt_construction_placement, place_construction_site),
+                (attempt_construction_placement, place_construction_site).chain(),
                 assign_new_workers,
                 (set_assigned_units, set_working_units).chain(),
                 increment_effort,
                 place_structure,
-                (display_construction_silhouette, display_site_validity),
+                (display_construction_silhouette, display_site_validity).chain(),
             )
                 .chain()
                 .in_set(InGameSet::EntityUpdates),
@@ -189,6 +189,7 @@ fn attempt_construction_placement(
                     position: attempt.position,
                     direction: Vec2::ONE * (CONSTRUCTION_RANGE - 50.0),
                     formation: Formation::Ringed,
+                    team: attempt.team.clone(),
                 });
             }
         }

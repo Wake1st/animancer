@@ -91,62 +91,92 @@ fn spawn_unit(
         };
         let texture = asset_server.load(texture_path);
 
-        let id = commands
-            .spawn((
-                SpriteBundle {
-                    texture,
-                    transform: Transform::from_translation(event.position),
-                    ..default()
-                },
-                Unit {},
-                Moving(false),
-                Moveable {
-                    location: event.location,
-                },
-                Selectable {
-                    size: vec2(32., 32.),
-                },
-                Navigator { speed },
-                Idle(true),
-                Team(event.team.clone()),
-                Name::new(name),
-            ))
-            .insert(match event.production_type {
-                ProductionType::Worker => {
-                    (
-                        Worker { effort: 1.5 },
-                        Health(24.0),
-                        Faith {
-                            base: 44.0,
-                            current: 44.0,
-                        },
-                    );
-                }
-                ProductionType::Priest => {
-                    (
-                        Priest { persuation: 3.0 },
-                        Health(16.0),
-                        Faith {
-                            base: 76.0,
-                            current: 76.0,
-                        },
-                    );
-                }
-                ProductionType::Warrior => {
-                    (
-                        Warrior { strength: 2.5 },
-                        Health(42.0),
-                        Faith {
-                            base: 32.0,
-                            current: 32.0,
-                        },
-                    );
-                }
-                ProductionType::None => {
-                    todo!();
-                }
-            })
-            .id();
+        let id = match event.production_type {
+            ProductionType::Worker => commands
+                .spawn((
+                    SpriteBundle {
+                        texture,
+                        transform: Transform::from_translation(event.position),
+                        ..default()
+                    },
+                    Unit {},
+                    Worker { effort: 1.5 },
+                    Health(24.0),
+                    Faith {
+                        base: 44.0,
+                        current: 44.0,
+                    },
+                    Moving(false),
+                    Moveable {
+                        location: event.location,
+                    },
+                    Selectable {
+                        size: vec2(32., 32.),
+                    },
+                    Navigator { speed },
+                    Idle(true),
+                    Team(event.team.clone()),
+                    Name::new(name),
+                ))
+                .id(),
+            ProductionType::Priest => commands
+                .spawn((
+                    SpriteBundle {
+                        texture,
+                        transform: Transform::from_translation(event.position),
+                        ..default()
+                    },
+                    Unit {},
+                    Priest { persuation: 3.0 },
+                    Health(16.0),
+                    Faith {
+                        base: 76.0,
+                        current: 76.0,
+                    },
+                    Moving(false),
+                    Moveable {
+                        location: event.location,
+                    },
+                    Selectable {
+                        size: vec2(32., 32.),
+                    },
+                    Navigator { speed },
+                    Idle(true),
+                    Team(event.team.clone()),
+                    Name::new(name),
+                ))
+                .id(),
+            ProductionType::Warrior => commands
+                .spawn((
+                    SpriteBundle {
+                        texture,
+                        transform: Transform::from_translation(event.position),
+                        ..default()
+                    },
+                    Unit {},
+                    Warrior { strength: 2.5 },
+                    Health(42.0),
+                    Faith {
+                        base: 32.0,
+                        current: 32.0,
+                    },
+                    Moving(false),
+                    Moveable {
+                        location: event.location,
+                    },
+                    Selectable {
+                        size: vec2(32., 32.),
+                    },
+                    Navigator { speed },
+                    Idle(true),
+                    Team(event.team.clone()),
+                    Name::new(name),
+                ))
+                .id(),
+            ProductionType::None => {
+                todo!();
+            }
+        };
 
         nav_path_assigner.send(AssignNavigatorPath {
             entity: id,

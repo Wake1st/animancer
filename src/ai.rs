@@ -305,6 +305,7 @@ fn run_instruction(
                             position: *position + rand_adjustment(),
                             direction: Vec2::ZERO,
                             formation: Formation::Ringed,
+                            team: TeamType::CPU,
                             ..default()
                         });
 
@@ -334,6 +335,7 @@ fn run_instruction(
                             position: *position,
                             direction: Vec2::ONE * 40.0,
                             formation: Formation::Ringed,
+                            team: TeamType::CPU,
                         });
 
                         //  add dependants
@@ -355,6 +357,7 @@ fn run_instruction(
 
                             attempt_production_event.send(AttemptProductionIncrease {
                                 production_type: production.clone(),
+                                team: TeamType::CPU,
                             });
                         }
 

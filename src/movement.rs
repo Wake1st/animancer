@@ -5,7 +5,7 @@ use bevy::{
     prelude::*,
 };
 
-use crate::{nav_agent::AssignNavigatorPath, selectable::SelectedUnits};
+use crate::{nav_agent::AssignNavigatorPath, selectable::SelectedUnits, teams::TeamType};
 
 const UNIT_BUFFER: f32 = 40.0;
 const LINE_STRENGTH_SCALE: f32 = 2.4;
@@ -40,6 +40,7 @@ pub struct SetUnitPosition {
     pub position: Vec2,
     pub direction: Vec2,
     pub formation: Formation,
+    pub team: TeamType,
 }
 
 pub enum Formation {
@@ -71,7 +72,7 @@ fn set_moveable_location(
     mut nav_path_assigner: EventWriter<AssignNavigatorPath>,
 ) {
     for unit_movement in reader.read() {
-        let unit_count = selected.entities.len() as f32;
+        let unit_count = selected.entities.len(&unit_movement.team) as f32;
         let (aim_angle, strength) = match unit_movement.direction {
             Vec2::ZERO => (0.0, UNIT_BUFFER),
             d => (Vec2::X.angle_between(d), UNIT_BUFFER + d.length()),
@@ -84,7 +85,7 @@ fn set_moveable_location(
                 let circumference = 2. * PI * radius;
                 let theta = (circumference / unit_count) / radius;
 
-                for &entity in selected.entities.iter() {
+                for &entity in selected.entities.iter(&unit_movement.team) {
                     if let Ok(mut moveable) = query.get_mut(entity) {
                         moveable.location = vec3(
                             unit_movement.position.x + radius * f32::cos(order * theta + aim_angle),
@@ -106,7 +107,7 @@ fn set_moveable_location(
                     f32::ceil(LINE_STRENGTH_SCALE * strength / (unit_count * UNIT_BUFFER));
                 let units_per_line = f32::ceil(unit_count / line_count);
 
-                for &entity in selected.entities.iter() {
+                for &entity in selected.entities.iter(&unit_movement.team) {
                     if let Ok(mut moveable) = query.get_mut(entity) {
                         let current_line_index = f32::floor(order / units_per_line);
                         let stagger =
@@ -148,7 +149,7 @@ fn set_moveable_location(
                 let unit_spacing = total_length / unit_count;
 
                 //  move along the square, placing units evenly apart
-                for &entity in selected.entities.iter() {
+                for &entity in selected.entities.iter(&unit_movement.team) {
                     if let Ok(mut moveable) = query.get_mut(entity) {
                         distance_traveled += unit_spacing;
                         if distance_traveled / (line_count * side_length) > 1.0 {

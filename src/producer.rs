@@ -117,6 +117,7 @@ pub struct RemoveProducerUI {}
 #[derive(Event)]
 pub struct AttemptProductionIncrease {
     pub production_type: ProductionType,
+    pub team: TeamType,
 }
 
 #[derive(Event)]
@@ -135,7 +136,12 @@ fn attempt_production_increase(
     mut energy: ResMut<Energy>,
 ) {
     for attempt in attempt_event.read() {
-        for entity in selected_structures.entities.clone() {
+        let selected_entities = match attempt.team {
+            TeamType::Human => selected_structures.entities.human.clone(),
+            TeamType::CPU => selected_structures.entities.cpu.clone(),
+        };
+
+        for entity in selected_entities {
             if let Ok((mut producer, children)) = producer_query.get_mut(entity) {
                 for &child in children.iter() {
                     if let Ok(mut production) = production_query.get_mut(child) {
@@ -227,7 +233,7 @@ fn display_post_spawn_marker(
         *visibility = Visibility::Hidden;
     }
 
-    for &selected_entity in selected_structures.entities.iter() {
+    for &selected_entity in selected_structures.entities.human.iter() {
         if let Ok((global_transform, producer, children)) = producer_query.get(selected_entity) {
             for &child in children.iter() {
                 if let Ok((mut visibility, mut transform, marker)) = marker_query.get_mut(child) {

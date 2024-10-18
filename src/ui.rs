@@ -315,7 +315,6 @@ fn update_ui(
     mut display_producer_ui: EventWriter<DisplayProducerUI>,
 ) {
     for selection_change in selection_state_changed.read() {
-        info!("selection team: {:?}", selection_change.team);
         if selection_change.team != TeamType::Human {
             continue;
         }
@@ -487,6 +486,7 @@ fn producer_button_interactions(
 
                 attempt_production_event.send(AttemptProductionIncrease {
                     production_type: button.production_type.clone(),
+                    team: TeamType::Human,
                 });
             }
             Interaction::Hovered => {

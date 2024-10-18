@@ -84,13 +84,13 @@ fn unassign_converters(
 }
 
 fn pursue_prey(
-    mut predators: Query<(&mut ConvertPursuit, &Transform, &Priest), With<ConvertPursuit>>,
+    mut predators: Query<(&mut ConvertPursuit, &Transform, &Priest, &Team), With<ConvertPursuit>>,
     victims: Query<&Transform, With<Faith>>,
     time: Res<Time>,
     mut movement_writer: EventWriter<SetUnitPosition>,
     mut convert_events: EventWriter<Convert>,
 ) {
-    for (mut convert_pursuit, predator_transform, priest) in predators.iter_mut() {
+    for (mut convert_pursuit, predator_transform, priest, team) in predators.iter_mut() {
         convert_pursuit.cooldown -= time.delta_seconds();
 
         if convert_pursuit.cooldown < 0.0 {
@@ -108,6 +108,7 @@ fn pursue_prey(
                         position: victim_transform.translation.xy(),
                         direction: convert_direction,
                         formation: Formation::Ringed,
+                        team: team.0.clone(),
                     });
                 } else {
                     convert_events.send(Convert {

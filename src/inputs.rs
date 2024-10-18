@@ -168,6 +168,7 @@ fn handle_click(
                     position: unit_aim.start,
                     direction: unit_aim.current - unit_aim.start,
                     formation: box_selector.formation.clone(),
+                    team: TeamType::Human,
                 });
 
                 unit_aim.aiming = false;
