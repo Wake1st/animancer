@@ -15,6 +15,8 @@ impl Plugin for SchedulePlugin {
                 InGameSet::SelectionState,
                 InGameSet::SpawnEntities,
                 InGameSet::EntityUpdates,
+                InGameSet::ConvertEntities,
+                InGameSet::DespawnEntities,
             )
                 .chain()
                 .run_if(in_state(GameState::InGame)),
@@ -30,4 +32,6 @@ pub enum InGameSet {
     SelectionState,
     SpawnEntities,
     EntityUpdates,
+    ConvertEntities,
+    DespawnEntities,
 }

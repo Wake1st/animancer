@@ -157,7 +157,6 @@ fn handle_click(
             );
 
             if mouse_button_input.just_pressed(MouseButton::Right) {
-                info!("interacting");
                 unit_action.send(UnitAction { position: pos });
 
                 unit_aim.aiming = true;
@@ -165,7 +164,6 @@ fn handle_click(
             } else if mouse_button_input.pressed(MouseButton::Right) {
                 unit_aim.current = pos;
             } else if mouse_button_input.just_released(MouseButton::Right) && unit_aim.aiming {
-                info!("moving");
                 movement_writer.send(SetUnitPosition {
                     position: unit_aim.start,
                     direction: unit_aim.current - unit_aim.start,

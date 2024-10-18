@@ -63,9 +63,9 @@
   - [x] utilize team with resources (pain, but it must be done)
   - [x] fix the "units broke attack, stop chasing target"
   - [x] utilize team based currency
-  - [ ] warriors/priests will attack/convert if not actively pursuing
-  - [ ] music mechanics (plugins?)
+  - [x] warriors/priests will attack/convert if not actively pursuing
   - [ ] run it on wasm
+  - [ ] music mechanics (plugins?)
   - [ ] main menu
   - [ ] pause menu
   - [ ] win state

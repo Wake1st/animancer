@@ -13,7 +13,7 @@ use crate::{
     unit::Unit,
 };
 
-const AI_STEP_COOLDOWN: f32 = 3.0;
+const AI_STEP_COOLDOWN: f32 = 5.0;
 const AI_FORCE_FORWARD: f32 = 30.0;
 const AI_FINAL_PHASE: usize = 8;
 const AI_RESET_PHASE: usize = 7;

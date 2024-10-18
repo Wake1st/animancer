@@ -3,6 +3,7 @@ use bevy::prelude::*;
 use crate::{
     movement::{Formation, SetUnitPosition},
     priest::Priest,
+    schedule::InGameSet,
     teams::{Team, TeamType},
     unit::Unit,
 };
@@ -20,8 +21,12 @@ impl Plugin for ConversionPlugin {
                 assign_converters,
                 ((unassign_converters, break_conversion_pursuit), pursue_prey).chain(),
                 persuade_unit,
-                convert_unfaithful_units,
-            ),
+            )
+                .in_set(InGameSet::EntityUpdates),
+        )
+        .add_systems(
+            Update,
+            convert_unfaithful_units.in_set(InGameSet::ConvertEntities),
         )
         .add_event::<AssignConvertPursuit>()
         .add_event::<BreakConvertPursuit>()
@@ -58,9 +63,22 @@ pub struct BreakConvertPursuit {
     pub entities: Vec<Entity>,
 }
 
-fn assign_converters(mut assignments: EventReader<AssignConvertPursuit>, mut commands: Commands) {
+pub fn assign_converters(
+    mut assignments: EventReader<AssignConvertPursuit>,
+    mut commands: Commands,
+) {
     for assignment in assignments.read() {
+        //  check to ensure prey exists
+        if let None = commands.get_entity(assignment.prey) {
+            continue;
+        }
+
         for &predator in assignment.predators.iter() {
+            //  check to ensure predator exists
+            if let None = commands.get_entity(predator) {
+                continue;
+            }
+
             //  clear away existing convert pursuit before assigning one
             commands
                 .entity(predator)

@@ -4,6 +4,7 @@ mod combat;
 mod construction;
 mod conversion;
 mod currency;
+mod detection;
 mod generator;
 mod helpers;
 mod inputs;
@@ -32,6 +33,7 @@ use combat::CombatPlugin;
 use construction::ConstructionPlugin;
 use conversion::ConversionPlugin;
 use currency::CurrencyPlugin;
+use detection::DetectionPlugin;
 use generator::GeneratorPlugin;
 use helpers::HelperPlugin;
 use inputs::InputPlugin;
@@ -84,14 +86,14 @@ fn main() {
         .add_plugins((
             StatePlugin,
             SchedulePlugin,
+            CameraPlugin,
+            MapPlugin,
             UIPlugin,
             InputPlugin,
-            CameraPlugin,
+            AIPlugin,
             VisualFeedbackPlugin,
         ))
         .add_plugins((
-            MapPlugin,
-            AIPlugin,
             CurrencyPlugin,
             UnitPlugin,
             SelectablePlugin,
@@ -103,6 +105,7 @@ fn main() {
             WorkerPlugin,
             CombatPlugin,
             ConversionPlugin,
+            DetectionPlugin,
         ))
         .add_plugins((
             // TestScenePlugin,

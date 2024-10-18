@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 
+const CAMERA_START: Vec2 = Vec2::new(960., 450.);
 pub const CAMERA_PLANAR_SPEED: f32 = 800.0;
 pub const CAMERA_ZOOM_RATE: f32 = 1.0;
 
@@ -16,7 +17,7 @@ fn spawn_camera(mut commands: Commands) {
     commands.spawn((
         Camera2dBundle {
             camera_2d: Camera2d {},
-            transform: Transform::from_translation(Vec3::new(960., 450., 0.0)),
+            transform: Transform::from_translation(CAMERA_START.extend(0.0)),
             ..default()
         },
         CameraDirection {

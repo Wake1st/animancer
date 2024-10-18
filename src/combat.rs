@@ -5,6 +5,7 @@ const ATTACK_RATE: f32 = 0.4;
 
 use crate::{
     movement::{Formation, SetUnitPosition},
+    schedule::InGameSet,
     teams::Team,
     warrior::Warrior,
 };
@@ -19,8 +20,12 @@ impl Plugin for CombatPlugin {
                 assign_attackers,
                 (break_attack_pursuit, pursue_prey).chain(),
                 attack_unit,
-                destroy_unhealthy_units,
-            ),
+            )
+                .in_set(InGameSet::EntityUpdates),
+        )
+        .add_systems(
+            Update,
+            destroy_unhealthy_units.in_set(InGameSet::DespawnEntities),
         )
         .add_event::<AssignAttackPursuit>()
         .add_event::<BreakAttackPursuit>()
@@ -54,9 +59,19 @@ pub struct BreakAttackPursuit {
     pub entities: Vec<Entity>,
 }
 
-fn assign_attackers(mut assignments: EventReader<AssignAttackPursuit>, mut commands: Commands) {
+pub fn assign_attackers(mut assignments: EventReader<AssignAttackPursuit>, mut commands: Commands) {
     for assignment in assignments.read() {
+        //  check to ensure prey exists
+        if let None = commands.get_entity(assignment.prey) {
+            continue;
+        }
+
         for &predator in assignment.predators.iter() {
+            //  check to ensure predator exists
+            if let None = commands.get_entity(predator) {
+                continue;
+            }
+
             //  clear away existing attack pursuit before assigning one
             commands
                 .entity(predator)

@@ -25,8 +25,8 @@ const UI_BASE_HEIGHT: f32 = 88.;
 const MARGIN: Val = Val::Px(12.);
 const NORMAL_BUTTON: Color = Color::srgb(0.15, 0.35, 0.35);
 
-pub const SIMPLE_SHRINE_COST: f32 = 40.;
-pub const PRODUCER_COST: f32 = 200.;
+pub const SIMPLE_SHRINE_COST: f32 = 60.;
+pub const PRODUCER_COST: f32 = 140.;
 
 pub struct UIPlugin;
 

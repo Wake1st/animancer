@@ -4,6 +4,7 @@ use crate::{
     ai::Idle,
     combat::Health,
     conversion::Faith,
+    detection::Detector,
     movement::{Moveable, Moving},
     nav_agent::{AssignNavigatorPath, Navigator},
     priest::Priest,
@@ -23,6 +24,10 @@ pub const WARRIOR_ASSET_PATH: &str = "warrior.png";
 const WORKER_SPEED: f32 = 100.0;
 const PRIEST_SPEED: f32 = 85.0;
 const WARRIOR_SPEED: f32 = 120.0;
+
+const HERO_DETECTION_RANGE: f32 = 500.0;
+const WARRIOR_DETECTION_RANGE: f32 = 380.0;
+const PRIEST_DETECTION_RANGE: f32 = 440.0;
 
 pub struct UnitPlugin;
 
@@ -58,6 +63,9 @@ pub fn spawn_hero(
         Unit {},
         Worker { effort: 4.5 },
         Warrior { strength: 7.0 },
+        Detector {
+            range: HERO_DETECTION_RANGE,
+        },
         Health(120.0),
         Faith {
             base: 160.0,
@@ -129,6 +137,9 @@ fn spawn_unit(
                     },
                     Unit {},
                     Priest { persuation: 3.0 },
+                    Detector {
+                        range: PRIEST_DETECTION_RANGE,
+                    },
                     Health(16.0),
                     Faith {
                         base: 76.0,
@@ -156,6 +167,9 @@ fn spawn_unit(
                     },
                     Unit {},
                     Warrior { strength: 2.5 },
+                    Detector {
+                        range: WARRIOR_DETECTION_RANGE,
+                    },
                     Health(42.0),
                     Faith {
                         base: 32.0,
