@@ -16,10 +16,15 @@ use crate::{
     worker::Worker,
 };
 
-const HERO_ASSET_PATH: &str = "hero.png";
-pub const WORKER_ASSET_PATH: &str = "worker.png";
-pub const PRIEST_ASSET_PATH: &str = "priest.png";
-pub const WARRIOR_ASSET_PATH: &str = "warrior.png";
+const GOOD_HERO_ASSET_PATH: &str = "hero_good.png";
+pub const GOOD_WORKER_ASSET_PATH: &str = "worker_good.png";
+pub const GOOD_PRIEST_ASSET_PATH: &str = "priest_good.png";
+pub const GOOD_WARRIOR_ASSET_PATH: &str = "warrior_good.png";
+
+const EVIL_HERO_ASSET_PATH: &str = "hero_evil.png";
+pub const EVIL_WORKER_ASSET_PATH: &str = "worker_evil.png";
+pub const EVIL_PRIEST_ASSET_PATH: &str = "priest_evil.png";
+pub const EVIL_WARRIOR_ASSET_PATH: &str = "warrior_evil.png";
 
 const WORKER_SPEED: f32 = 100.0;
 const PRIEST_SPEED: f32 = 85.0;
@@ -52,7 +57,10 @@ pub fn spawn_hero(
     position: Vec2,
     team: TeamType,
 ) {
-    let texture: Handle<Image> = asset_server.load(HERO_ASSET_PATH);
+    let texture: Handle<Image> = asset_server.load(match &team {
+        TeamType::Human => GOOD_HERO_ASSET_PATH,
+        TeamType::CPU => EVIL_HERO_ASSET_PATH,
+    });
 
     commands.spawn((
         SpriteBundle {
@@ -92,11 +100,27 @@ fn spawn_unit(
     asset_server: Res<AssetServer>,
 ) {
     for event in production_event.read() {
-        let (texture_path, speed, name) = match event.production_type {
-            ProductionType::Worker => (WORKER_ASSET_PATH, WORKER_SPEED, "Worker"),
-            ProductionType::Priest => (PRIEST_ASSET_PATH, PRIEST_SPEED, "Priest"),
-            ProductionType::Warrior => (WARRIOR_ASSET_PATH, WARRIOR_SPEED, "Warrior"),
-            ProductionType::None => ("", 0.0, "None"),
+        let (texture_path, speed, name) = match (&event.production_type, &event.team) {
+            (ProductionType::Worker, TeamType::Human) => {
+                (GOOD_WORKER_ASSET_PATH, WORKER_SPEED, "Worker")
+            }
+            (ProductionType::Priest, TeamType::Human) => {
+                (GOOD_PRIEST_ASSET_PATH, PRIEST_SPEED, "Priest")
+            }
+            (ProductionType::Warrior, TeamType::Human) => {
+                (GOOD_WARRIOR_ASSET_PATH, WARRIOR_SPEED, "Warrior")
+            }
+            (ProductionType::None, TeamType::Human) => ("", 0.0, "None"),
+            (ProductionType::Worker, TeamType::CPU) => {
+                (EVIL_WORKER_ASSET_PATH, WORKER_SPEED, "Worker")
+            }
+            (ProductionType::Priest, TeamType::CPU) => {
+                (EVIL_PRIEST_ASSET_PATH, PRIEST_SPEED, "Priest")
+            }
+            (ProductionType::Warrior, TeamType::CPU) => {
+                (EVIL_WARRIOR_ASSET_PATH, WARRIOR_SPEED, "Warrior")
+            }
+            (ProductionType::None, TeamType::CPU) => ("", 0.0, "None"),
         };
         let texture = asset_server.load(texture_path);
 

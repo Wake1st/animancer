@@ -64,10 +64,11 @@
   - [x] fix the "units broke attack, stop chasing target"
   - [x] utilize team based currency
   - [x] warriors/priests will attack/convert if not actively pursuing
-  - [ ] run it on wasm
+  - [x] enemy should be different colors
+  - [ ] ui button should display cost
+  - [ ] main menu / pause menu
   - [ ] music mechanics (plugins?)
-  - [ ] main menu
-  - [ ] pause menu
+  - [ ] run it on wasm
   - [ ] win state
     - [ ] obliteration (enemy cannot do the following)
       - [ ] cannot make new units

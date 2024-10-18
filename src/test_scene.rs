@@ -22,7 +22,7 @@ use crate::{
     },
     teams::{Team, TeamType},
     unit::Unit,
-    unit::{PRIEST_ASSET_PATH, WARRIOR_ASSET_PATH, WORKER_ASSET_PATH},
+    unit::{GOOD_PRIEST_ASSET_PATH, GOOD_WARRIOR_ASSET_PATH, GOOD_WORKER_ASSET_PATH},
     warrior::Warrior,
     worker::Worker,
 };
@@ -84,7 +84,7 @@ fn spawn_hero<const IS_HUMAN: bool>(mut commands: Commands, asset_server: Res<As
 }
 
 fn spawn_workers<const IS_HUMAN: bool>(mut commands: Commands, asset_server: Res<AssetServer>) {
-    let texture: Handle<Image> = asset_server.load(WORKER_ASSET_PATH);
+    let texture: Handle<Image> = asset_server.load(GOOD_WORKER_ASSET_PATH);
     let team_side = if IS_HUMAN { -1.0 } else { 1.0 };
     let spawn_position_base = vec3(-100., 200. * team_side, 0.);
 
@@ -119,7 +119,7 @@ fn spawn_workers<const IS_HUMAN: bool>(mut commands: Commands, asset_server: Res
 }
 
 fn spawn_priests<const IS_HUMAN: bool>(mut commands: Commands, asset_server: Res<AssetServer>) {
-    let texture: Handle<Image> = asset_server.load(PRIEST_ASSET_PATH);
+    let texture: Handle<Image> = asset_server.load(GOOD_PRIEST_ASSET_PATH);
     let team_side = if IS_HUMAN { -1.0 } else { 1.0 };
     let spawn_position_base = vec3(-200., 200. * team_side, 0.);
 
@@ -154,7 +154,7 @@ fn spawn_priests<const IS_HUMAN: bool>(mut commands: Commands, asset_server: Res
 }
 
 fn spawn_warriors<const IS_HUMAN: bool>(mut commands: Commands, asset_server: Res<AssetServer>) {
-    let texture: Handle<Image> = asset_server.load(WARRIOR_ASSET_PATH);
+    let texture: Handle<Image> = asset_server.load(GOOD_WARRIOR_ASSET_PATH);
     let team_side = if IS_HUMAN { -1.0 } else { 1.0 };
     let spawn_position_base = vec3(-300., 200. * team_side, 0.);
 

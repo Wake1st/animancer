@@ -16,7 +16,7 @@ use crate::{
     selectable::{SelectedStructures, SelectionState, SelectionStateChanged, SelectionType},
     structure::{StructureType, PRODUCER_ASSET_PATH, SIMPLE_SHRINE_ASSET_PATH},
     teams::TeamType,
-    unit::{PRIEST_ASSET_PATH, WARRIOR_ASSET_PATH, WORKER_ASSET_PATH},
+    unit::{GOOD_PRIEST_ASSET_PATH, GOOD_WARRIOR_ASSET_PATH, GOOD_WORKER_ASSET_PATH},
     worker::{DisplayWorkerUI, RemoveWorkerUI},
 };
 
@@ -210,9 +210,9 @@ fn setup_worker_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
 }
 
 fn setup_producer_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
-    let worker_texture: Handle<Image> = asset_server.load(WORKER_ASSET_PATH);
-    let priest_texture: Handle<Image> = asset_server.load(PRIEST_ASSET_PATH);
-    let warrior_texture: Handle<Image> = asset_server.load(WARRIOR_ASSET_PATH);
+    let worker_texture: Handle<Image> = asset_server.load(GOOD_WORKER_ASSET_PATH);
+    let priest_texture: Handle<Image> = asset_server.load(GOOD_PRIEST_ASSET_PATH);
+    let warrior_texture: Handle<Image> = asset_server.load(GOOD_WARRIOR_ASSET_PATH);
 
     commands
         .spawn((
