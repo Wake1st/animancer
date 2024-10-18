@@ -1,6 +1,8 @@
 use bevy::prelude::*;
 
-use crate::{currency::Energy, schedule::InGameSet, structure::Structure, worker::Worker};
+use crate::{
+    currency::Energy, schedule::InGameSet, structure::Structure, teams::Team, worker::Worker,
+};
 
 const GENERATOR_BASE_RATE: f32 = 1.0;
 const WORKING_RANGE: f32 = 60.0;
@@ -144,15 +146,18 @@ fn get_worker_effort(mut generator_query: Query<&mut Generator>, worker_query: Q
 fn generate(
     time: Res<Time>,
     mut energy: ResMut<Energy>,
-    query: Query<&Generator, With<Structure>>,
+    query: Query<(&Generator, &Team), With<Structure>>,
 ) {
     let delta_time = time.delta_seconds();
 
-    for generator in query.iter() {
+    for (generator, team) in query.iter() {
         if generator.is_running {
             match generator.gen_type {
                 GeneratorType::Energy => {
-                    energy.value += (generator.base_rate + generator.added_rate) * delta_time
+                    energy.add(
+                        &team.0,
+                        (generator.base_rate + generator.added_rate) * delta_time,
+                    );
                 }
             }
         }

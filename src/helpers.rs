@@ -130,7 +130,7 @@ fn debug_text(
         })
         .into();
 
-        text.sections[8].value = energy.value.to_string();
+        text.sections[8].value = energy.human.to_string();
 
         text.sections[10].value = current_ui.focused.to_string();
 

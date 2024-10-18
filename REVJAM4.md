@@ -61,8 +61,9 @@
     - [ ] player lost
   - [x] worker selection wont update selection type
   - [x] utilize team with resources (pain, but it must be done)
-  - [ ] fix the "units broke attack, stop chasing target"
-  - [ ] utilize team based currency
+  - [x] fix the "units broke attack, stop chasing target"
+  - [x] utilize team based currency
+  - [ ] warriors/priests will attack/convert if not actively pursuing
   - [ ] music mechanics (plugins?)
   - [ ] run it on wasm
   - [ ] main menu

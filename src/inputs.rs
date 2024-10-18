@@ -237,7 +237,7 @@ fn set_selection_state(
         SelectionType::Construction => {
             let deselect_construction = mouse_button_input.just_released(MouseButton::Right);
             let place_structure = mouse_button_input.just_released(MouseButton::Left)
-                && energy.value > build_selection.cost
+                && energy.human > build_selection.cost
                 && !keys.pressed(KeyCode::ShiftLeft);
 
             if deselect_construction || place_structure {

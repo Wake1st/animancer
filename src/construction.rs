@@ -174,8 +174,8 @@ fn attempt_construction_placement(
 ) {
     for attempt in placement_attempt.read() {
         for intersects in silhouettes.iter() {
-            if !intersects.0 && energy.value > build_selection.cost {
-                energy.value -= build_selection.cost;
+            if !intersects.0 && energy.get(&attempt.team) > build_selection.cost {
+                energy.add(&attempt.team, -build_selection.cost);
 
                 place_construction_site.send(PlaceConstructionSite {
                     team: attempt.team.clone(),

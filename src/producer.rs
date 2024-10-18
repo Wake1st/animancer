@@ -150,9 +150,9 @@ fn attempt_production_increase(
                         //     production.production_type, attempt.production_type,energy.value, production.cost
                         // );
                         if production.production_type == attempt.production_type
-                            && energy.value > production.cost
+                            && energy.get(&attempt.team) > production.cost
                         {
-                            energy.value -= production.cost;
+                            energy.add(&attempt.team, -production.cost);
                             production.queue += 1;
 
                             producer.queue.push(production.production_type.clone());
