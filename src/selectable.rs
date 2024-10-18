@@ -1,9 +1,9 @@
 use bevy::{math::vec2, prelude::*};
 
 use crate::{
-    combat::{AssignAttackPursuit, Health},
+    combat::{AssignAttackPursuit, BreakAttackPursuit, Health},
     construction::{AssignConstructionWorkers, ConstructionSite},
-    conversion::{AssignConvertPursuit, Faith},
+    conversion::{AssignConvertPursuit, BreakConvertPursuit, Faith},
     generator::{AssignGeneratorWorkers, Generator},
     inputs::ProducerSelection,
     priest::Priest,
@@ -328,8 +328,10 @@ fn unit_action_selection(
     mut assign_generator_workers: EventWriter<AssignGeneratorWorkers>,
     attackables: Query<(Entity, &Team, &Transform, &Selectable), With<Health>>,
     mut assign_attack_pursuit: EventWriter<AssignAttackPursuit>,
+    mut break_attack_pursuit: EventWriter<BreakAttackPursuit>,
     convertables: Query<(Entity, &Team, &Transform, &Selectable), With<Faith>>,
     mut assign_convert_pursuit: EventWriter<AssignConvertPursuit>,
+    mut break_convert_pursuit: EventWriter<BreakConvertPursuit>,
     selected_units: Res<SelectedUnits>,
 ) {
     for action in unit_action.read() {
@@ -378,6 +380,10 @@ fn unit_action_selection(
                     predators: selected_units.entities.human.clone(),
                     prey: entity,
                 });
+            } else {
+                break_attack_pursuit.send(BreakAttackPursuit {
+                    entities: selected_units.entities.human.clone(),
+                });
             }
         }
 
@@ -393,6 +399,10 @@ fn unit_action_selection(
                 assign_convert_pursuit.send(AssignConvertPursuit {
                     predators: selected_units.entities.human.clone(),
                     prey: entity,
+                });
+            } else {
+                break_convert_pursuit.send(BreakConvertPursuit {
+                    entities: selected_units.entities.human.clone(),
                 });
             }
         }

@@ -18,13 +18,13 @@ impl Plugin for ConversionPlugin {
             Update,
             (
                 assign_converters,
-                unassign_converters,
-                pursue_prey,
+                ((unassign_converters, break_conversion_pursuit), pursue_prey).chain(),
                 persuade_unit,
                 convert_unfaithful_units,
             ),
         )
         .add_event::<AssignConvertPursuit>()
+        .add_event::<BreakConvertPursuit>()
         .add_event::<Convert>();
     }
 }
@@ -53,6 +53,11 @@ pub struct Convert {
     pub value: f32,
 }
 
+#[derive(Event)]
+pub struct BreakConvertPursuit {
+    pub entities: Vec<Entity>,
+}
+
 fn assign_converters(mut assignments: EventReader<AssignConvertPursuit>, mut commands: Commands) {
     for assignment in assignments.read() {
         for &predator in assignment.predators.iter() {
@@ -79,6 +84,14 @@ fn unassign_converters(
             if predator_team.0 == prey_team.0 {
                 commands.entity(entity).remove::<ConvertPursuit>();
             }
+        }
+    }
+}
+
+fn break_conversion_pursuit(mut event: EventReader<BreakConvertPursuit>, mut commands: Commands) {
+    for break_convert in event.read() {
+        for &entity in break_convert.entities.iter() {
+            commands.entity(entity).remove::<ConvertPursuit>();
         }
     }
 }

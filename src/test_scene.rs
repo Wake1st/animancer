@@ -167,10 +167,7 @@ fn spawn_warriors<const IS_HUMAN: bool>(mut commands: Commands, asset_server: Re
                 ..default()
             },
             Unit {},
-            Warrior {
-                strength: 2.5,
-                attacking: false,
-            },
+            Warrior { strength: 2.5 },
             Health(42.0),
             Faith {
                 base: 32.0,

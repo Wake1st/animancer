@@ -17,12 +17,13 @@ impl Plugin for CombatPlugin {
             Update,
             (
                 assign_attackers,
-                pursue_prey,
+                (break_attack_pursuit, pursue_prey).chain(),
                 attack_unit,
                 destroy_unhealthy_units,
             ),
         )
         .add_event::<AssignAttackPursuit>()
+        .add_event::<BreakAttackPursuit>()
         .add_event::<Attack>();
     }
 }
@@ -48,6 +49,11 @@ pub struct Attack {
     pub value: f32,
 }
 
+#[derive(Event)]
+pub struct BreakAttackPursuit {
+    pub entities: Vec<Entity>,
+}
+
 fn assign_attackers(mut assignments: EventReader<AssignAttackPursuit>, mut commands: Commands) {
     for assignment in assignments.read() {
         for &predator in assignment.predators.iter() {
@@ -59,6 +65,14 @@ fn assign_attackers(mut assignments: EventReader<AssignAttackPursuit>, mut comma
                     cooldown: 0.0,
                     prey: assignment.prey,
                 });
+        }
+    }
+}
+
+fn break_attack_pursuit(mut event: EventReader<BreakAttackPursuit>, mut commands: Commands) {
+    for break_attack in event.read() {
+        for &entity in break_attack.entities.iter() {
+            commands.entity(entity).remove::<AttackPursuit>();
         }
     }
 }
@@ -111,8 +125,6 @@ fn pursue_prey(
         }
     }
 }
-
-fn break_pursuit() {}
 
 fn attack_unit(mut attack_events: EventReader<Attack>, mut victim_health: Query<&mut Health>) {
     for attack in attack_events.read() {

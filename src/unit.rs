@@ -57,10 +57,7 @@ pub fn spawn_hero(
         },
         Unit {},
         Worker { effort: 4.5 },
-        Warrior {
-            strength: 7.0,
-            attacking: false,
-        },
+        Warrior { strength: 7.0 },
         Health(120.0),
         Faith {
             base: 160.0,
@@ -158,10 +155,7 @@ fn spawn_unit(
                         ..default()
                     },
                     Unit {},
-                    Warrior {
-                        strength: 2.5,
-                        attacking: false,
-                    },
+                    Warrior { strength: 2.5 },
                     Health(42.0),
                     Faith {
                         base: 32.0,
