@@ -1,6 +1,6 @@
 use bevy::{
     color::palettes::{
-        css::{DARK_GREEN, DARK_SLATE_BLUE},
+        css::{BLACK, DARK_GREEN, DARK_SLATE_BLUE},
         tailwind::{GRAY_200, GRAY_800, GREEN_200},
     },
     prelude::*,
@@ -10,7 +10,7 @@ use crate::{
     inputs::BuildSelection,
     producer::{
         AttemptProductionIncrease, DisplayProducerUI, Producer, Production, ProductionType,
-        RemoveProducerUI,
+        RemoveProducerUI, PRIEST_COST, WARRIOR_COST, WORKER_COST,
     },
     schedule::InGameSet,
     selectable::{SelectedStructures, SelectionState, SelectionStateChanged, SelectionType},
@@ -24,6 +24,7 @@ const UI_BASE_HEIGHT: f32 = 88.;
 
 const MARGIN: Val = Val::Px(12.);
 const NORMAL_BUTTON: Color = Color::srgb(0.15, 0.35, 0.35);
+const COST_TEXT_COLOR: Color = Color::Srgba(BLACK);
 
 pub const SIMPLE_SHRINE_COST: f32 = 60.;
 pub const PRODUCER_COST: f32 = 140.;
@@ -159,52 +160,109 @@ fn setup_worker_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
                     ..Default::default()
                 })
                 .with_children(|builder| {
-                    builder.spawn((
-                        ButtonBundle {
-                            style: Style {
-                                width: Val::Px(64.0),
-                                height: Val::Px(64.0),
-                                border: UiRect::all(Val::Px(2.0)),
-                                justify_content: JustifyContent::Center,
-                                align_items: AlignItems::Center,
+                    builder
+                        .spawn((
+                            ButtonBundle {
+                                style: Style {
+                                    width: Val::Px(64.0),
+                                    height: Val::Px(64.0),
+                                    border: UiRect::all(Val::Px(2.0)),
+                                    justify_content: JustifyContent::Center,
+                                    align_items: AlignItems::Center,
+                                    ..default()
+                                },
+                                border_color: Color::Srgba(GRAY_800).into(),
+                                background_color: NORMAL_BUTTON.into(),
+                                image: UiImage {
+                                    texture: simple_shrine_texture,
+                                    ..default()
+                                },
                                 ..default()
                             },
-                            border_color: Color::Srgba(GRAY_800).into(),
-                            background_color: NORMAL_BUTTON.into(),
-                            image: UiImage {
-                                texture: simple_shrine_texture,
+                            BuildButton {
+                                structure_type: StructureType::SimpleShrine,
+                                cost: SIMPLE_SHRINE_COST,
+                            },
+                        ))
+                        .with_children(|builder| {
+                            builder
+                                .spawn(NodeBundle {
+                                    style: Style {
+                                        width: Val::Percent(100.),
+                                        height: Val::Percent(100.),
+                                        padding: UiRect::all(Val::Px(2.)),
+                                        flex_direction: FlexDirection::Column,
+                                        justify_content: JustifyContent::FlexEnd,
+                                        align_items: AlignItems::FlexStart,
+                                        ..default()
+                                    },
+                                    ..default()
+                                })
+                                .with_children(|builder| {
+                                    builder.spawn(TextBundle {
+                                        text: Text::from_section(
+                                            SIMPLE_SHRINE_COST.to_string(),
+                                            TextStyle {
+                                                color: COST_TEXT_COLOR,
+                                                ..default()
+                                            },
+                                        ),
+                                        ..default()
+                                    });
+                                });
+                        });
+
+                    builder
+                        .spawn((
+                            ButtonBundle {
+                                style: Style {
+                                    width: Val::Px(64.0),
+                                    height: Val::Px(64.0),
+                                    border: UiRect::all(Val::Px(2.0)),
+                                    justify_content: JustifyContent::Center,
+                                    align_items: AlignItems::Center,
+                                    ..default()
+                                },
+                                border_color: Color::Srgba(GRAY_800).into(),
+                                background_color: NORMAL_BUTTON.into(),
+                                image: UiImage {
+                                    texture: producer_texture,
+                                    ..default()
+                                },
                                 ..default()
                             },
-                            ..default()
-                        },
-                        BuildButton {
-                            structure_type: StructureType::SimpleShrine,
-                            cost: SIMPLE_SHRINE_COST,
-                        },
-                    ));
-                    builder.spawn((
-                        ButtonBundle {
-                            style: Style {
-                                width: Val::Px(64.0),
-                                height: Val::Px(64.0),
-                                border: UiRect::all(Val::Px(2.0)),
-                                justify_content: JustifyContent::Center,
-                                align_items: AlignItems::Center,
-                                ..default()
+                            BuildButton {
+                                structure_type: StructureType::Producer,
+                                cost: PRODUCER_COST,
                             },
-                            border_color: Color::Srgba(GRAY_800).into(),
-                            background_color: NORMAL_BUTTON.into(),
-                            image: UiImage {
-                                texture: producer_texture,
-                                ..default()
-                            },
-                            ..default()
-                        },
-                        BuildButton {
-                            structure_type: StructureType::Producer,
-                            cost: PRODUCER_COST,
-                        },
-                    ));
+                        ))
+                        .with_children(|builder| {
+                            builder
+                                .spawn(NodeBundle {
+                                    style: Style {
+                                        width: Val::Percent(100.),
+                                        height: Val::Percent(100.),
+                                        padding: UiRect::all(Val::Px(2.)),
+                                        flex_direction: FlexDirection::Column,
+                                        justify_content: JustifyContent::FlexEnd,
+                                        align_items: AlignItems::FlexStart,
+                                        ..default()
+                                    },
+                                    ..default()
+                                })
+                                .with_children(|builder| {
+                                    builder.spawn(TextBundle {
+                                        text: Text::from_section(
+                                            PRODUCER_COST.to_string(),
+                                            TextStyle {
+                                                color: COST_TEXT_COLOR,
+                                                ..default()
+                                            },
+                                        ),
+                                        ..default()
+                                    });
+                                });
+                        });
                 });
         });
 }
@@ -244,9 +302,24 @@ fn setup_producer_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
                     ..Default::default()
                 })
                 .with_children(|builder| {
-                    production_button(builder, worker_texture, ProductionType::Worker);
-                    production_button(builder, priest_texture, ProductionType::Priest);
-                    production_button(builder, warrior_texture, ProductionType::Warrior);
+                    production_button(
+                        builder,
+                        worker_texture,
+                        ProductionType::Worker,
+                        WORKER_COST.to_string(),
+                    );
+                    production_button(
+                        builder,
+                        priest_texture,
+                        ProductionType::Priest,
+                        PRIEST_COST.to_string(),
+                    );
+                    production_button(
+                        builder,
+                        warrior_texture,
+                        ProductionType::Warrior,
+                        WARRIOR_COST.to_string(),
+                    );
                 });
         });
 }
@@ -255,6 +328,7 @@ fn production_button(
     parent: &mut ChildBuilder,
     texture: Handle<Image>,
     production_type: ProductionType,
+    cost_text: String,
 ) {
     parent
         .spawn((
@@ -301,6 +375,31 @@ fn production_button(
                         },
                         QueueText { production_type },
                     ));
+                });
+            builder
+                .spawn(NodeBundle {
+                    style: Style {
+                        width: Val::Percent(100.),
+                        height: Val::Percent(100.),
+                        padding: UiRect::all(Val::Px(2.)),
+                        flex_direction: FlexDirection::Column,
+                        justify_content: JustifyContent::FlexEnd,
+                        align_items: AlignItems::FlexStart,
+                        ..default()
+                    },
+                    ..default()
+                })
+                .with_children(|builder| {
+                    builder.spawn(TextBundle {
+                        text: Text::from_section(
+                            cost_text,
+                            TextStyle {
+                                color: COST_TEXT_COLOR,
+                                ..default()
+                            },
+                        ),
+                        ..default()
+                    });
                 });
         });
 }

@@ -65,7 +65,7 @@
   - [x] utilize team based currency
   - [x] warriors/priests will attack/convert if not actively pursuing
   - [x] enemy should be different colors
-  - [ ] ui button should display cost
+  - [x] ui button should display cost
   - [ ] main menu / pause menu
   - [ ] music mechanics (plugins?)
   - [ ] run it on wasm
