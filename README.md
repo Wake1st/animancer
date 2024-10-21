@@ -3,6 +3,7 @@
 ## Credits
 Programming/Design - Joel Wakefield
 Art - Aelita "Vessk" Mullet
+Music - Marce R
 
 ## Task List
 - [x] user can select a single unit
