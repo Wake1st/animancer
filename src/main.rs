@@ -26,7 +26,7 @@ mod warrior;
 mod worker;
 
 use ai::AIPlugin;
-use bevy::{asset::AssetMetaCheck, log::LogPlugin, prelude::*, window::WindowMode};
+use bevy::{asset::AssetMetaCheck, log::LogPlugin, prelude::*};
 
 use camera::CameraPlugin;
 use combat::CombatPlugin;

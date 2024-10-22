@@ -78,7 +78,7 @@ fn give_target_to_navigator<const X: u32, const Y: u32>(
     mut commands: Commands,
 ) {
     for assignment in nav_path_assignment.read() {
-        for transform in &navigator.get(assignment.entity) {
+        while let Ok(transform) = &navigator.get(assignment.entity) {
             let Some(navmesh) = navmeshes.get(navmesh.single()) else {
                 continue;
             };

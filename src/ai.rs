@@ -283,14 +283,14 @@ fn run_instruction(
     for set in instruction_sets.sets.iter_mut() {
         if !set.complete && set.phase == current {
             phase_ongoing = true;
-            // info!("running set: {:?}", set.name);
+            debug!("running set: {:?}", set.name);
 
             //  perform step if no remaining dependants
             if set.dependants.is_empty() {
                 //  execute step
                 let index = &set.current_step;
                 let step = &set.steps[*index];
-                // info!("running ai step: {:?}", step);
+                debug!("running ai step: {:?}", step);
 
                 match &step {
                     AIInstructionType::Selection(rect) => {
