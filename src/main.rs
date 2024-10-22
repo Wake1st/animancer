@@ -26,7 +26,7 @@ mod warrior;
 mod worker;
 
 use ai::AIPlugin;
-use bevy::{log::LogPlugin, prelude::*, window::WindowMode};
+use bevy::{asset::AssetMetaCheck, log::LogPlugin, prelude::*, window::WindowMode};
 
 use camera::CameraPlugin;
 use combat::CombatPlugin;
@@ -63,14 +63,19 @@ fn main() {
                 .set(WindowPlugin {
                     primary_window: Some(Window {
                         title: "Animancer".into(),
-                        resizable: false,
-                        mode: WindowMode::BorderlessFullscreen,
+                        canvas: Some("#bevy".to_string()),
+                        fit_canvas_to_parent: true,
+                        prevent_default_event_handling: true,
                         ..default()
                     }),
                     ..default()
                 })
                 .set(LogPlugin {
                     level: bevy::log::Level::INFO,
+                    ..default()
+                })
+                .set(AssetPlugin {
+                    meta_check: AssetMetaCheck::Never,
                     ..default()
                 })
                 .build(),
