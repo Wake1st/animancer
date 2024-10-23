@@ -91,5 +91,6 @@ input:checked+.slider:before {
 }
 
 #programming img {
-  padding: 0 16rem;
+  width: 10rem;
+  margin: 0 auto;
 }
