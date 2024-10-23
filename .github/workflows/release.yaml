@@ -90,12 +90,12 @@ jobs:
             package_ext: .zip
             runner: ubuntu-latest
 
-          - platform: linux
-            targets: x86_64-unknown-linux-gnu
-            profile: release-native
-            features: bevy/wayland
-            package_ext: .zip
-            runner: ubuntu-latest
+          # - platform: linux
+          #   targets: x86_64-unknown-linux-gnu
+          #   profile: release-native
+          #   features: bevy/wayland
+          #   package_ext: .zip
+          #   runner: ubuntu-latest
 
           # - platform: windows
           #   targets: x86_64-pc-windows-msvc
@@ -152,9 +152,9 @@ jobs:
         with:
           sweep-cache: true
 
-      - name: Install dependencies (Linux)
-        if: ${{ matrix.platform == 'linux' }}
-        run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev libwayland-dev libxkbcommon-dev
+      # - name: Install dependencies (Linux)
+      #   if: ${{ matrix.platform == 'linux' }}
+      #   run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev libwayland-dev libxkbcommon-dev
 
       - name: Prepare output directories
         run: rm -rf tmp; mkdir -p tmp/binary '${{ env.app }}'
@@ -169,26 +169,26 @@ jobs:
           cargo binstall --no-confirm trunk wasm-bindgen-cli wasm-opt
           trunk build --locked --release --dist '${{ env.app }}'
 
-      - name: Build binaries (non-Web)
-        if: ${{ matrix.platform != 'web' }}
-        run: |
-          for target in ${{ matrix.targets }}; do
-            cargo build --locked --profile='${{ matrix.profile }}' --target="${target}" --no-default-features --features='${{ matrix.features }}'
-            mv target/"${target}"/'${{ matrix.profile }}/${{ env.cargo_build_binary_name }}${{ matrix.binary_ext }}' tmp/binary/"${target}"'${{ matrix.binary_ext }}'
-          done
+      # - name: Build binaries (non-Web)
+      #   if: ${{ matrix.platform != 'web' }}
+      #   run: |
+      #     for target in ${{ matrix.targets }}; do
+      #       cargo build --locked --profile='${{ matrix.profile }}' --target="${target}" --no-default-features --features='${{ matrix.features }}'
+      #       mv target/"${target}"/'${{ matrix.profile }}/${{ env.cargo_build_binary_name }}${{ matrix.binary_ext }}' tmp/binary/"${target}"'${{ matrix.binary_ext }}'
+      #     done
 
-      - name: Add binaries to app (non-Web)
-        if: ${{ matrix.platform != 'web' }}
-        run: |
-          if [ '${{ matrix.platform }}' == 'macos' ]; then
-            lipo tmp/binary/*'${{ matrix.binary_ext }}' -create -output '${{ env.app }}/${{ env.app_binary_name }}${{ matrix.binary_ext }}'
-          else
-            mv tmp/binary/*'${{ matrix.binary_ext }}' '${{ env.app }}/${{ env.app_binary_name }}${{ matrix.binary_ext }}'
-          fi
+      # - name: Add binaries to app (non-Web)
+      #   if: ${{ matrix.platform != 'web' }}
+      #   run: |
+      #     if [ '${{ matrix.platform }}' == 'macos' ]; then
+      #       lipo tmp/binary/*'${{ matrix.binary_ext }}' -create -output '${{ env.app }}/${{ env.app_binary_name }}${{ matrix.binary_ext }}'
+      #     else
+      #       mv tmp/binary/*'${{ matrix.binary_ext }}' '${{ env.app }}/${{ env.app_binary_name }}${{ matrix.binary_ext }}'
+      #     fi
 
-      - name: Add assets to app (non-Web)
-        if: ${{ matrix.platform != 'web' }}
-        run: cp -r ./'${{ env.assets_path }}' '${{ env.app }}' || true # Ignore error if assets folder does not exist
+      # - name: Add assets to app (non-Web)
+      #   if: ${{ matrix.platform != 'web' }}
+      #   run: cp -r ./'${{ env.assets_path }}' '${{ env.app }}' || true # Ignore error if assets folder does not exist
 
       # - name: Add metadata to app (macOS)
       #   if: ${{ matrix.platform == 'macos' }}
