@@ -1,11 +1,5 @@
 body {
-  background-color: black;
-}
-
-h1 {
-  font-size: 4rem;
-  color: aliceblue;
-  margin: 2rem auto;
+  margin: 0;
 }
 
 h2 {
