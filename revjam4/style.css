@@ -1,0 +1,101 @@
+body {
+  background-color: black;
+}
+
+h1 {
+  font-size: 4rem;
+  color: aliceblue;
+  margin: 2rem auto;
+}
+
+h2 {
+  font-size: 2.3rem;
+  margin: 0 auto;
+  padding: 2rem 1rem 0.2rem 1rem;
+}
+
+p {
+  font-size: 1.3rem;
+  margin: 0 auto 2rem auto;
+  padding: 1rem;
+}
+
+#parent {
+  display: flex;
+  flex-direction: column;
+}
+
+#art {
+  display: flex;
+  flex-direction: column;
+  background-color: #b3b3b3;
+}
+
+#sprites {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+}
+
+#music {
+  height: 20%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  background-color: rgb(166, 166, 207);
+}
+
+#toggles {
+  display: flex;
+  flex-direction: column;
+  margin: 0 auto;
+}
+
+/* The switch - the box around the slider */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 400px;
+  height: 40px;
+}
+
+/* Hide default HTML checkbox */
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+input:checked+.slider {
+  background-color: #1a7ccc;
+}
+
+input:focus+.slider {
+  box-shadow: 0 0 1px #1976c2;
+}
+
+input:checked+.slider:before {
+  -webkit-transform: translateX(26px);
+  -ms-transform: translateX(26px);
+  transform: translateX(26px);
+}
+
+/* Rounded sliders */
+.slider.round {
+  border-radius: 34px;
+  padding: 0.4rem 1rem;
+}
+
+.slider.round:before {
+  border-radius: 50%;
+}
+
+#programming {
+  display: flex;
+  flex-direction: column;
+  background-color: rgb(233, 107, 107);
+}
+
+#programming img {
+  padding: 0 16rem;
+}

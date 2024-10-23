@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css" />
+  < <title>Animancer - Art & Music</title>
+</head>
+
+<body>
+  <div id="parent">
+    <h1>Animancer</h1>
+    <div id="art">
+      <h2>Art</h2>
+      <p>Created by <a href="https://vessk.itch.io/">Vessk</a> - sprite sheets for player and enemy units, floor tiles,
+        buildings, and terrain obstacles.</p>
+      <div id="sprites">
+        <div id="sheet1" class="sprite_sheet">
+          <img src="../assets/SpriteSheet1.png" />
+        </div>
+        <div id="sheet2" class="sprite_sheet">
+          <img src="../assets/SpriteSheet2.png" />
+        </div>
+      </div>
+    </div>
+    <div id="music">
+      <h2>Music</h2>
+      <p>Created by <a href="https://greatvaluemagic.itch.io/">GreatValueMagic</a> - select a theme to listen.</p>
+      <div id="toggles">
+        <label class="switch">
+          <input id="toggle_menu" type="checkbox" onclick="toggleMenu()">
+          <span class="slider round">Main Menu Theme</span>
+          <audio id="audio_menu" loop autoplay src="../assets/menu_theme.wav" />
+        </label>
+        <label class="switch">
+          <input id="toggle_ambient" type="checkbox" onclick="toggleAmbient()">
+          <span class="slider round">Ambient Theme</span>
+          <audio id="audio_ambient" loop src="../assets/ambient_theme.wav" />
+        </label>
+        <label class="switch">
+          <input id="toggle_battle" type="checkbox" onclick="toggleBattle()">
+          <span class="slider round">Battle Theme</span>
+          <audio id="audio_battle" loop src="../assets/battle_theme.wav" />
+        </label>
+      </div>
+    </div>
+    <div id="programming">
+      <h2>Programming/Design</h2>
+      <p>Created by <a href="https://wake1st.itch.io/">Wake1st</a> - the game is not here because the game broke.</p>
+      <img src="https://i.pinimg.com/564x/2d/a6/cc/2da6cc3c6a38759b41ad53457d4b111a.jpg" />
+    </div>
+  </div>
+
+  <script src="main.js"></script>
+</body>
+
+</html>
