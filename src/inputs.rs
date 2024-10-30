@@ -58,8 +58,7 @@ impl Plugin for InputPlugin {
             cost: 0.,
         })
         .insert_resource(ProducerSelection { is_selected: false })
-        .insert_resource(MousePosition(Vec2::ZERO))
-        .insert_resource(MousePositionState(MousePositionType::World));
+        .insert_resource(MousePosition(Vec2::ZERO));
     }
 }
 
