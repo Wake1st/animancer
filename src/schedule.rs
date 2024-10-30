@@ -9,6 +9,7 @@ impl Plugin for SchedulePlugin {
         app.configure_sets(
             Update,
             (
+                InGameSet::MousePosition,
                 InGameSet::UIInput,
                 InGameSet::UserInput,
                 InGameSet::AIInput,
@@ -26,6 +27,7 @@ impl Plugin for SchedulePlugin {
 
 #[derive(Debug, Hash, PartialEq, Eq, Clone, SystemSet)]
 pub enum InGameSet {
+    MousePosition,
     UIInput,
     UserInput,
     AIInput,
