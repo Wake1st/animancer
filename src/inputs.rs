@@ -29,7 +29,7 @@ impl Plugin for InputPlugin {
             Update,
             (check_mouse_position, store_mouse_position)
                 .chain()
-                .in_set(InGameSet::UIInput),
+                .in_set(InGameSet::MousePosition),
         )
         .add_systems(
             Update,
@@ -37,6 +37,7 @@ impl Plugin for InputPlugin {
                 (handle_click, handle_mouse_wheel, handle_keys),
                 set_selection_state,
             )
+                .run_if(mouse_is_in_world)
                 .chain()
                 .in_set(InGameSet::UserInput),
         )
@@ -57,7 +58,8 @@ impl Plugin for InputPlugin {
             cost: 0.,
         })
         .insert_resource(ProducerSelection { is_selected: false })
-        .insert_resource(MousePosition(Vec2::ZERO));
+        .insert_resource(MousePosition(Vec2::ZERO))
+        .insert_resource(MousePositionState(MousePositionType::World));
     }
 }
 
@@ -91,10 +93,10 @@ pub struct ProducerSelection {
     pub is_selected: bool,
 }
 
-/// check if cursor is hovered over ui
-fn check_mouse_position(windows: Query<&Window>, mut current_ui: ResMut<CurrentUI>) {
+/// check if cursor is in the game world
+fn mouse_is_in_world(windows: Query<&Window>) -> bool {
     if let Some(pos) = windows.single().cursor_position() {
-        current_ui.focused = pos.y > (WINDOW_HEIGHT - UI_BASE_HEIGHT);
+        return pos.y < (WINDOW_HEIGHT - UI_BASE_HEIGHT)
     }
 }
 
@@ -115,7 +117,6 @@ fn store_mouse_position(
 }
 
 fn handle_click(
-    current_ui: Res<CurrentUI>,
     mouse_position: Res<MousePosition>,
     mouse_button_input: Res<ButtonInput<MouseButton>>,
     mut box_selector: ResMut<BoxSelector>,
@@ -129,11 +130,6 @@ fn handle_click(
     selection_state: Res<SelectionState>,
     mut unit_action: EventWriter<UnitAction>,
 ) {
-    //  ensure cursor is not hovered over ui
-    if current_ui.focused {
-        return;
-    }
-
     let pos = mouse_position.0;
 
     match selection_state.0 {
@@ -218,7 +214,6 @@ fn handle_click(
 }
 
 fn set_selection_state(
-    current_ui: Res<CurrentUI>,
     mouse_button_input: Res<ButtonInput<MouseButton>>,
     keys: Res<ButtonInput<KeyCode>>,
     selection_state: Res<SelectionState>,
@@ -226,11 +221,6 @@ fn set_selection_state(
     energy: Res<Energy>,
     build_selection: ResMut<BuildSelection>,
 ) {
-    //  ensure cursor is not hovered over ui
-    if current_ui.focused {
-        return;
-    }
-
     match selection_state.0 {
         SelectionType::Construction => {
             let deselect_construction = mouse_button_input.just_released(MouseButton::Right);
