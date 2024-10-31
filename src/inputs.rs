@@ -14,7 +14,6 @@ use crate::{
     },
     structure::StructureType,
     teams::TeamType,
-    ui::CurrentUI,
     unit::UnitAction,
 };
 
@@ -27,7 +26,7 @@ impl Plugin for InputPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Update,
-            (check_mouse_position, store_mouse_position)
+            store_mouse_position
                 .chain()
                 .in_set(InGameSet::MousePosition),
         )
@@ -93,9 +92,11 @@ pub struct ProducerSelection {
 }
 
 /// check if cursor is in the game world
-fn mouse_is_in_world(windows: Query<&Window>) -> bool {
+pub fn mouse_is_in_world(windows: Query<&Window>) -> bool {
     if let Some(pos) = windows.single().cursor_position() {
-        return pos.y < (WINDOW_HEIGHT - UI_BASE_HEIGHT)
+        pos.y < (WINDOW_HEIGHT - UI_BASE_HEIGHT)
+    } else {
+        false
     }
 }
 
