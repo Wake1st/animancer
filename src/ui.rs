@@ -7,7 +7,7 @@ use bevy::{
 };
 
 use crate::{
-    inputs::{mouse_is_in_world, BuildSelection},
+    inputs::{mouse_is_hovered_over, BuildSelection},
     producer::{
         AttemptProductionIncrease, DisplayProducerUI, Producer, Production, ProductionType,
         RemoveProducerUI, PRIEST_COST, WARRIOR_COST, WORKER_COST,
@@ -49,7 +49,7 @@ impl Plugin for UIPlugin {
                 Update,
                 (
                     (build_button_interactions, producer_button_interactions)
-                        .run_if(mouse_is_in_world == false),
+                        .run_if(mouse_is_hovered_over::<false>),
                     production_queue_display,
                 )
                     .in_set(InGameSet::UIInput),

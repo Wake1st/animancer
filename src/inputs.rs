@@ -36,7 +36,7 @@ impl Plugin for InputPlugin {
                 (handle_click, handle_mouse_wheel, handle_keys),
                 set_selection_state,
             )
-                .run_if(mouse_is_in_world)
+                .run_if(mouse_is_hovered_over::<true>)
                 .chain()
                 .in_set(InGameSet::UserInput),
         )
@@ -92,9 +92,9 @@ pub struct ProducerSelection {
 }
 
 /// check if cursor is in the game world
-pub fn mouse_is_in_world(windows: Query<&Window>) -> bool {
+pub fn mouse_is_hovered_over<const WORLD: bool>(windows: Query<&Window>) -> bool {
     if let Some(pos) = windows.single().cursor_position() {
-        pos.y < (WINDOW_HEIGHT - UI_BASE_HEIGHT)
+        WORLD == (pos.y < (WINDOW_HEIGHT - UI_BASE_HEIGHT))
     } else {
         false
     }
