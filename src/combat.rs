@@ -18,9 +18,11 @@ impl Plugin for CombatPlugin {
             Update,
             (
                 assign_attackers,
-                (break_attack_pursuit, pursue_prey).chain(),
+                break_attack_pursuit,
+                pursue_prey,
                 attack_unit,
             )
+                .chain()
                 .in_set(InGameSet::EntityUpdates),
         )
         .add_systems(
@@ -33,15 +35,18 @@ impl Plugin for CombatPlugin {
     }
 }
 
+#[derive(Component)]
+pub struct CombatEngagementState(pub CombatEngagement);
+
+pub enum CombatEngagement {
+    None,
+    Pursuing { target: Entity },
+    Attacking { target: Entity, cooldown: f32 },
+}
+
 #[derive(Event)]
 pub struct AssignAttackPursuit {
     pub predators: Vec<Entity>,
-    pub prey: Entity,
-}
-
-#[derive(Component)]
-pub struct AttackPursuit {
-    pub cooldown: f32,
     pub prey: Entity,
 }
 
@@ -59,7 +64,11 @@ pub struct BreakAttackPursuit {
     pub entities: Vec<Entity>,
 }
 
-pub fn assign_attackers(mut assignments: EventReader<AssignAttackPursuit>, mut commands: Commands) {
+pub fn assign_attackers(
+    mut assignments: EventReader<AssignAttackPursuit>,
+    mut combatants: Query<&mut CombatEngagementState, With<Warrior>>,
+    mut commands: Commands,
+) {
     for assignment in assignments.read() {
         //  check to ensure prey exists
         if let None = commands.get_entity(assignment.prey) {
@@ -68,75 +77,110 @@ pub fn assign_attackers(mut assignments: EventReader<AssignAttackPursuit>, mut c
 
         for &predator in assignment.predators.iter() {
             //  check to ensure predator exists
-            if let None = commands.get_entity(predator) {
-                continue;
+            if let Ok(mut engagement_state) = combatants.get_entity(predator) {
+                //  set new engagement
+                engagement_state.0 = CombatEngagement::Attacking {
+                    target: assignment.prey,
+                    cooldown: ATTACK_RATE,
+                };
             }
-
-            //  clear away existing attack pursuit before assigning one
-            commands
-                .entity(predator)
-                .remove::<AttackPursuit>()
-                .insert(AttackPursuit {
-                    cooldown: 0.0,
-                    prey: assignment.prey,
-                });
         }
     }
 }
 
-fn break_attack_pursuit(mut event: EventReader<BreakAttackPursuit>, mut commands: Commands) {
+fn break_attack_pursuit(
+    mut event: EventReader<BreakAttackPursuit>,
+    mut combatants: Query<&mut CombatEngagementState, With<Warrior>>,
+) {
     for break_attack in event.read() {
         for &entity in break_attack.entities.iter() {
-            commands.entity(entity).remove::<AttackPursuit>();
+            if let Ok(mut engagement_state) = combatants.get_entity(entity) {
+                engagement_state.0 = CombatEngagement::None;
+            }
         }
     }
 }
 
 fn pursue_prey(
-    mut predators: Query<
-        (Entity, &mut AttackPursuit, &Transform, &Warrior, &Team),
-        With<AttackPursuit>,
-    >,
-    victims: Query<&Transform, With<Health>>,
-    time: Res<Time>,
+    mut predators: Query<(
+        Entity,
+        &mut CombatEngagementState,
+        &Transform,
+        &Warrior,
+        &Team,
+    )>,
+    targets: Query<&Transform, With<Health>>,
     mut movement_writer: EventWriter<SetUnitPosition>,
-    mut attack_events: EventWriter<Attack>,
-    mut commands: Commands,
 ) {
-    for (predetor_entity, mut attack_pursuit, predator_transform, warrior, team) in
+    for (predetor_entity, mut engagement_state, predator_transform, warrior, team) in
         predators.iter_mut()
     {
-        attack_pursuit.cooldown -= time.delta_seconds();
+        let mut new_engagement_state = engagement_state.0.clone();
 
-        if attack_pursuit.cooldown < 0.0 {
-            if let Ok(victim_transform) = victims.get(attack_pursuit.prey) {
-                let dist = predator_transform
-                    .translation
-                    .distance(victim_transform.translation);
+        match engagement_state.0 {
+            CombatEngagement::Pursuing { target } => {
+                if let Ok(target_transform) = targets.get(target) {
+                    let dist = predator_transform
+                        .translation
+                        .distance(target_transform.translation);
 
-                if dist > ATTACK_RANGE {
-                    let attack_direction = (predator_transform.translation
-                        - victim_transform.translation)
-                        .normalize()
-                        .xy();
-                    movement_writer.send(SetUnitPosition {
-                        position: victim_transform.translation.xy(),
-                        direction: attack_direction,
-                        formation: Formation::Ringed,
-                        team: team.0.clone(),
-                    });
+                    if dist > ATTACK_RANGE {
+                        let attack_direction = (predator_transform.translation
+                            - target_transform.translation)
+                            .normalize()
+                            .xy();
+
+                        movement_writer.send(SetUnitPosition {
+                            position: target_transform.translation.xy(),
+                            direction: attack_direction,
+                            formation: Formation::Ringed,
+                            team: team.0.clone(),
+                        });
+                    } else {
+                        new_engagement_state = CombatEngagement::Attacking {
+                            target,
+                            cooldown: ATTACK_RATE,
+                        };
+                    }
                 } else {
+                    //  If we cannot find prey, then it is most likely dead
+                    new_engagement_state = CombatEngagement::None;
+                }
+            }
+            _ => (),
+        }
+
+        if new_engagement_state != engagement_state.0 {
+            engagement_state.0 = new_engagement_state.clone();
+        }
+    }
+}
+
+fn attacking(
+    time: Res<Time>,
+    mut combatants: Query<(&mut CombatEngagementState, &Warrior)>,
+    mut attack_events: EventWriter<Attack>,
+) {
+    let delta_time = time.delta_seconds();
+
+    for (mut engagement_state, warrior) in combatants.iter_mut() {
+        match engagement_state.0 {
+            CombatEngagement::Attacking {
+                target,
+                mut cooldown,
+            } => {
+                cooldown -= delta_time;
+
+                if cooldown < 0.0 {
+                    cooldown = ATTACK_RATE;
+
                     attack_events.send(Attack {
-                        victim: attack_pursuit.prey,
+                        victim: target,
                         value: warrior.strength,
                     });
                 }
-
-                attack_pursuit.cooldown = ATTACK_RATE;
-            } else {
-                //  If we cannot find prey, then it is most likely dead
-                commands.entity(predetor_entity).remove::<AttackPursuit>();
             }
+            _ => (),
         }
     }
 }

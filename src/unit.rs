@@ -2,7 +2,7 @@ use bevy::{math::vec2, prelude::*};
 
 use crate::{
     ai::Idle,
-    combat::Health,
+    combat::{CombatEngagementState, Health},
     conversion::Faith,
     detection::Detector,
     movement::{Moveable, Moving},
@@ -191,6 +191,7 @@ fn spawn_unit(
                     },
                     Unit {},
                     Warrior { strength: 2.5 },
+                    CombatEngagementState(Default::default()),
                     Detector {
                         range: WARRIOR_DETECTION_RANGE,
                     },
